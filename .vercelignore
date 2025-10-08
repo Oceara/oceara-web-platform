@@ -1,0 +1,73 @@
+# Backend (deploy separately)
+backend/
+backend/**/*
+
+# ML Models (deploy separately)
+ml-models/
+ml-models/**/*
+
+# Smart Contracts (deploy separately)
+contracts/
+hardhat/
+scripts/deploy.js
+
+# Docker (not needed on Vercel)
+docker-compose.yml
+Dockerfile.*
+nginx/
+monitoring/
+
+# CI/CD
+.github/workflows/
+
+# Documentation (keep README.md only)
+API_DOCUMENTATION.md
+SMART_CONTRACTS_DOCUMENTATION.md
+BLOCKCHAIN_BACKEND_DOCUMENTATION.md
+CARBON_CALCULATION_DOCUMENTATION.md
+AI_ML_DOCUMENTATION.md
+ADMIN_DOCUMENTATION.md
+GLOBE_INTEGRATION_DOCUMENTATION.md
+COMPREHENSIVE_API_DATABASE_IMPLEMENTATION.md
+SECURITY_DEPLOYMENT_GUIDE.md
+DEPLOYMENT_CHECKLIST.md
+FINAL_PROJECT_SUMMARY.md
+IMPLEMENTATION_SUMMARY.md
+PROJECT_STATUS.md
+QUICK_START_CARBON.md
+CARBON_SYSTEM_IMPLEMENTATION.md
+SECURITY_IMPLEMENTATION_SUMMARY.md
+PROJECT_INDEX.md
+
+# Tests
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/__tests__/
+coverage/
+
+# Development
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Uploads
+uploads/
+temp/
+
+# Database
+*.db
+*.sqlite

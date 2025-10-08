@@ -1,0 +1,81 @@
+{
+  "name": "oceara-fullstack",
+  "version": "1.0.0",
+  "description": "Oceara - Blue Carbon Ecosystem Platform",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "ml-models"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm run install:frontend && npm run install:backend && npm run install:ml",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && npm install",
+    "install:ml": "cd ml-models && pip install -r requirements.txt",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "start:frontend": "cd frontend && npm run start",
+    "start:backend": "cd backend && npm run start",
+    "lint": "npm run lint:frontend && npm run lint:backend",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint:backend": "cd backend && npm run lint",
+    "format": "npm run format:frontend && npm run format:backend",
+    "format:frontend": "cd frontend && npm run format",
+    "format:backend": "cd backend && npm run format",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd frontend && npm run test",
+    "test:backend": "cd backend && npm run test",
+    "blockchain:install": "npm install --save-dev hardhat @nomicfoundation/hardhat-toolbox @openzeppelin/contracts",
+    "blockchain:compile": "npx hardhat compile",
+    "blockchain:test": "npx hardhat test",
+    "blockchain:deploy:local": "npx hardhat run scripts/deploy.js --network localhost",
+    "blockchain:deploy:mumbai": "npx hardhat run scripts/deploy.js --network mumbai",
+    "blockchain:deploy:polygon": "npx hardhat run scripts/deploy.js --network polygon",
+    "blockchain:deploy:goerli": "npx hardhat run scripts/deploy.js --network goerli",
+    "blockchain:verify": "npx hardhat verify --network mumbai",
+    "blockchain:node": "npx hardhat node",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "hardhat": "^2.19.0",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/contracts": "^4.9.3"
+  },
+  "dependencies": {
+    "ethers": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "carbon-credits",
+    "blockchain",
+    "nft",
+    "environment",
+    "sustainability",
+    "mangrove",
+    "wetland",
+    "blue-carbon"
+  ],
+  "author": "Oceara Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oceara/oceara-platform.git"
+  },
+  "bugs": {
+    "url": "https://github.com/oceara/oceara-platform/issues"
+  },
+  "homepage": "https://oceara.com"
+}
