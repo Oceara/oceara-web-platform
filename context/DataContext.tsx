@@ -179,6 +179,225 @@ const initialProjects: Project[] = [
       confidence: 93
     },
     documents: ['Land Deed', 'Survey Report']
+  },
+  {
+    id: 5,
+    name: 'Mumbai Coastal Mangrove',
+    owner: 'Rajesh Kumar',
+    location: 'Mumbai, Maharashtra',
+    coordinates: { lat: 19.0760, lng: 72.8777 },
+    area: '150 hectares',
+    creditsAvailable: 750,
+    pricePerCredit: 26,
+    verified: false,
+    status: 'Pending Review',
+    impact: '1,875 tons CO₂/year',
+    image: '🏙️',
+    description: 'Urban mangrove conservation in Mumbai metropolitan area',
+    submittedDate: '2024-10-10',
+    images: ['📷', '📷', '📷'],
+    satelliteImages: [
+      'https://maps.googleapis.com/maps/api/staticmap?center=19.0760,72.8777&zoom=16&size=800x600&maptype=satellite&key=',
+      'https://maps.googleapis.com/maps/api/staticmap?center=19.0760,72.8777&zoom=17&size=800x600&maptype=satellite&key=',
+      'https://maps.googleapis.com/maps/api/staticmap?center=19.0760,72.8777&zoom=18&size=800x600&maptype=satellite&key='
+    ],
+    fieldData: {
+      trees: 7500,
+      species: 'Rhizophora mucronata',
+      soilType: 'Muddy clay',
+      waterSalinity: '25 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 7450,
+      mangroveArea: 150,
+      healthScore: 87,
+      speciesDetected: ['Rhizophora mucronata', 'Avicennia marina'],
+      carbonCredits: 750,
+      confidence: 92
+    },
+    documents: ['Land Deed', 'Survey Report', 'Environmental Clearance']
+  },
+  {
+    id: 6,
+    name: 'Tamil Nadu Estuary Project',
+    owner: 'Priya Sharma',
+    location: 'Tamil Nadu, India',
+    coordinates: { lat: 11.1271, lng: 78.6569 },
+    area: '220 hectares',
+    creditsAvailable: 1100,
+    pricePerCredit: 23,
+    verified: false,
+    status: 'Under Verification',
+    impact: '2,750 tons CO₂/year',
+    image: '🌺',
+    description: 'Estuary mangrove restoration with community involvement',
+    submittedDate: '2024-10-08',
+    images: ['📷', '📷'],
+    satelliteImages: [
+      'https://maps.googleapis.com/maps/api/staticmap?center=11.1271,78.6569&zoom=16&size=800x600&maptype=satellite&key=',
+      'https://maps.googleapis.com/maps/api/staticmap?center=11.1271,78.6569&zoom=17&size=800x600&maptype=satellite&key='
+    ],
+    fieldData: {
+      trees: 11000,
+      species: 'Avicennia marina',
+      soilType: 'Sandy loam',
+      waterSalinity: '30 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 10980,
+      mangroveArea: 220,
+      healthScore: 91,
+      speciesDetected: ['Avicennia marina', 'Bruguiera gymnorrhiza'],
+      carbonCredits: 1100,
+      confidence: 95
+    },
+    documents: ['Land Deed', 'Survey Report']
+  },
+  {
+    id: 7,
+    name: 'Odisha Deltaic Mangrove',
+    owner: 'Anil Patel',
+    location: 'Odisha, India',
+    coordinates: { lat: 20.2961, lng: 85.8245 },
+    area: '190 hectares',
+    creditsAvailable: 950,
+    pricePerCredit: 24,
+    verified: false,
+    status: 'Pending Review',
+    impact: '2,375 tons CO₂/year',
+    image: '🌊',
+    description: 'Delta region mangrove conservation and fish habitat',
+    submittedDate: '2024-10-12',
+    images: ['📷', '📷', '📷'],
+    satelliteImages: [
+      'https://maps.googleapis.com/maps/api/staticmap?center=20.2961,85.8245&zoom=16&size=800x600&maptype=satellite&key=',
+      'https://maps.googleapis.com/maps/api/staticmap?center=20.2961,85.8245&zoom=17&size=800x600&maptype=satellite&key=',
+      'https://maps.googleapis.com/maps/api/staticmap?center=20.2961,85.8245&zoom=18&size=800x600&maptype=satellite&key='
+    ],
+    fieldData: {
+      trees: 9500,
+      species: 'Bruguiera gymnorrhiza',
+      soilType: 'Silty clay',
+      waterSalinity: '28 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 9470,
+      mangroveArea: 190,
+      healthScore: 89,
+      speciesDetected: ['Bruguiera gymnorrhiza', 'Rhizophora mucronata'],
+      carbonCredits: 950,
+      confidence: 94
+    },
+    documents: ['Land Deed', 'Survey Report', 'Environmental Clearance']
+  },
+  {
+    id: 8,
+    name: 'Goa Coastal Restoration',
+    owner: 'Maria Fernandes',
+    location: 'Goa, India',
+    coordinates: { lat: 15.2993, lng: 74.1240 },
+    area: '95 hectares',
+    creditsAvailable: 475,
+    pricePerCredit: 27,
+    verified: true,
+    status: 'Active',
+    impact: '1,188 tons CO₂/year',
+    image: '🏖️',
+    description: 'Tourism-friendly mangrove conservation project',
+    submittedDate: '2024-09-25',
+    images: ['📷', '📷'],
+    satelliteImages: [
+      'https://maps.googleapis.com/maps/api/staticmap?center=15.2993,74.1240&zoom=16&size=800x600&maptype=satellite&key=',
+      'https://maps.googleapis.com/maps/api/staticmap?center=15.2993,74.1240&zoom=17&size=800x600&maptype=satellite&key='
+    ],
+    fieldData: {
+      trees: 4750,
+      species: 'Sonneratia apetala',
+      soilType: 'Sandy',
+      waterSalinity: '26 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 4730,
+      mangroveArea: 95,
+      healthScore: 86,
+      speciesDetected: ['Sonneratia apetala', 'Avicennia marina'],
+      carbonCredits: 475,
+      confidence: 91
+    },
+    documents: ['Land Deed', 'Survey Report', 'Environmental Clearance', 'Tourism Board Approval']
+  },
+  {
+    id: 9,
+    name: 'Karnataka Coastal Belt',
+    owner: 'Suresh Reddy',
+    location: 'Karnataka, India',
+    coordinates: { lat: 14.8520, lng: 74.1350 },
+    area: '135 hectares',
+    creditsAvailable: 675,
+    pricePerCredit: 25,
+    verified: false,
+    status: 'Under Verification',
+    impact: '1,688 tons CO₂/year',
+    image: '🌴',
+    description: 'Mangrove reforestation along Karnataka coast',
+    submittedDate: '2024-10-09',
+    images: ['📷', '📷', '📷'],
+    satelliteImages: [
+      'https://maps.googleapis.com/maps/api/staticmap?center=14.8520,74.1350&zoom=16&size=800x600&maptype=satellite&key=',
+      'https://maps.googleapis.com/maps/api/staticmap?center=14.8520,74.1350&zoom=17&size=800x600&maptype=satellite&key='
+    ],
+    fieldData: {
+      trees: 6750,
+      species: 'Rhizophora mucronata',
+      soilType: 'Clay loam',
+      waterSalinity: '27 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 6720,
+      mangroveArea: 135,
+      healthScore: 88,
+      speciesDetected: ['Rhizophora mucronata', 'Avicennia marina'],
+      carbonCredits: 675,
+      confidence: 93
+    },
+    documents: ['Land Deed', 'Survey Report']
+  },
+  {
+    id: 10,
+    name: 'Lakshadweep Marine Sanctuary',
+    owner: 'Ahmed Ali',
+    location: 'Lakshadweep, India',
+    coordinates: { lat: 10.5667, lng: 72.6417 },
+    area: '275 hectares',
+    creditsAvailable: 1375,
+    pricePerCredit: 30,
+    verified: true,
+    status: 'Active',
+    impact: '3,438 tons CO₂/year',
+    image: '🏝️',
+    description: 'Island mangrove ecosystem with coral reef protection',
+    submittedDate: '2024-09-18',
+    images: ['📷', '📷', '📷'],
+    satelliteImages: [
+      'https://maps.googleapis.com/maps/api/staticmap?center=10.5667,72.6417&zoom=16&size=800x600&maptype=satellite&key=',
+      'https://maps.googleapis.com/maps/api/staticmap?center=10.5667,72.6417&zoom=17&size=800x600&maptype=satellite&key=',
+      'https://maps.googleapis.com/maps/api/staticmap?center=10.5667,72.6417&zoom=18&size=800x600&maptype=satellite&key='
+    ],
+    fieldData: {
+      trees: 13750,
+      species: 'Rhizophora mucronata',
+      soilType: 'Coral sand',
+      waterSalinity: '32 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 13700,
+      mangroveArea: 275,
+      healthScore: 95,
+      speciesDetected: ['Rhizophora mucronata', 'Bruguiera gymnorrhiza', 'Sonneratia apetala'],
+      carbonCredits: 1375,
+      confidence: 97
+    },
+    documents: ['Land Deed', 'Survey Report', 'Environmental Clearance', 'Marine Board Approval']
   }
 ]
 

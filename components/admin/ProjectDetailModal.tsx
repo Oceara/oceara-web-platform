@@ -261,7 +261,40 @@ export default function ProjectDetailModal({ project, onClose, onApprove, onReje
             </div>
           )}
 
-          {/* ML Analysis Section */}
+          {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+            <h2 className="text-2xl font-bold text-white mb-6">📈 Project Analytics Dashboard</h2>
+            
+            {/* Coming Soon */}
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">📊</div>
+              <h3 className="text-white text-xl font-bold mb-2">Advanced Analytics Coming Soon</h3>
+              <p className="text-gray-400 mb-6">
+                Real-time graphs, trend analysis, and predictive modeling
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <div className="text-2xl mb-2">📈</div>
+                  <h4 className="text-white font-semibold mb-1">Growth Trends</h4>
+                  <p className="text-gray-400 text-sm">Track mangrove growth over time</p>
+                </div>
+                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <div className="text-2xl mb-2">🌡️</div>
+                  <h4 className="text-white font-semibold mb-1">Health Monitoring</h4>
+                  <p className="text-gray-400 text-sm">Real-time ecosystem health metrics</p>
+                </div>
+                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <div className="text-2xl mb-2">💰</div>
+                  <h4 className="text-white font-semibold mb-1">Credit Forecasting</h4>
+                  <p className="text-gray-400 text-sm">Predict future carbon credit potential</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ML Analysis Section */}
           {activeSection === 'ml' && (
             <div className="space-y-6">
               <div className="bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-xl p-6">

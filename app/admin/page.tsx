@@ -47,51 +47,57 @@ export default function AdminDashboard() {
     },
     { 
       label: 'Total Area', 
-      value: `${verifiedProjects.reduce((acc, p) => acc + parseFloat(p.area), 0).toFixed(0)} ha`, 
+      value: `${verifiedProjects.reduce((acc, p) => {
+        const areaNum = parseFloat(p.area.replace(/[^0-9.]/g, ''));
+        return acc + (isNaN(areaNum) ? 0 : areaNum);
+      }, 0).toFixed(0)} ha`, 
       icon: '🌍', 
       color: 'from-purple-500 to-pink-500',
       trend: 'Verified',
       trendUp: true
     }
-  ]
+  ];
 
   const recentActivity = [
     { action: 'Project Approved', project: 'Sundarbans Project', user: 'Admin John', time: '10 mins ago', icon: '✅' },
     { action: 'Credits Minted', project: 'Kerala Restoration', amount: '890 credits', time: '1 hour ago', icon: '💰' },
     { action: 'New Submission', project: 'Gujarat Coastal', user: 'Amit Patel', time: '2 hours ago', icon: '📝' },
     { action: 'Data Verified', project: 'Andaman Project', user: 'Admin Sarah', time: '3 hours ago', icon: '🔍' }
-  ]
+  ];
 
   const blockchainTransactions = [
     { txHash: '0x1a2b3c...', action: 'Mint Credits', amount: '1,250', status: 'Confirmed', time: '2024-10-09 14:30' },
     { txHash: '0x4d5e6f...', action: 'Transfer Credits', amount: '500', status: 'Confirmed', time: '2024-10-09 13:15' },
     { txHash: '0x7g8h9i...', action: 'Mint Credits', amount: '890', status: 'Pending', time: '2024-10-09 12:00' }
-  ]
+  ];
 
   const handleApprove = (projectId: number, carbonCredits: number) => {
     updateProject(projectId, {
       status: 'Verified',
       verified: true,
       creditsAvailable: carbonCredits
-    })
-    setShowModal(false)
-    setSelectedProject(null)
-  }
+    });
+    setShowModal(false);
+    setSelectedProject(null);
+  };
 
   const handleReject = (projectId: number, reason: string) => {
     updateProject(projectId, {
-      status: 'Rejected',
+      status: 'Rejected' as const,
       verified: false
-    })
-    setShowModal(false)
-    setSelectedProject(null)
-  }
+    });
+    setShowModal(false);
+    setSelectedProject(null);
+  };
 
-  const filteredProjects = filterStatus === 'all' 
-    ? [...pendingProjects, ...verifiedProjects]
-    : filterStatus === 'pending'
-    ? pendingProjects
-    : verifiedProjects
+  let filteredProjects;
+  if (filterStatus === 'all') {
+    filteredProjects = [...pendingProjects, ...verifiedProjects];
+  } else if (filterStatus === 'pending') {
+    filteredProjects = pendingProjects;
+  } else {
+    filteredProjects = verifiedProjects;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900">
@@ -586,27 +592,15 @@ export default function AdminDashboard() {
 
       {/* Detail Modal */}
       {showModal && selectedProject && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-slate-900 rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-          >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-white">{selectedProject.name}</h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-white text-2xl hover:text-red-400"
-              >
-                ✕
-              </button>
-            </div>
-            {/* Full project details here */}
-            <div className="text-white">
-              <p>Full project verification interface would go here...</p>
-            </div>
-          </motion.div>
-        </div>
+        <ProjectDetailModal
+          project={selectedProject}
+          onClose={() => {
+            setShowModal(false)
+            setSelectedProject(null)
+          }}
+          onApprove={handleApprove}
+          onReject={handleReject}
+        />
       )}
     </div>
   )
