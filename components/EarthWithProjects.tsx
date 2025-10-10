@@ -1,8 +1,8 @@
 'use client'
 
-import { useRef, useState } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Sphere, Html } from '@react-three/drei'
+import { useRef, useEffect, useState } from 'react'
+import { Canvas, useFrame, useLoader } from '@react-three/fiber'
+import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 
 interface Project {
@@ -10,141 +10,323 @@ interface Project {
   name: string
   location: string
   coordinates: { lat: number; lng: number }
+  area: string
   creditsAvailable: number
   pricePerCredit: number
+  verified: boolean
+  impact: string
   image: string
+  description: string
 }
 
-function latLongToVector3(lat: number, lon: number, radius: number) {
-  const phi = (90 - lat) * (Math.PI / 180)
-  const theta = (lon + 180) * (Math.PI / 180)
-
-  const x = -(radius * Math.sin(phi) * Math.cos(theta))
-  const z = radius * Math.sin(phi) * Math.sin(theta)
-  const y = radius * Math.cos(phi)
-
-  return new THREE.Vector3(x, y, z)
+interface EarthWithProjectsProps {
+  projects: Project[]
 }
 
-function ProjectMarker({ project, position }: { project: Project; position: THREE.Vector3 }) {
+function ProjectMarker({ 
+  position, 
+  project, 
+  onClick 
+}: { 
+  position: [number, number, number]
+  project: Project
+  onClick: () => void 
+}) {
+  const meshRef = useRef<THREE.Mesh>(null)
   const [hovered, setHovered] = useState(false)
 
-  return (
-    <group position={position}>
-      {/* Marker Pin */}
-      <mesh
-        onPointerOver={() => setHovered(true)}
-        onPointerOut={() => setHovered(false)}
-      >
-        <sphereGeometry args={[0.02, 16, 16]} />
-        <meshStandardMaterial
-          color={hovered ? '#10b981' : '#3b82f6'}
-          emissive={hovered ? '#10b981' : '#3b82f6'}
-          emissiveIntensity={1}
-        />
-      </mesh>
-
-      {/* Pulsing Ring */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.025, 0.035, 32]} />
-        <meshBasicMaterial color="#3b82f6" transparent opacity={0.6} />
-      </mesh>
-
-      {/* Info Card on Hover */}
-      {hovered && (
-        <Html distanceFactor={2}>
-          <div className="bg-slate-900/95 backdrop-blur-lg rounded-lg p-4 border border-blue-500 shadow-2xl min-w-[250px]">
-            <div className="text-2xl mb-2">{project.image}</div>
-            <h3 className="text-white font-bold text-lg mb-1">{project.name}</h3>
-            <p className="text-gray-300 text-sm mb-3">{project.location}</p>
-            <div className="flex justify-between items-center">
-              <div>
-                <div className="text-gray-400 text-xs">Credits</div>
-                <div className="text-white font-semibold">{project.creditsAvailable}</div>
-              </div>
-              <div>
-                <div className="text-gray-400 text-xs">Price</div>
-                <div className="text-blue-400 font-semibold">${project.pricePerCredit}</div>
-              </div>
-            </div>
-          </div>
-        </Html>
-      )}
-    </group>
-  )
-}
-
-function Earth({ projects }: { projects: Project[] }) {
-  const meshRef = useRef<THREE.Mesh>(null)
-  const groupRef = useRef<THREE.Group>(null)
-
-  useFrame((state, delta) => {
+  useFrame((state) => {
     if (meshRef.current) {
-      meshRef.current.rotation.y += delta * 0.1
+      // Pulse animation
+      const scale = hovered ? 0.06 + Math.sin(state.clock.elapsedTime * 4) * 0.02 : 0.04
+      meshRef.current.scale.setScalar(scale)
+      
+      // Rotate marker
+      meshRef.current.rotation.y = state.clock.elapsedTime * 2
     }
   })
 
   return (
-    <group ref={groupRef}>
-      {/* Earth Sphere */}
-      <Sphere ref={meshRef} args={[1, 64, 64]}>
+    <group position={position}>
+      {/* Pin Point */}
+      <mesh
+        ref={meshRef}
+        onClick={onClick}
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
+      >
+        <sphereGeometry args={[1, 16, 16]} />
         <meshStandardMaterial
-          color="#0ea5e9"
-          roughness={0.7}
-          metalness={0.3}
+          color={hovered ? '#fbbf24' : '#10b981'}
+          emissive={hovered ? '#fbbf24' : '#10b981'}
+          emissiveIntensity={hovered ? 1.5 : 0.8}
         />
-      </Sphere>
+      </mesh>
 
-      {/* Project Markers */}
-      {projects.map((project) => {
-        const position = latLongToVector3(
-          project.coordinates.lat,
-          project.coordinates.lng,
-          1.02
-        )
-        return <ProjectMarker key={project.id} project={project} position={position} />
-      })}
-
-      {/* Atmosphere Glow */}
-      <Sphere args={[1.1, 64, 64]}>
+      {/* Glow Ring */}
+      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
+        <ringGeometry args={[0.8, 1.2, 32]} />
         <meshBasicMaterial
-          color="#3b82f6"
+          color="#10b981"
           transparent
-          opacity={0.1}
-          side={THREE.BackSide}
+          opacity={hovered ? 0.6 : 0.3}
+          side={THREE.DoubleSide}
         />
-      </Sphere>
+      </mesh>
+
+      {/* Vertical Line */}
+      <mesh position={[0, 0.5, 0]}>
+        <cylinderGeometry args={[0.01, 0.01, 1, 8]} />
+        <meshStandardMaterial
+          color="#10b981"
+          emissive="#10b981"
+          emissiveIntensity={0.5}
+        />
+      </mesh>
     </group>
   )
 }
 
-export default function EarthWithProjects({ projects }: { projects: Project[] }) {
+function Earth({ projects, onProjectClick }: { projects: Project[], onProjectClick: (project: Project) => void }) {
+  const meshRef = useRef<THREE.Mesh>(null)
+  const cloudsRef = useRef<THREE.Mesh>(null)
+  const atmosphereRef = useRef<THREE.Mesh>(null)
+
+  // Load textures
+  const dayTexture = useLoader(THREE.TextureLoader, '/earth/day.jpg')
+  const nightTexture = useLoader(THREE.TextureLoader, '/earth/night.jpg')
+  const cloudsTexture = useLoader(THREE.TextureLoader, '/earth/specularClouds.jpg')
+
+  // Custom shader material for day/night transition
+  const earthMaterial = useRef(
+    new THREE.ShaderMaterial({
+      uniforms: {
+        dayTexture: { value: dayTexture },
+        nightTexture: { value: nightTexture },
+        sunDirection: { value: new THREE.Vector3(1, 0, 0) }
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        
+        void main() {
+          vUv = uv;
+          vNormal = normalize(normalMatrix * normal);
+          vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D dayTexture;
+        uniform sampler2D nightTexture;
+        uniform vec3 sunDirection;
+        
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        
+        void main() {
+          vec3 dayColor = texture2D(dayTexture, vUv).rgb;
+          vec3 nightColor = texture2D(nightTexture, vUv).rgb;
+          
+          float intensity = dot(vNormal, sunDirection);
+          intensity = smoothstep(-0.3, 0.3, intensity);
+          
+          vec3 color = mix(nightColor * 0.5, dayColor, intensity);
+          gl_FragColor = vec4(color, 1.0);
+        }
+      `
+    })
+  )
+
+  useFrame((state, delta) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += delta * 0.05
+    }
+    if (cloudsRef.current) {
+      cloudsRef.current.rotation.y += delta * 0.06
+      cloudsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.3) * 0.05
+    }
+    if (atmosphereRef.current) {
+      const scale = 2.55 + Math.sin(state.clock.elapsedTime * 2) * 0.02
+      atmosphereRef.current.scale.setScalar(scale)
+    }
+  })
+
+  // Convert lat/lng to 3D coordinates
+  const latLngToVector3 = (lat: number, lng: number, radius: number): [number, number, number] => {
+    const phi = (90 - lat) * (Math.PI / 180)
+    const theta = (lng + 180) * (Math.PI / 180)
+    
+    const x = -(radius * Math.sin(phi) * Math.cos(theta))
+    const y = radius * Math.cos(phi)
+    const z = radius * Math.sin(phi) * Math.sin(theta)
+    
+    return [x, y, z]
+  }
+
   return (
-    <Canvas
-      camera={{ position: [0, 0, 2.5], fov: 50 }}
-      style={{ background: 'transparent' }}
-    >
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 3, 5]} intensity={1} />
-      <pointLight position={[-5, -3, -5]} intensity={0.5} color="#60a5fa" />
-      
-      <Earth projects={projects} />
-      
-      <OrbitControls
-        enableZoom={true}
-        enablePan={false}
-        minDistance={1.5}
-        maxDistance={4}
-        minPolarAngle={Math.PI / 4}
-        maxPolarAngle={Math.PI / 1.5}
-      />
-      
-      {/* Stars Background */}
-      <mesh>
-        <sphereGeometry args={[50, 32, 32]} />
-        <meshBasicMaterial color="#000510" side={THREE.BackSide} />
+    <group>
+      {/* Main Earth */}
+      <mesh ref={meshRef}>
+        <sphereGeometry args={[2, 64, 64]} />
+        <primitive object={earthMaterial.current} attach="material" />
       </mesh>
-    </Canvas>
+
+      {/* Clouds Layer */}
+      <mesh ref={cloudsRef}>
+        <sphereGeometry args={[2.02, 64, 64]} />
+        <meshStandardMaterial
+          map={cloudsTexture}
+          transparent
+          opacity={0.4}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Atmosphere */}
+      <mesh ref={atmosphereRef}>
+        <sphereGeometry args={[2.5, 64, 64]} />
+        <meshBasicMaterial
+          color="#4da6ff"
+          transparent
+          opacity={0.15}
+          side={THREE.BackSide}
+        />
+      </mesh>
+
+      {/* Project Markers */}
+      {projects.map((project) => {
+        const position = latLngToVector3(project.coordinates.lat, project.coordinates.lng, 2.1)
+        return (
+          <ProjectMarker
+            key={project.id}
+            position={position}
+            project={project}
+            onClick={() => onProjectClick(project)}
+          />
+        )
+      })}
+
+      {/* Ambient markers for visual effect */}
+      <pointLight position={[5, 3, 5]} intensity={0.8} color="#ffffff" />
+      <pointLight position={[-5, -3, -5]} intensity={0.3} color="#4da6ff" />
+    </group>
   )
 }
 
+export default function EarthWithProjects({ projects }: EarthWithProjectsProps) {
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+
+  const handleProjectClick = (project: Project) => {
+    setSelectedProject(project)
+  }
+
+  const handleViewOnMap = () => {
+    if (selectedProject) {
+      const { lat, lng } = selectedProject.coordinates
+      // Open Google Maps with the project location
+      window.open(
+        `https://www.google.com/maps?q=${lat},${lng}&z=15&t=k`,
+        '_blank'
+      )
+    }
+  }
+
+  return (
+    <div className="relative w-full h-full">
+      <Canvas
+        camera={{ position: [0, 0, 6], fov: 45 }}
+        gl={{ antialias: true, alpha: true }}
+      >
+        <color attach="background" args={['#0a0a1a']} />
+        <ambientLight intensity={0.3} />
+        <directionalLight position={[5, 3, 5]} intensity={1.5} />
+        <Earth projects={projects} onProjectClick={handleProjectClick} />
+        <OrbitControls
+          enableZoom={true}
+          enablePan={false}
+          minDistance={4}
+          maxDistance={10}
+          autoRotate
+          autoRotateSpeed={0.5}
+        />
+        
+        {/* Stars Background */}
+        <mesh>
+          <sphereGeometry args={[50, 32, 32]} />
+          <meshBasicMaterial
+            color="#ffffff"
+            side={THREE.BackSide}
+            transparent
+            opacity={0.3}
+          />
+        </mesh>
+      </Canvas>
+
+      {/* Info Panel */}
+      {selectedProject && (
+        <div className="absolute bottom-4 left-4 right-4 bg-slate-900/95 backdrop-blur-lg rounded-xl p-6 border border-green-500/50 shadow-2xl">
+          <div className="flex justify-between items-start mb-3">
+            <div className="flex items-center gap-3">
+              <span className="text-4xl">{selectedProject.image}</span>
+              <div>
+                <h3 className="text-xl font-bold text-white">{selectedProject.name}</h3>
+                <p className="text-gray-300 text-sm">📍 {selectedProject.location}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setSelectedProject(null)}
+              className="text-white hover:text-red-400 text-2xl"
+            >
+              ✕
+            </button>
+          </div>
+
+          <p className="text-gray-300 text-sm mb-4">{selectedProject.description}</p>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <div className="bg-white/5 rounded-lg p-2">
+              <div className="text-gray-400 text-xs">Area</div>
+              <div className="text-white font-semibold text-sm">{selectedProject.area}</div>
+            </div>
+            <div className="bg-white/5 rounded-lg p-2">
+              <div className="text-gray-400 text-xs">Credits</div>
+              <div className="text-white font-semibold text-sm">{selectedProject.creditsAvailable}</div>
+            </div>
+            <div className="bg-white/5 rounded-lg p-2">
+              <div className="text-gray-400 text-xs">Price/Credit</div>
+              <div className="text-white font-semibold text-sm">${selectedProject.pricePerCredit}</div>
+            </div>
+            <div className="bg-white/5 rounded-lg p-2">
+              <div className="text-gray-400 text-xs">CO₂ Impact</div>
+              <div className="text-white font-semibold text-sm">{selectedProject.impact}</div>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={handleViewOnMap}
+              className="flex-1 py-2 bg-green-500 hover:bg-green-600 rounded-lg text-white font-semibold transition-all"
+            >
+              🗺️ View on Map
+            </button>
+            <button className="flex-1 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg text-white font-semibold transition-all">
+              💰 Buy Credits
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Instructions */}
+      {!selectedProject && (
+        <div className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-md rounded-lg px-4 py-2 border border-green-500/30">
+          <p className="text-green-400 text-sm">
+            🌍 Click on green markers to view project details • Drag to rotate • Scroll to zoom
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}

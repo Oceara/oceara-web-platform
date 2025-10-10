@@ -200,7 +200,13 @@ export default function BuyerDashboard() {
                       <button className="flex-1 py-3 bg-purple-500 rounded-full text-white font-semibold hover:bg-purple-600">
                         Buy Credits
                       </button>
-                      <button className="px-6 py-3 bg-white/10 rounded-full text-white hover:bg-white/20">
+                      <button
+                        onClick={() => {
+                          const { lat, lng } = project.coordinates
+                          window.open(`https://www.google.com/maps?q=${lat},${lng}&z=15&t=k`, '_blank')
+                        }}
+                        className="px-6 py-3 bg-white/10 rounded-full text-white hover:bg-white/20"
+                      >
                         View on Map
                       </button>
                     </div>
