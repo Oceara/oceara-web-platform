@@ -4,6 +4,9 @@ import { useRef, useMemo } from 'react'
 import { Canvas, useFrame, useLoader } from '@react-three/fiber'
 import { OrbitControls, Stars } from '@react-three/drei'
 import * as THREE from 'three'
+import dynamic from 'next/dynamic'
+
+const AnimatedParticles = dynamic(() => import('./AnimatedParticles'), { ssr: false })
 
 interface RealisticEarthProps {
   hoveredRole?: string | null
@@ -100,47 +103,65 @@ function Earth({ hoveredRole }: { hoveredRole: string | null }) {
       // Continuous rotation
       meshRef.current.rotation.y += delta * 0.05
       
-      // Interactive effects
+      // Interactive effects - NEW ANIMATION
       if (hoveredRole) {
-        // Faster rotation on hover with tilt
-        meshRef.current.rotation.y += delta * 0.15
-        meshRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 1.5) * 0.15
+        // Zoom in dramatically towards viewer
+        const targetScale = 3.5 + Math.sin(state.clock.elapsedTime * 1.5) * 0.2
+        meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.08)
         
-        // Scale up with breathing effect
-        const breathingScale = 2.8 + Math.sin(state.clock.elapsedTime * 2) * 0.1
-        meshRef.current.scale.lerp(new THREE.Vector3(breathingScale, breathingScale, breathingScale), 0.1)
+        // Rapid spin on multiple axes
+        meshRef.current.rotation.y += delta * 0.3
+        meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 2) * 0.2
+        meshRef.current.rotation.z = Math.cos(state.clock.elapsedTime * 1.8) * 0.25
         
-        // Orbital motion (figure-8 pattern)
-        const radius = 0.15
-        meshRef.current.position.x = Math.sin(state.clock.elapsedTime * 1.5) * radius
-        meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 3) * radius * 0.5
-        meshRef.current.position.z = Math.cos(state.clock.elapsedTime * 1.5) * radius * 0.3
+        // Move forward towards camera
+        meshRef.current.position.z = THREE.MathUtils.lerp(
+          meshRef.current.position.z,
+          1.5 + Math.sin(state.clock.elapsedTime * 3) * 0.3,
+          0.1
+        )
+        
+        // Dramatic side-to-side swing
+        meshRef.current.position.x = Math.sin(state.clock.elapsedTime * 2.5) * 0.4
+        meshRef.current.position.y = Math.cos(state.clock.elapsedTime * 2) * 0.3
       } else {
-        // Return to normal
+        // Return to normal smoothly
         const targetScale = 2.2
-        meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1)
-        meshRef.current.rotation.z = THREE.MathUtils.lerp(meshRef.current.rotation.z, 0, 0.1)
-        meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, 0, 0.1)
-        meshRef.current.position.y = THREE.MathUtils.lerp(meshRef.current.position.y, 0, 0.1)
-        meshRef.current.position.z = THREE.MathUtils.lerp(meshRef.current.position.z, 0, 0.1)
+        meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.05)
+        meshRef.current.rotation.x = THREE.MathUtils.lerp(meshRef.current.rotation.x, 0, 0.05)
+        meshRef.current.rotation.z = THREE.MathUtils.lerp(meshRef.current.rotation.z, 0, 0.05)
+        meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, 0, 0.05)
+        meshRef.current.position.y = THREE.MathUtils.lerp(meshRef.current.position.y, 0, 0.05)
+        meshRef.current.position.z = THREE.MathUtils.lerp(meshRef.current.position.z, 0, 0.05)
       }
     }
 
-    // Rotate clouds independently and faster on hover
+    // Rotate clouds - ultra-fast on hover
     if (cloudsRef.current) {
-      cloudsRef.current.rotation.y += hoveredRole ? delta * 0.08 : delta * 0.03
-      cloudsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.5) * 0.05
+      if (hoveredRole) {
+        cloudsRef.current.rotation.y += delta * 0.2
+        cloudsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 2) * 0.1
+        // Scale clouds differently for depth effect
+        const cloudScale = 1.01 + Math.sin(state.clock.elapsedTime * 3) * 0.02
+        cloudsRef.current.scale.setScalar(cloudScale)
+      } else {
+        cloudsRef.current.rotation.y += delta * 0.03
+        cloudsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.5) * 0.05
+        cloudsRef.current.scale.lerp(new THREE.Vector3(1, 1, 1), 0.05)
+      }
     }
 
-    // Pulse atmosphere on hover with wave effect
+    // Atmosphere - explosive expansion
     if (atmosphereRef.current) {
       if (hoveredRole) {
-        const scale = 2.9 + Math.sin(state.clock.elapsedTime * 4) * 0.15
+        const scale = 3.5 + Math.sin(state.clock.elapsedTime * 5) * 0.3
         atmosphereRef.current.scale.setScalar(scale)
-        atmosphereRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 2) * 0.1
+        atmosphereRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 3) * 0.2
+        atmosphereRef.current.rotation.x = Math.cos(state.clock.elapsedTime * 2.5) * 0.15
       } else {
-        atmosphereRef.current.scale.lerp(new THREE.Vector3(2.5, 2.5, 2.5), 0.1)
-        atmosphereRef.current.rotation.z = THREE.MathUtils.lerp(atmosphereRef.current.rotation.z, 0, 0.1)
+        atmosphereRef.current.scale.lerp(new THREE.Vector3(2.5, 2.5, 2.5), 0.05)
+        atmosphereRef.current.rotation.z = THREE.MathUtils.lerp(atmosphereRef.current.rotation.z, 0, 0.05)
+        atmosphereRef.current.rotation.x = THREE.MathUtils.lerp(atmosphereRef.current.rotation.x, 0, 0.05)
       }
     }
   })
@@ -179,27 +200,27 @@ function Earth({ hoveredRole }: { hoveredRole: string | null }) {
         />
       </mesh>
 
-      {/* Animated particles on hover - spiral pattern */}
+      {/* Energy particles - explosive burst pattern */}
       {hoveredRole && (
         <>
-          {[...Array(40)].map((_, i) => {
-            const t = (i / 40)
-            const angle = t * Math.PI * 8 // Multiple spirals
-            const radius = 2.5 + t * 1.5 // Expanding spiral
-            const height = Math.sin(t * Math.PI * 4) * 0.8 // Wave height
+          {[...Array(60)].map((_, i) => {
+            const t = (i / 60)
+            const angle = t * Math.PI * 12
+            const radius = 3 + t * 2
+            const height = Math.sin(t * Math.PI * 6) * 1.2
             const x = Math.cos(angle) * radius
             const z = Math.sin(angle) * radius
             const y = height
             return (
               <mesh key={i} position={[x, y, z]}>
-                <sphereGeometry args={[0.04, 16, 16]} />
+                <octahedronGeometry args={[0.06, 0]} />
                 <meshBasicMaterial
                   color={
                     hoveredRole === 'landowner' ? '#10b981' : 
                     hoveredRole === 'buyer' ? '#3b82f6' : '#a855f7'
                   }
                   transparent
-                  opacity={1 - t * 0.5} // Fade out towards edges
+                  opacity={1 - t * 0.7}
                 />
               </mesh>
             )
@@ -207,42 +228,36 @@ function Earth({ hoveredRole }: { hoveredRole: string | null }) {
         </>
       )}
 
-      {/* Multiple glowing rings with different angles */}
+      {/* Dynamic rotating energy rings */}
       {hoveredRole && (
         <>
-          <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[3.2, 0.03, 16, 100]} />
-            <meshBasicMaterial
-              color={
-                hoveredRole === 'landowner' ? '#10b981' : 
-                hoveredRole === 'buyer' ? '#3b82f6' : '#a855f7'
-              }
-              transparent
-              opacity={0.8}
-            />
-          </mesh>
-          <mesh rotation={[Math.PI / 3, Math.PI / 4, 0]}>
-            <torusGeometry args={[3.4, 0.02, 16, 100]} />
-            <meshBasicMaterial
-              color={
-                hoveredRole === 'landowner' ? '#10b981' : 
-                hoveredRole === 'buyer' ? '#3b82f6' : '#a855f7'
-              }
-              transparent
-              opacity={0.5}
-            />
-          </mesh>
-          <mesh rotation={[-Math.PI / 3, -Math.PI / 4, 0]}>
-            <torusGeometry args={[3.6, 0.015, 16, 100]} />
-            <meshBasicMaterial
-              color={
-                hoveredRole === 'landowner' ? '#10b981' : 
-                hoveredRole === 'buyer' ? '#3b82f6' : '#a855f7'
-              }
-              transparent
-              opacity={0.3}
-            />
-          </mesh>
+          {[...Array(5)].map((_, i) => {
+            const radius = 3.5 + i * 0.3
+            const thickness = 0.04 - i * 0.005
+            const opacity = 0.9 - i * 0.15
+            const rotationOffset = (i * Math.PI) / 5
+            
+            return (
+              <mesh
+                key={`ring-${i}`}
+                rotation={[
+                  Math.PI / 2 + rotationOffset,
+                  rotationOffset * 0.5,
+                  rotationOffset * 0.3
+                ]}
+              >
+                <torusGeometry args={[radius, thickness, 16, 100]} />
+                <meshBasicMaterial
+                  color={
+                    hoveredRole === 'landowner' ? '#10b981' : 
+                    hoveredRole === 'buyer' ? '#3b82f6' : '#a855f7'
+                  }
+                  transparent
+                  opacity={opacity}
+                />
+              </mesh>
+            )
+          })}
         </>
       )}
     </group>
@@ -282,6 +297,7 @@ export default function RealisticEarth({ hoveredRole }: RealisticEarthProps) {
       )}
       
       <Earth hoveredRole={hoveredRole || null} />
+      <AnimatedParticles hoveredRole={hoveredRole || null} />
       
       <OrbitControls
         enableZoom={false}
