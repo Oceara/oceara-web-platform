@@ -9,6 +9,11 @@ const Earth = dynamic(() => import('@/components/Earth'), {
   loading: () => <div className="flex items-center justify-center h-screen">Loading Earth...</div>
 })
 
+const InteractiveRoleCard = dynamic(() => import('@/components/InteractiveRoleCard'), {
+  ssr: false,
+  loading: () => <div className="h-96 bg-white/10 rounded-2xl animate-pulse" />
+})
+
 export default function Home() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
 
@@ -74,37 +79,30 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
-              whileHover={{ scale: 1.05 }}
-              className={`
-                bg-white/10 backdrop-blur-lg rounded-2xl p-8 cursor-pointer
-                border border-white/20 hover:border-white/40
-                transition-all duration-300
-                ${selectedRole === role.id ? 'ring-4 ring-white/50' : ''}
-              `}
-              onClick={() => setSelectedRole(role.id)}
             >
-              <div className="text-6xl mb-4">{role.icon}</div>
-              <h3 className="text-2xl font-bold mb-3 text-white">
-                {role.title}
-              </h3>
-              <p className="text-gray-300">
-                {role.description}
-              </p>
-              <div className={`mt-6 h-1 rounded-full bg-gradient-to-r ${role.color}`} />
+              <InteractiveRoleCard
+                role={role}
+                isSelected={selectedRole === role.id}
+                onSelect={() => setSelectedRole(role.id)}
+              />
             </motion.div>
           ))}
         </motion.div>
 
         {selectedRole && (
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-8 px-8 py-4 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full text-white font-bold text-lg hover:shadow-2xl transition-all duration-300"
-            onClick={() => alert(`Welcome! ${selectedRole} dashboard coming soon...`)}
-          >
-            Continue as {roles.find(r => r.id === selectedRole)?.title}
-          </motion.button>
-        )}
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-8 px-8 py-4 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full text-white font-bold text-lg hover:shadow-2xl transition-all duration-300"
+              onClick={() => {
+                if (selectedRole === 'landowner') window.location.href = '/landowner'
+                else if (selectedRole === 'buyer') window.location.href = '/buyer'
+                else alert('Admin dashboard coming soon!')
+              }}
+            >
+              Continue as {roles.find(r => r.id === selectedRole)?.title}
+            </motion.button>
+          )}
 
         <motion.div
           initial={{ opacity: 0 }}
