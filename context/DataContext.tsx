@@ -735,6 +735,114 @@ const initialProjects: Project[] = [
       confidence: 96
     },
     documents: ['Land Deed', 'Survey Report', 'Bird Sanctuary NOC', 'Environmental Clearance']
+  },
+  {
+    id: 21,
+    name: 'Machilipatnam Coastal Protection',
+    owner: 'Coastal Guardians NGO',
+    location: 'Andhra Pradesh, India',
+    coordinates: { lat: 16.1875, lng: 81.1389 },
+    area: '168 hectares',
+    creditsAvailable: 845,
+    pricePerCredit: 24,
+    verified: false,
+    status: 'Pending Review',
+    impact: '2,113 tons CO₂/year',
+    image: '🛥️',
+    description: 'Port city mangrove restoration with coastal erosion prevention',
+    submittedDate: '2024-10-11',
+    images: ['📷', '📷', '📷'],
+    satelliteImages: [
+      'https://maps.googleapis.com/maps/api/staticmap?center=16.1875,81.1389&zoom=16&size=800x600&maptype=satellite&key=',
+      'https://maps.googleapis.com/maps/api/staticmap?center=16.1875,81.1389&zoom=17&size=800x600&maptype=satellite&key='
+    ],
+    fieldData: {
+      trees: 8450,
+      species: 'Rhizophora mucronata',
+      soilType: 'Coastal sediment',
+      waterSalinity: '28 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 8420,
+      mangroveArea: 168,
+      healthScore: 86,
+      speciesDetected: ['Rhizophora mucronata', 'Avicennia marina'],
+      carbonCredits: 845,
+      confidence: 92
+    },
+    documents: ['Land Deed', 'Survey Report', 'Port Authority NOC']
+  },
+  {
+    id: 22,
+    name: 'Diu Island Marine Ecosystem',
+    owner: 'Island Eco Trust',
+    location: 'Diu, India',
+    coordinates: { lat: 20.7144, lng: 70.9871 },
+    area: '125 hectares',
+    creditsAvailable: 630,
+    pricePerCredit: 26,
+    verified: false,
+    status: 'Pending Review',
+    impact: '1,575 tons CO₂/year',
+    image: '🏖️',
+    description: 'Small island mangrove conservation with tourism integration',
+    submittedDate: '2024-10-11',
+    images: ['📷', '📷'],
+    satelliteImages: [
+      'https://maps.googleapis.com/maps/api/staticmap?center=20.7144,70.9871&zoom=16&size=800x600&maptype=satellite&key='
+    ],
+    fieldData: {
+      trees: 6300,
+      species: 'Avicennia marina',
+      soilType: 'Sandy',
+      waterSalinity: '31 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 6280,
+      mangroveArea: 125,
+      healthScore: 84,
+      speciesDetected: ['Avicennia marina', 'Rhizophora apiculata'],
+      carbonCredits: 630,
+      confidence: 88
+    },
+    documents: ['Land Deed', 'Survey Report', 'Tourism Board Approval']
+  },
+  {
+    id: 23,
+    name: 'Mahanadi Delta Extension',
+    owner: 'Delta Conservation Forum',
+    location: 'Odisha, India',
+    coordinates: { lat: 20.3000, lng: 86.4000 },
+    area: '285 hectares',
+    creditsAvailable: 1430,
+    pricePerCredit: 25,
+    verified: false,
+    status: 'Under Verification',
+    impact: '3,575 tons CO₂/year',
+    image: '🌊',
+    description: 'Large delta mangrove expansion with flood protection benefits',
+    submittedDate: '2024-10-10',
+    images: ['📷', '📷', '📷', '📷', '📷'],
+    satelliteImages: [
+      'https://maps.googleapis.com/maps/api/staticmap?center=20.3000,86.4000&zoom=16&size=800x600&maptype=satellite&key=',
+      'https://maps.googleapis.com/maps/api/staticmap?center=20.3000,86.4000&zoom=17&size=800x600&maptype=satellite&key=',
+      'https://maps.googleapis.com/maps/api/staticmap?center=20.3000,86.4000&zoom=18&size=800x600&maptype=satellite&key='
+    ],
+    fieldData: {
+      trees: 14300,
+      species: 'Sonneratia apetala',
+      soilType: 'Deltaic alluvium',
+      waterSalinity: '19 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 14250,
+      mangroveArea: 285,
+      healthScore: 91,
+      speciesDetected: ['Sonneratia apetala', 'Avicennia officinalis', 'Excoecaria agallocha'],
+      carbonCredits: 1430,
+      confidence: 95
+    },
+    documents: ['Land Deed', 'Survey Report', 'Flood Control Department NOC', 'Environmental Clearance']
   }
 ]
 

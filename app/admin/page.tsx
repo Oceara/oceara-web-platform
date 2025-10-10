@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { useData } from '@/context/DataContext'
 import Link from 'next/link'
 import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
+import toast from 'react-hot-toast'
 
 export default function AdminDashboard() {
   const { projects, updateProject, getPendingProjects, getVerifiedProjects } = useData()
@@ -433,29 +434,184 @@ export default function AdminDashboard() {
 
         {/* Reports Tab */}
         {activeTab === 'reports' && (
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-            <h2 className="text-2xl font-bold text-white mb-4">📄 Export Reports</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              <button className="p-4 bg-white/5 hover:bg-white/10 rounded-xl text-left transition-all">
-                <div className="text-2xl mb-2">📊</div>
-                <h3 className="text-white font-semibold mb-1">Project Report</h3>
-                <p className="text-gray-400 text-sm">Export all project data</p>
-              </button>
-              <button className="p-4 bg-white/5 hover:bg-white/10 rounded-xl text-left transition-all">
-                <div className="text-2xl mb-2">💰</div>
-                <h3 className="text-white font-semibold mb-1">Credits Report</h3>
-                <p className="text-gray-400 text-sm">Export carbon credits data</p>
-              </button>
-              <button className="p-4 bg-white/5 hover:bg-white/10 rounded-xl text-left transition-all">
-                <div className="text-2xl mb-2">📈</div>
-                <h3 className="text-white font-semibold mb-1">Analytics Report</h3>
-                <p className="text-gray-400 text-sm">Export platform analytics</p>
-              </button>
-              <button className="p-4 bg-white/5 hover:bg-white/10 rounded-xl text-left transition-all">
-                <div className="text-2xl mb-2">🔒</div>
-                <h3 className="text-white font-semibold mb-1">Audit Log</h3>
-                <p className="text-gray-400 text-sm">Export audit trail</p>
-              </button>
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+              <h2 className="text-2xl font-bold text-white mb-4">📄 Export Reports</h2>
+              <p className="text-gray-300 mb-6">Download comprehensive reports for compliance and analysis</p>
+              
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Project Report */}
+                <button 
+                  onClick={() => {
+                    const data = projects.map(p => ({
+                      ID: p.id,
+                      Name: p.name,
+                      Owner: p.owner,
+                      Location: p.location,
+                      Area: p.area,
+                      Status: p.status,
+                      Verified: p.verified ? 'Yes' : 'No',
+                      Credits: p.creditsAvailable,
+                      'Submitted Date': p.submittedDate,
+                      'Health Score': p.mlAnalysis?.healthScore || 'N/A',
+                      'ML Confidence': p.mlAnalysis?.confidence ? `${p.mlAnalysis.confidence}%` : 'N/A'
+                    }))
+                    const csv = [
+                      Object.keys(data[0]).join(','),
+                      ...data.map(row => Object.values(row).join(','))
+                    ].join('\n')
+                    const blob = new Blob([csv], { type: 'text/csv' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `oceara-projects-report-${new Date().toISOString().split('T')[0]}.csv`
+                    a.click()
+                    toast.success('Project report downloaded!')
+                  }}
+                  className="p-4 bg-gradient-to-br from-blue-500/20 to-purple-500/20 hover:from-blue-500/30 hover:to-purple-500/30 rounded-xl text-left transition-all border border-blue-500/30"
+                >
+                  <div className="text-3xl mb-2">📊</div>
+                  <h3 className="text-white font-semibold mb-1">Project Report</h3>
+                  <p className="text-gray-300 text-sm mb-3">Export all project data (CSV)</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-400">{projects.length} projects</span>
+                    <span className="text-blue-400 text-sm">⬇ Download</span>
+                  </div>
+                </button>
+
+                {/* Credits Report */}
+                <button 
+                  onClick={() => {
+                    const verifiedOnly = verifiedProjects
+                    const data = verifiedOnly.map(p => ({
+                      Project: p.name,
+                      Location: p.location,
+                      'Credits Available': p.creditsAvailable,
+                      'Price Per Credit': `$${p.pricePerCredit}`,
+                      'Total Value': `$${p.creditsAvailable * p.pricePerCredit}`,
+                      Impact: p.impact,
+                      Status: p.status
+                    }))
+                    const csv = [
+                      Object.keys(data[0]).join(','),
+                      ...data.map(row => Object.values(row).join(','))
+                    ].join('\n')
+                    const blob = new Blob([csv], { type: 'text/csv' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `oceara-credits-report-${new Date().toISOString().split('T')[0]}.csv`
+                    a.click()
+                    toast.success('Credits report downloaded!')
+                  }}
+                  className="p-4 bg-gradient-to-br from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 rounded-xl text-left transition-all border border-green-500/30"
+                >
+                  <div className="text-3xl mb-2">💰</div>
+                  <h3 className="text-white font-semibold mb-1">Credits Report</h3>
+                  <p className="text-gray-300 text-sm mb-3">Export carbon credits data (CSV)</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-400">{verifiedProjects.reduce((acc, p) => acc + p.creditsAvailable, 0).toLocaleString()} credits</span>
+                    <span className="text-green-400 text-sm">⬇ Download</span>
+                  </div>
+                </button>
+
+                {/* Analytics Report */}
+                <button 
+                  onClick={() => {
+                    const stats = {
+                      'Report Generated': new Date().toLocaleString(),
+                      'Total Projects': projects.length,
+                      'Verified Projects': verifiedProjects.length,
+                      'Pending Projects': pendingProjects.length,
+                      'Total Carbon Credits': verifiedProjects.reduce((acc, p) => acc + p.creditsAvailable, 0),
+                      'Total Area (hectares)': verifiedProjects.reduce((acc, p) => acc + parseFloat(p.area), 0).toFixed(2),
+                      'Average ML Confidence': `${(projects.reduce((acc, p) => acc + (p.mlAnalysis?.confidence || 0), 0) / projects.length).toFixed(1)}%`,
+                      'Average Health Score': (projects.reduce((acc, p) => acc + (p.mlAnalysis?.healthScore || 0), 0) / projects.length).toFixed(1),
+                      'Total Trees': projects.reduce((acc, p) => acc + (p.mlAnalysis?.treeCount || 0), 0),
+                      'Unique Species': [...new Set(projects.flatMap(p => p.mlAnalysis?.speciesDetected || []))].length,
+                      'Total Impact (CO₂/year)': verifiedProjects.reduce((acc, p) => acc + parseFloat(p.impact.split(' ')[0].replace(',', '')), 0).toFixed(0) + ' tons'
+                    }
+                    const csv = Object.entries(stats).map(([key, value]) => `${key},${value}`).join('\n')
+                    const blob = new Blob([csv], { type: 'text/csv' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `oceara-analytics-${new Date().toISOString().split('T')[0]}.csv`
+                    a.click()
+                    toast.success('Analytics report downloaded!')
+                  }}
+                  className="p-4 bg-gradient-to-br from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 rounded-xl text-left transition-all border border-purple-500/30"
+                >
+                  <div className="text-3xl mb-2">📈</div>
+                  <h3 className="text-white font-semibold mb-1">Analytics Report</h3>
+                  <p className="text-gray-300 text-sm mb-3">Export platform analytics (CSV)</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-400">11 key metrics</span>
+                    <span className="text-purple-400 text-sm">⬇ Download</span>
+                  </div>
+                </button>
+
+                {/* Audit Log */}
+                <button 
+                  onClick={() => {
+                    const auditData = projects.map(p => ({
+                      'Project ID': p.id,
+                      'Project Name': p.name,
+                      Action: p.verified ? 'Approved' : 'Pending Review',
+                      'Submitted Date': p.submittedDate,
+                      Status: p.status,
+                      'Verification Status': p.verified ? 'Verified' : 'Unverified',
+                      Documents: p.documents?.length || 0,
+                      'ML Analysis': p.mlAnalysis ? 'Completed' : 'Pending'
+                    }))
+                    const csv = [
+                      Object.keys(auditData[0]).join(','),
+                      ...auditData.map(row => Object.values(row).join(','))
+                    ].join('\n')
+                    const blob = new Blob([csv], { type: 'text/csv' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `oceara-audit-log-${new Date().toISOString().split('T')[0]}.csv`
+                    a.click()
+                    toast.success('Audit log downloaded!')
+                  }}
+                  className="p-4 bg-gradient-to-br from-orange-500/20 to-red-500/20 hover:from-orange-500/30 hover:to-red-500/30 rounded-xl text-left transition-all border border-orange-500/30"
+                >
+                  <div className="text-3xl mb-2">🔒</div>
+                  <h3 className="text-white font-semibold mb-1">Audit Log</h3>
+                  <p className="text-gray-300 text-sm mb-3">Export audit trail (CSV)</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-400">{projects.length} entries</span>
+                    <span className="text-orange-400 text-sm">⬇ Download</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Report Preview */}
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4">📋 Recent Activity</h3>
+              <div className="space-y-3">
+                {projects.slice(0, 5).map((project) => (
+                  <div key={project.id} className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{project.image}</span>
+                      <div>
+                        <p className="text-white font-semibold">{project.name}</p>
+                        <p className="text-gray-400 text-sm">{project.submittedDate}</p>
+                      </div>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      project.verified 
+                        ? 'bg-green-500/20 text-green-300' 
+                        : 'bg-yellow-500/20 text-yellow-300'
+                    }`}>
+                      {project.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
