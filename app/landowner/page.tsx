@@ -3,12 +3,12 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
-import MapLocationPicker from '@/components/MapLocationPicker'
+import GoogleMapsPicker from '@/components/GoogleMapsPicker'
 import MLAnalysisDisplay from '@/components/MLAnalysisDisplay'
 
-const MapComponent = dynamic(() => import('@/components/MapLocationPicker'), {
+const MapComponent = dynamic(() => import('@/components/GoogleMapsPicker'), {
   ssr: false,
-  loading: () => <div className="text-white text-center py-12">Loading map...</div>
+  loading: () => <div className="text-white text-center py-12">Loading Google Maps...</div>
 })
 
 export default function LandownerDashboard() {
