@@ -92,6 +92,11 @@ export default function LoginPage() {
   }
 
   const handleGoogleLogin = async () => {
+    if (!supabase) {
+      toast.error('Google authentication is not configured. Please use email/password login or demo access.')
+      return
+    }
+
     setLoading(true)
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -112,7 +117,7 @@ export default function LoginPage() {
         localStorage.setItem('pending_role', roleParam)
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to sign in with Google')
+      toast.error('Google sign-in not available. Please use email/password or demo access.')
       setLoading(false)
     }
   }
@@ -265,9 +270,8 @@ export default function LoginPage() {
                 {loading ? 'Connecting...' : 'Continue with Google'}
               </button>
 
-              <div className="text-center text-gray-400 text-sm mt-4">
-                <p>✨ More social login options coming soon!</p>
-                <p className="text-xs mt-1">(Facebook, GitHub, Twitter, Apple)</p>
+              <div className="text-center text-gray-400 text-xs mt-4">
+                <p>💡 Note: Requires Google OAuth configuration</p>
               </div>
             </div>
           )}

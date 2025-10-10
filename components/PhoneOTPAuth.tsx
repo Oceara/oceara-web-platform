@@ -32,7 +32,7 @@ export default function PhoneOTPAuth({ role, onSuccess }: PhoneOTPAuthProps) {
   const supabase = createClient()
 
   useEffect(() => {
-    if (step === 'phone' && recaptchaRef.current && !window.recaptchaVerifier) {
+    if (step === 'phone' && recaptchaRef.current && !window.recaptchaVerifier && auth) {
       try {
         window.recaptchaVerifier = new RecaptchaVerifier(auth, recaptchaRef.current, {
           size: 'invisible',
@@ -67,6 +67,11 @@ export default function PhoneOTPAuth({ role, onSuccess }: PhoneOTPAuthProps) {
   }
 
   const handleSendOTP = async () => {
+    if (!auth) {
+      toast.error('Phone authentication is not configured. Please use email/password login.')
+      return
+    }
+
     if (!phoneNumber || phoneNumber.length < 10) {
       toast.error('Please enter a valid phone number')
       return
