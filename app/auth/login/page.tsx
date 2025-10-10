@@ -268,6 +268,29 @@ export default function LoginPage() {
             </div>
           )}
 
+          {/* Demo User Section */}
+          <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="text-2xl">👤</div>
+              <div className="flex-1">
+                <h4 className="text-white font-semibold mb-1">Demo User Access</h4>
+                <p className="text-gray-300 text-sm mb-3">
+                  Skip login and explore the platform instantly
+                </p>
+                <button
+                  onClick={() => {
+                    if (roleParam === 'landowner') window.location.href = '/landowner'
+                    else if (roleParam === 'buyer') window.location.href = '/buyer'
+                    else window.location.href = '/'
+                  }}
+                  className="w-full py-2 bg-green-500 hover:bg-green-600 rounded-lg text-white font-semibold transition-all"
+                >
+                  🚀 Continue as Demo {roleName}
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Divider */}
           <div className="mt-6 text-center">
             <p className="text-gray-400 text-sm">

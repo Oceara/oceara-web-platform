@@ -102,34 +102,46 @@ function Earth({ hoveredRole }: { hoveredRole: string | null }) {
       
       // Interactive effects
       if (hoveredRole) {
-        // Faster rotation on hover
-        meshRef.current.rotation.y += delta * 0.1
+        // Faster rotation on hover with tilt
+        meshRef.current.rotation.y += delta * 0.15
+        meshRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 1.5) * 0.15
         
-        // Scale up
-        const targetScale = 2.8
-        meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1)
+        // Scale up with breathing effect
+        const breathingScale = 2.8 + Math.sin(state.clock.elapsedTime * 2) * 0.1
+        meshRef.current.scale.lerp(new THREE.Vector3(breathingScale, breathingScale, breathingScale), 0.1)
         
-        // Wobble effect
-        meshRef.current.position.x = Math.sin(state.clock.elapsedTime * 2) * 0.1
-        meshRef.current.position.y = Math.cos(state.clock.elapsedTime * 1.5) * 0.1
+        // Orbital motion (figure-8 pattern)
+        const radius = 0.15
+        meshRef.current.position.x = Math.sin(state.clock.elapsedTime * 1.5) * radius
+        meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 3) * radius * 0.5
+        meshRef.current.position.z = Math.cos(state.clock.elapsedTime * 1.5) * radius * 0.3
       } else {
         // Return to normal
         const targetScale = 2.2
         meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1)
+        meshRef.current.rotation.z = THREE.MathUtils.lerp(meshRef.current.rotation.z, 0, 0.1)
         meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, 0, 0.1)
         meshRef.current.position.y = THREE.MathUtils.lerp(meshRef.current.position.y, 0, 0.1)
+        meshRef.current.position.z = THREE.MathUtils.lerp(meshRef.current.position.z, 0, 0.1)
       }
     }
 
-    // Rotate clouds independently
+    // Rotate clouds independently and faster on hover
     if (cloudsRef.current) {
-      cloudsRef.current.rotation.y += delta * 0.03
+      cloudsRef.current.rotation.y += hoveredRole ? delta * 0.08 : delta * 0.03
+      cloudsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.5) * 0.05
     }
 
-    // Pulse atmosphere on hover
-    if (atmosphereRef.current && hoveredRole) {
-      const scale = 2.9 + Math.sin(state.clock.elapsedTime * 3) * 0.1
-      atmosphereRef.current.scale.setScalar(scale)
+    // Pulse atmosphere on hover with wave effect
+    if (atmosphereRef.current) {
+      if (hoveredRole) {
+        const scale = 2.9 + Math.sin(state.clock.elapsedTime * 4) * 0.15
+        atmosphereRef.current.scale.setScalar(scale)
+        atmosphereRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 2) * 0.1
+      } else {
+        atmosphereRef.current.scale.lerp(new THREE.Vector3(2.5, 2.5, 2.5), 0.1)
+        atmosphereRef.current.rotation.z = THREE.MathUtils.lerp(atmosphereRef.current.rotation.z, 0, 0.1)
+      }
     }
   })
 
@@ -167,23 +179,27 @@ function Earth({ hoveredRole }: { hoveredRole: string | null }) {
         />
       </mesh>
 
-      {/* Particles on hover */}
+      {/* Animated particles on hover - spiral pattern */}
       {hoveredRole && (
         <>
-          {[...Array(30)].map((_, i) => {
-            const angle = (i / 30) * Math.PI * 2
-            const radius = 3
+          {[...Array(40)].map((_, i) => {
+            const t = (i / 40)
+            const angle = t * Math.PI * 8 // Multiple spirals
+            const radius = 2.5 + t * 1.5 // Expanding spiral
+            const height = Math.sin(t * Math.PI * 4) * 0.8 // Wave height
             const x = Math.cos(angle) * radius
-            const y = Math.sin(angle) * radius
-            const z = Math.sin(angle * 3) * 0.5
+            const z = Math.sin(angle) * radius
+            const y = height
             return (
               <mesh key={i} position={[x, y, z]}>
-                <sphereGeometry args={[0.03, 16, 16]} />
+                <sphereGeometry args={[0.04, 16, 16]} />
                 <meshBasicMaterial
                   color={
                     hoveredRole === 'landowner' ? '#10b981' : 
                     hoveredRole === 'buyer' ? '#3b82f6' : '#a855f7'
                   }
+                  transparent
+                  opacity={1 - t * 0.5} // Fade out towards edges
                 />
               </mesh>
             )
@@ -191,19 +207,43 @@ function Earth({ hoveredRole }: { hoveredRole: string | null }) {
         </>
       )}
 
-      {/* Glowing ring */}
+      {/* Multiple glowing rings with different angles */}
       {hoveredRole && (
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[3.2, 0.02, 16, 100]} />
-          <meshBasicMaterial
-            color={
-              hoveredRole === 'landowner' ? '#10b981' : 
-              hoveredRole === 'buyer' ? '#3b82f6' : '#a855f7'
-            }
-            transparent
-            opacity={0.8}
-          />
-        </mesh>
+        <>
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[3.2, 0.03, 16, 100]} />
+            <meshBasicMaterial
+              color={
+                hoveredRole === 'landowner' ? '#10b981' : 
+                hoveredRole === 'buyer' ? '#3b82f6' : '#a855f7'
+              }
+              transparent
+              opacity={0.8}
+            />
+          </mesh>
+          <mesh rotation={[Math.PI / 3, Math.PI / 4, 0]}>
+            <torusGeometry args={[3.4, 0.02, 16, 100]} />
+            <meshBasicMaterial
+              color={
+                hoveredRole === 'landowner' ? '#10b981' : 
+                hoveredRole === 'buyer' ? '#3b82f6' : '#a855f7'
+              }
+              transparent
+              opacity={0.5}
+            />
+          </mesh>
+          <mesh rotation={[-Math.PI / 3, -Math.PI / 4, 0]}>
+            <torusGeometry args={[3.6, 0.015, 16, 100]} />
+            <meshBasicMaterial
+              color={
+                hoveredRole === 'landowner' ? '#10b981' : 
+                hoveredRole === 'buyer' ? '#3b82f6' : '#a855f7'
+              }
+              transparent
+              opacity={0.3}
+            />
+          </mesh>
+        </>
       )}
     </group>
   )
