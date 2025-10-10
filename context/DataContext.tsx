@@ -398,6 +398,166 @@ const initialProjects: Project[] = [
       confidence: 97
     },
     documents: ['Land Deed', 'Survey Report', 'Environmental Clearance', 'Marine Board Approval']
+  },
+  {
+    id: 11,
+    name: 'Pichavaram Mangrove Forest',
+    owner: 'Eco Warriors Foundation',
+    location: 'Tamil Nadu, India',
+    coordinates: { lat: 11.4274, lng: 79.7722 },
+    area: '280 hectares',
+    creditsAvailable: 1420,
+    pricePerCredit: 24,
+    verified: true,
+    status: 'Active',
+    impact: '3,550 tons CO₂/year',
+    image: '🌿',
+    description: 'One of the largest mangrove forests in India with rich biodiversity',
+    submittedDate: '2024-09-28',
+    images: ['📷', '📷', '📷', '📷'],
+    fieldData: {
+      trees: 14200,
+      species: 'Avicennia marina',
+      soilType: 'Estuarine mud',
+      waterSalinity: '26 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 14180,
+      mangroveArea: 280,
+      healthScore: 90,
+      speciesDetected: ['Avicennia marina', 'Rhizophora apiculata', 'Bruguiera cylindrica'],
+      carbonCredits: 1420,
+      confidence: 94
+    },
+    documents: ['Forest Department Certificate', 'Survey Report', 'Environmental Clearance']
+  },
+  {
+    id: 12,
+    name: 'Bhitarkanika National Park Extension',
+    owner: 'Green Earth Society',
+    location: 'Odisha, India',
+    coordinates: { lat: 20.7186, lng: 87.0333 },
+    area: '310 hectares',
+    creditsAvailable: 1580,
+    pricePerCredit: 26,
+    verified: true,
+    status: 'Active',
+    impact: '4,100 tons CO₂/year',
+    image: '🐊',
+    description: 'Extension of Bhitarkanika wetlands with rich mangrove diversity',
+    submittedDate: '2024-10-02',
+    images: ['📷', '📷', '📷'],
+    fieldData: {
+      trees: 15800,
+      species: 'Heritiera fomes',
+      soilType: 'Deltaic alluvium',
+      waterSalinity: '22 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 15750,
+      mangroveArea: 310,
+      healthScore: 93,
+      speciesDetected: ['Heritiera fomes', 'Excoecaria agallocha', 'Ceriops decandra'],
+      carbonCredits: 1580,
+      confidence: 97
+    },
+    documents: ['National Park Permit', 'Wildlife Clearance', 'Survey Report']
+  },
+  {
+    id: 13,
+    name: 'Coringa Wildlife Sanctuary Buffer',
+    owner: 'Coastal Protection Trust',
+    location: 'Andhra Pradesh, India',
+    coordinates: { lat: 16.7500, lng: 82.2333 },
+    area: '195 hectares',
+    creditsAvailable: 990,
+    pricePerCredit: 23,
+    verified: true,
+    status: 'Active',
+    impact: '2,480 tons CO₂/year',
+    image: '🦜',
+    description: 'Buffer zone restoration supporting wildlife sanctuary',
+    submittedDate: '2024-09-25',
+    images: ['📷', '📷'],
+    fieldData: {
+      trees: 9900,
+      species: 'Avicennia officinalis',
+      soilType: 'Muddy',
+      waterSalinity: '24 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 9880,
+      mangroveArea: 195,
+      healthScore: 88,
+      speciesDetected: ['Avicennia officinalis', 'Sonneratia apetala'],
+      carbonCredits: 990,
+      confidence: 91
+    },
+    documents: ['Wildlife Sanctuary NOC', 'Survey Report']
+  },
+  {
+    id: 14,
+    name: 'Konkan Coast Restoration',
+    owner: 'Blue Planet Initiative',
+    location: 'Maharashtra, India',
+    coordinates: { lat: 17.9689, lng: 73.0125 },
+    area: '165 hectares',
+    creditsAvailable: 840,
+    pricePerCredit: 25,
+    verified: true,
+    status: 'Active',
+    impact: '2,100 tons CO₂/year',
+    image: '⛵',
+    description: 'Coastal protection and mangrove restoration along Konkan coast',
+    submittedDate: '2024-10-05',
+    images: ['📷', '📷', '📷'],
+    fieldData: {
+      trees: 8400,
+      species: 'Rhizophora mucronata',
+      soilType: 'Sandy clay',
+      waterSalinity: '29 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 8390,
+      mangroveArea: 165,
+      healthScore: 89,
+      speciesDetected: ['Rhizophora mucronata', 'Avicennia marina'],
+      carbonCredits: 840,
+      confidence: 93
+    },
+    documents: ['Coastal Regulation Zone Clearance', 'Survey Report']
+  },
+  {
+    id: 15,
+    name: 'Chilika Lake Mangrove Buffer',
+    owner: 'Wetlands Forever',
+    location: 'Odisha, India',
+    coordinates: { lat: 19.7167, lng: 85.3167 },
+    area: '220 hectares',
+    creditsAvailable: 1120,
+    pricePerCredit: 24,
+    verified: true,
+    status: 'Active',
+    impact: '2,800 tons CO₂/year',
+    image: '🦩',
+    description: 'Protecting Asia\'s largest brackish water lagoon ecosystem',
+    submittedDate: '2024-09-30',
+    images: ['📷', '📷', '📷', '📷'],
+    fieldData: {
+      trees: 11200,
+      species: 'Excoecaria agallocha',
+      soilType: 'Lagoon sediment',
+      waterSalinity: '18 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 11180,
+      mangroveArea: 220,
+      healthScore: 92,
+      speciesDetected: ['Excoecaria agallocha', 'Avicennia alba', 'Acanthus ilicifolius'],
+      carbonCredits: 1120,
+      confidence: 95
+    },
+    documents: ['Ramsar Site NOC', 'Environmental Clearance', 'Survey Report']
   }
 ]
 

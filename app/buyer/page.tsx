@@ -225,17 +225,45 @@ export default function BuyerDashboard() {
             {/* Project List Below Globe */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {verifiedProjects.map((project) => (
-                <div
+                <motion.div
                   key={project.id}
-                  className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 cursor-pointer hover:border-purple-500 transition-all"
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 hover:border-purple-500 transition-all"
                 >
                   <div className="text-3xl mb-2">{project.image}</div>
-                  <h4 className="text-white font-semibold mb-1">{project.name}</h4>
-                  <p className="text-gray-400 text-sm">{project.location}</p>
-                  <div className="mt-3 pt-3 border-t border-white/20">
-                    <div className="text-purple-400 font-semibold">{project.creditsAvailable} credits</div>
+                  <h4 className="text-white font-semibold mb-1 text-sm">{project.name}</h4>
+                  <p className="text-gray-400 text-xs mb-2">{project.location}</p>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-400">Available:</span>
+                      <span className="text-purple-400 font-semibold">{project.creditsAvailable}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-400">Price:</span>
+                      <span className="text-white font-semibold">${project.pricePerCredit}/credit</span>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => {
+                          setSelectedProject(project)
+                          setShowPurchaseModal(true)
+                        }}
+                        className="flex-1 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg text-white text-xs font-semibold transition-all"
+                      >
+                        💳 Buy
+                      </button>
+                      <button
+                        onClick={() => {
+                          const { lat, lng } = project.coordinates
+                          window.open(`https://www.google.com/maps?q=${lat},${lng}&z=15&t=k`, '_blank')
+                        }}
+                        className="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-xs transition-all"
+                      >
+                        🗺️
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>
