@@ -2,6 +2,8 @@
 
 import './globals.css'
 import { DataProvider } from '@/context/DataContext'
+import { AuthProvider } from '@/context/AuthContext'
+import { Toaster } from 'react-hot-toast'
 
 export default function RootLayout({
   children,
@@ -20,9 +22,12 @@ export default function RootLayout({
         <meta name="description" content="Mangrove restoration tracking & carbon credit marketplace with 3D Earth visualization" />
       </head>
       <body>
-        <DataProvider>
-          {children}
-        </DataProvider>
+        <AuthProvider>
+          <DataProvider>
+            <Toaster position="top-center" />
+            {children}
+          </DataProvider>
+        </AuthProvider>
       </body>
     </html>
   )
