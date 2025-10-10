@@ -530,42 +530,112 @@ export default function LandownerDashboard() {
               >
                 ← Back
               </button>
-              <h2 className="text-2xl font-bold text-white">Upload Photos & Details</h2>
+              <h2 className="text-2xl font-bold text-white">📝 Simple Farmer Registration</h2>
             </div>
             
             <form className="space-y-6">
+              {/* Location Detection */}
+              <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-6">
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-white font-bold text-lg mb-1">📍 Auto-Detect Your Farm Location</h3>
+                    <p className="text-gray-300 text-sm">
+                      {autoLocation 
+                        ? `✅ Location detected: ${autoLocation.lat.toFixed(6)}, ${autoLocation.lng.toFixed(6)}`
+                        : 'One click to automatically find your location using your device'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={detectLocation}
+                    disabled={isGettingLocation}
+                    className={`px-6 py-3 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                      isGettingLocation
+                        ? 'bg-gray-500 cursor-not-allowed'
+                        : autoLocation
+                        ? 'bg-green-500 hover:bg-green-600'
+                        : 'bg-blue-500 hover:bg-blue-600'
+                    } text-white flex items-center gap-2`}
+                  >
+                    {isGettingLocation ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Detecting...</span>
+                      </>
+                    ) : autoLocation ? (
+                      <>
+                        <span>✓</span>
+                        <span>Re-detect</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>📍</span>
+                        <span>Detect Location</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                {autoLocation && (
+                  <div className="text-xs text-green-300">
+                    🛰️ We'll use satellite imagery from this location for AI analysis
+                  </div>
+                )}
+              </div>
+
+              {/* Basic Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-white mb-2">Project Name</label>
+                  <label className="block text-white mb-2">
+                    Project/Farm Name <span className="text-red-400">*</span>
+                  </label>
                   <input
                     type="text"
+                    value={formData.projectName}
+                    onChange={(e) => setFormData({...formData, projectName: e.target.value})}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., Mumbai Coastal Restoration"
+                    placeholder="e.g., Mumbai Coastal Mangrove Farm"
+                    required
                   />
                 </div>
                 <div>
-                  <label className="block text-white mb-2">Location</label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:ring-2 focus:ring-blue-500"
-                    placeholder="City, State"
-                  />
-                </div>
-                <div>
-                  <label className="block text-white mb-2">Area (hectares)</label>
+                  <label className="block text-white mb-2">
+                    Total Area (hectares) <span className="text-red-400">*</span>
+                  </label>
                   <input
                     type="number"
+                    value={formData.area}
+                    onChange={(e) => setFormData({...formData, area: e.target.value})}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:ring-2 focus:ring-blue-500"
-                    placeholder="100"
+                    placeholder="e.g., 100"
+                    required
                   />
+                  <p className="text-xs text-gray-400 mt-1">Approximate area is fine</p>
                 </div>
                 <div>
-                  <label className="block text-white mb-2">GPS Coordinates</label>
+                  <label className="block text-white mb-2">
+                    Approximate Tree Count <span className="text-gray-400">(optional)</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.treeCount}
+                    onChange={(e) => setFormData({...formData, treeCount: e.target.value})}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., 5000"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">AI will estimate if not provided</p>
+                </div>
+                <div>
+                  <label className="block text-white mb-2">
+                    Mangrove Species <span className="text-gray-400">(if known)</span>
+                  </label>
                   <input
                     type="text"
+                    value={formData.species}
+                    onChange={(e) => setFormData({...formData, species: e.target.value})}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:ring-2 focus:ring-blue-500"
-                    placeholder="Latitude, Longitude"
+                    placeholder="e.g., Rhizophora"
                   />
+                  <p className="text-xs text-gray-400 mt-1">AI will identify species</p>
                 </div>
               </div>
 
