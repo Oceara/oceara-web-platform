@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { Canvas, useFrame, useLoader } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
+import { motion } from 'framer-motion'
 import * as THREE from 'three'
 
 interface Project {

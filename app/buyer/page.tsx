@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
+import { useData } from '@/context/DataContext'
+import PurchaseModal from '@/components/PurchaseModal'
 
 const EarthWithProjects = dynamic(() => import('@/components/EarthWithProjects'), {
   ssr: false,
@@ -10,68 +12,44 @@ const EarthWithProjects = dynamic(() => import('@/components/EarthWithProjects')
 })
 
 export default function BuyerDashboard() {
+  const { projects, updateProject, getVerifiedProjects } = useData()
   const [activeTab, setActiveTab] = useState('marketplace')
-  const [selectedProject, setSelectedProject] = useState<number | null>(null)
+  const [selectedProject, setSelectedProject] = useState<any | null>(null)
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false)
+  const [myPurchases, setMyPurchases] = useState<any[]>([])
+  const [totalCreditsOwned, setTotalCreditsOwned] = useState(80)
+  const [totalSpent, setTotalSpent] = useState(1910)
 
-  const projects = [
-    {
-      id: 1,
-      name: 'Sundarbans Mangrove Conservation',
-      location: 'West Bengal, India',
-      coordinates: { lat: 21.9497, lng: 88.8837 },
-      area: '250 hectares',
-      creditsAvailable: 1250,
-      pricePerCredit: 25,
-      verified: true,
-      impact: '3,125 tons CO₂/year',
-      image: '🌴',
-      description: 'Largest mangrove forest restoration project in India'
-    },
-    {
-      id: 2,
-      name: 'Kerala Backwater Restoration',
-      location: 'Kerala, India',
-      coordinates: { lat: 9.9312, lng: 76.2673 },
-      area: '180 hectares',
-      creditsAvailable: 890,
-      pricePerCredit: 22,
-      verified: true,
-      impact: '2,225 tons CO₂/year',
-      image: '🌊',
-      description: 'Coastal ecosystem restoration in Kerala backwaters'
-    },
-    {
-      id: 3,
-      name: 'Andaman Islands Blue Carbon',
-      location: 'Andaman & Nicobar, India',
-      coordinates: { lat: 11.7401, lng: 92.6586 },
-      area: '320 hectares',
-      creditsAvailable: 1600,
-      pricePerCredit: 28,
-      verified: true,
-      impact: '4,480 tons CO₂/year',
-      image: '🏝️',
-      description: 'Pristine mangrove conservation in Andaman Islands'
-    },
-    {
-      id: 4,
-      name: 'Gujarat Coastal Protection',
-      location: 'Gujarat, India',
-      coordinates: { lat: 21.5222, lng: 70.4579 },
-      area: '200 hectares',
-      creditsAvailable: 1000,
-      pricePerCredit: 24,
-      verified: true,
-      impact: '2,500 tons CO₂/year',
-      image: '🌅',
-      description: 'Mangrove plantation for coastal protection'
+  // Get verified projects from context
+  const verifiedProjects = getVerifiedProjects()
+
+  const handlePurchase = (projectId: number, credits: number, totalCost: number) => {
+    // Find the project
+    const project = projects.find(p => p.id === projectId)
+    if (project) {
+      // Update project credits available
+      updateProject(projectId, {
+        creditsAvailable: project.creditsAvailable - credits
+      })
+
+      // Add to my purchases
+      const newPurchase = {
+        project: project.name,
+        credits,
+        value: totalCost,
+        date: new Date().toISOString().split('T')[0]
+      }
+      setMyPurchases(prev => [...prev, newPurchase])
+      
+      // Update totals
+      setTotalCreditsOwned(prev => prev + credits)
+      setTotalSpent(prev => prev + totalCost)
+      
+      // Close modal
+      setShowPurchaseModal(false)
+      setSelectedProject(null)
     }
-  ]
-
-  const myCredits = [
-    { project: 'Sundarbans Project', credits: 50, value: 1250, date: '2024-09-15' },
-    { project: 'Kerala Restoration', credits: 30, value: 660, date: '2024-10-01' }
-  ]
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -82,7 +60,7 @@ export default function BuyerDashboard() {
           <div className="flex items-center gap-4">
             <div className="text-right">
               <div className="text-gray-300 text-sm">My Credits</div>
-              <div className="text-white font-bold">80 Credits</div>
+              <div className="text-white font-bold">{totalCreditsOwned} Credits</div>
             </div>
             <button className="px-6 py-2 bg-purple-500 rounded-full text-white hover:bg-purple-600">
               Profile
@@ -152,7 +130,7 @@ export default function BuyerDashboard() {
 
             {/* Projects Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {projects.map((project) => (
+              {verifiedProjects.map((project) => (
                 <motion.div
                   key={project.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -197,17 +175,23 @@ export default function BuyerDashboard() {
                     </div>
 
                     <div className="flex gap-3">
-                      <button className="flex-1 py-3 bg-purple-500 rounded-full text-white font-semibold hover:bg-purple-600">
-                        Buy Credits
+                      <button
+                        onClick={() => {
+                          setSelectedProject(project)
+                          setShowPurchaseModal(true)
+                        }}
+                        className="flex-1 py-3 bg-purple-500 rounded-full text-white font-semibold hover:bg-purple-600 transition-all"
+                      >
+                        💳 Buy Credits
                       </button>
                       <button
                         onClick={() => {
                           const { lat, lng } = project.coordinates
                           window.open(`https://www.google.com/maps?q=${lat},${lng}&z=15&t=k`, '_blank')
                         }}
-                        className="px-6 py-3 bg-white/10 rounded-full text-white hover:bg-white/20"
+                        className="px-6 py-3 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all"
                       >
-                        View on Map
+                        🗺️ Map
                       </button>
                     </div>
                   </div>
@@ -230,13 +214,13 @@ export default function BuyerDashboard() {
                 Explore verified mangrove conservation projects across India. Click on markers to view details.
               </p>
               <div className="h-[500px] bg-slate-900 rounded-xl overflow-hidden">
-                <EarthWithProjects projects={projects} />
+                <EarthWithProjects projects={verifiedProjects} />
               </div>
             </div>
 
             {/* Project List Below Globe */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {projects.map((project) => (
+              {verifiedProjects.map((project) => (
                 <div
                   key={project.id}
                   className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 cursor-pointer hover:border-purple-500 transition-all"
@@ -263,25 +247,32 @@ export default function BuyerDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
                 <div className="text-4xl mb-2">💰</div>
-                <div className="text-3xl font-bold text-white">80</div>
+                <div className="text-3xl font-bold text-white">{totalCreditsOwned}</div>
                 <div className="text-gray-300">Total Credits Owned</div>
               </div>
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
                 <div className="text-4xl mb-2">🌍</div>
-                <div className="text-3xl font-bold text-white">$1,910</div>
-                <div className="text-gray-300">Portfolio Value</div>
+                <div className="text-3xl font-bold text-white">${totalSpent.toLocaleString()}</div>
+                <div className="text-gray-300">Total Invested</div>
               </div>
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
                 <div className="text-4xl mb-2">📊</div>
-                <div className="text-3xl font-bold text-white">200t</div>
+                <div className="text-3xl font-bold text-white">{(totalCreditsOwned * 2.5).toFixed(0)}t</div>
                 <div className="text-gray-300">CO₂ Offset</div>
               </div>
             </div>
 
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
               <h2 className="text-2xl font-bold text-white mb-4">My Credit Holdings</h2>
-              <div className="space-y-4">
-                {myCredits.map((credit, index) => (
+              {myPurchases.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">📊</div>
+                  <p className="text-gray-400">No purchases yet</p>
+                  <p className="text-gray-500 text-sm">Start buying carbon credits to see your portfolio</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {myPurchases.map((credit, index) => (
                   <div
                     key={index}
                     className="flex justify-between items-center p-4 bg-white/5 rounded-lg"
@@ -295,12 +286,25 @@ export default function BuyerDashboard() {
                       <div className="text-purple-400">${credit.value}</div>
                     </div>
                   </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
         )}
       </div>
+
+      {/* Purchase Modal */}
+      {showPurchaseModal && selectedProject && (
+        <PurchaseModal
+          project={selectedProject}
+          onClose={() => {
+            setShowPurchaseModal(false)
+            setSelectedProject(null)
+          }}
+          onPurchase={handlePurchase}
+        />
+      )}
     </div>
   )
 }
