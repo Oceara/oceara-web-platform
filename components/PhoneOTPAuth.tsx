@@ -7,6 +7,13 @@ import { ConfirmationResult } from 'firebase/auth'
 import toast from 'react-hot-toast'
 import { createClient } from '@/lib/supabase/client'
 
+// Extend Window interface for recaptchaVerifier
+declare global {
+  interface Window {
+    recaptchaVerifier: any
+  }
+}
+
 interface PhoneOTPAuthProps {
   role: string
   onSuccess: () => void
