@@ -412,6 +412,7 @@ export default function SignupPage() {
                   onClick={() => {
                     if (roleParam === 'landowner') window.location.href = '/landowner'
                     else if (roleParam === 'buyer') window.location.href = '/buyer'
+                    else if (roleParam === 'admin') window.location.href = '/admin'
                     else window.location.href = '/'
                   }}
                   className="w-full py-2 bg-green-500 hover:bg-green-600 rounded-lg text-white font-semibold transition-all"
