@@ -181,8 +181,7 @@ export default function LandownerDashboard() {
           {[
             { id: 'overview', label: 'Overview', icon: '📊' },
             { id: 'myprojects', label: 'My Projects', icon: '🌴', badge: myProjects.length },
-            { id: 'register', label: 'Register New', icon: '➕' },
-            { id: 'analytics', label: 'Analytics', icon: '📈' }
+            { id: 'register', label: 'Register New', icon: '➕' }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -211,7 +210,7 @@ export default function LandownerDashboard() {
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {ecosystems.map((eco) => (
+            {myProjects.map((eco) => (
               <motion.div
                 key={eco.id}
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -236,7 +235,7 @@ export default function LandownerDashboard() {
                   </div>
                   <div>
                     <div className="text-gray-400 text-sm">Credits</div>
-                    <div className="text-white font-semibold">{eco.carbonCredits}</div>
+                    <div className="text-white font-semibold">{eco.creditsAvailable}</div>
                   </div>
                 </div>
                 <button className="w-full py-3 bg-blue-500 rounded-full text-white font-semibold hover:bg-blue-600">
@@ -702,8 +701,8 @@ export default function LandownerDashboard() {
             </div>
           </motion.div>
         )}
-        {/* Analytics Tab */}
-        {activeTab === 'analytics' && (
+        {/* Analytics Tab - Coming Soon */}
+        {activeTab === 'analytics' && false && (
           <div className="space-y-6">
             {/* Revenue Analytics */}
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
