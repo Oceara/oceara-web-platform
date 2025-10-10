@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 
-const Earth = dynamic(() => import('@/components/Earth'), {
+const RealisticEarth = dynamic(() => import('@/components/RealisticEarth'), {
   ssr: false,
   loading: () => <div className="flex items-center justify-center h-screen">Loading Earth...</div>
 })
@@ -39,9 +39,9 @@ export default function Home() {
 
   return (
     <main className="relative w-full h-screen overflow-hidden">
-      {/* 3D Earth Background */}
+      {/* 3D Realistic Earth Background */}
       <div className="absolute inset-0 z-0">
-        <Earth hoveredRole={hoveredRole} />
+        <RealisticEarth hoveredRole={hoveredRole} />
       </div>
 
       {/* Content Overlay */}
