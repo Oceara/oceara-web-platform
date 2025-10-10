@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import GoogleMapsPicker from '@/components/GoogleMapsPicker'
@@ -16,6 +16,9 @@ export default function LandownerDashboard() {
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [registrationMethod, setRegistrationMethod] = useState<'upload' | 'map' | null>(null)
   const [analysisData, setAnalysisData] = useState<any>(null)
+  const [uploadedImages, setUploadedImages] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const ecosystems = [
     {
@@ -44,6 +47,76 @@ export default function LandownerDashboard() {
     { label: 'Monthly Income', value: '$8,560', icon: '📈' },
     { label: 'Projects', value: '2', icon: '📊' }
   ]
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files) {
+      const newFiles = Array.from(files)
+      setUploadedImages(prev => [...prev, ...newFiles])
+      
+      // Create preview URLs
+      newFiles.forEach(file => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setImagePreviews(prev => [...prev, reader.result as string])
+        }
+        reader.readAsDataURL(file)
+      })
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    const files = e.dataTransfer.files
+    if (files) {
+      const newFiles = Array.from(files).filter(file => 
+        file.type.startsWith('image/')
+      )
+      
+      setUploadedImages(prev => [...prev, ...newFiles])
+      
+      newFiles.forEach(file => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setImagePreviews(prev => [...prev, reader.result as string])
+        }
+        reader.readAsDataURL(file)
+      })
+    }
+  }
+
+  const removeImage = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index))
+    setImagePreviews(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleManualSubmit = () => {
+    // Simulate AI analysis with uploaded images
+    setAnalysisData({
+      coordinates: { lat: 19.0760, lng: 72.8777 },
+      area: 125,
+      satelliteImages: imagePreviews.length > 0 ? imagePreviews : [
+        'https://via.placeholder.com/800x600/0ea5e9/ffffff?text=Uploaded+Image+1',
+        'https://via.placeholder.com/800x600/10b981/ffffff?text=Uploaded+Image+2',
+        'https://via.placeholder.com/800x600/3b82f6/ffffff?text=Uploaded+Image+3'
+      ],
+      mlAnalysis: {
+        treeCount: 11250,
+        mangroveArea: 125,
+        healthScore: 89,
+        speciesDetected: ['Rhizophora mucronata', 'Avicennia marina'],
+        carbonCredits: 575,
+        confidence: 94
+      }
+    })
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
@@ -295,15 +368,62 @@ export default function LandownerDashboard() {
                 </div>
               </div>
 
-              {/* File Upload */}
-              <div>
-                <label className="block text-white mb-2">Upload Images</label>
-                <div className="border-2 border-dashed border-white/30 rounded-lg p-8 text-center hover:border-blue-500 transition-colors cursor-pointer">
-                  <div className="text-4xl mb-2">📷</div>
-                  <p className="text-gray-300">Click to upload or drag and drop</p>
-                  <p className="text-gray-500 text-sm">PNG, JPG up to 10MB (Multiple images supported)</p>
-                </div>
-              </div>
+                      {/* File Upload */}
+                      <div>
+                        <label className="block text-white mb-2 font-semibold">Upload Images</label>
+                        
+                        {/* Upload Zone */}
+                        <div
+                          onClick={() => fileInputRef.current?.click()}
+                          onDragOver={handleDragOver}
+                          onDrop={handleDrop}
+                          className="border-2 border-dashed border-white/30 rounded-lg p-8 text-center hover:border-blue-500 hover:bg-white/5 transition-all cursor-pointer"
+                        >
+                          <div className="text-4xl mb-2">📷</div>
+                          <p className="text-gray-300 font-medium">Click to upload or drag and drop</p>
+                          <p className="text-gray-500 text-sm mt-1">PNG, JPG up to 10MB (Multiple images supported)</p>
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleImageUpload}
+                            className="hidden"
+                          />
+                        </div>
+
+                        {/* Image Previews */}
+                        {imagePreviews.length > 0 && (
+                          <div className="mt-4">
+                            <p className="text-white text-sm mb-2 font-semibold">
+                              {imagePreviews.length} image{imagePreviews.length !== 1 ? 's' : ''} uploaded
+                            </p>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                              {imagePreviews.map((preview, index) => (
+                                <div key={index} className="relative group aspect-square">
+                                  <img
+                                    src={preview}
+                                    alt={`Upload ${index + 1}`}
+                                    className="w-full h-full object-cover rounded-lg border border-white/20"
+                                  />
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      removeImage(index)
+                                    }}
+                                    className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    ✕
+                                  </button>
+                                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 text-center rounded-b-lg">
+                                    {uploadedImages[index]?.name.substring(0, 20)}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
 
               <div>
                 <label className="block text-white mb-2">Project Description</label>
@@ -314,32 +434,28 @@ export default function LandownerDashboard() {
                 />
               </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  // Simulate analysis
-                  setAnalysisData({
-                    coordinates: { lat: 19.0760, lng: 72.8777 },
-                    area: 125,
-                    satelliteImages: [
-                      'https://via.placeholder.com/800x600/0ea5e9/ffffff?text=Satellite+Image+1',
-                      'https://via.placeholder.com/800x600/10b981/ffffff?text=Satellite+Image+2',
-                      'https://via.placeholder.com/800x600/3b82f6/ffffff?text=Satellite+Image+3'
-                    ],
-                    mlAnalysis: {
-                      treeCount: 11250,
-                      mangroveArea: 125,
-                      healthScore: 89,
-                      speciesDetected: ['Rhizophora mucronata', 'Avicennia marina'],
-                      carbonCredits: 575,
-                      confidence: 94
-                    }
-                  })
-                }}
-                className="w-full py-4 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full text-white font-bold text-lg hover:shadow-2xl transition-all"
-              >
-                🤖 Analyze with AI & Submit
-              </button>
+                      <button
+                        type="button"
+                        onClick={handleManualSubmit}
+                        disabled={imagePreviews.length === 0}
+                        className={`w-full py-4 rounded-full text-white font-bold text-lg transition-all ${
+                          imagePreviews.length === 0
+                            ? 'bg-gray-500 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-blue-500 to-emerald-500 hover:shadow-2xl'
+                        }`}
+                      >
+                        {imagePreviews.length === 0 ? (
+                          <>📷 Please upload images first</>
+                        ) : (
+                          <>🤖 Analyze {imagePreviews.length} Image{imagePreviews.length !== 1 ? 's' : ''} with AI</>
+                        )}
+                      </button>
+                      
+                      {imagePreviews.length === 0 && (
+                        <p className="text-center text-gray-400 text-sm mt-2">
+                          Upload at least one image to proceed with AI analysis
+                        </p>
+                      )}
             </form>
           </motion.div>
         )}
