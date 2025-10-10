@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useData } from '@/context/DataContext'
 import Link from 'next/link'
+import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
 
 export default function AdminDashboard() {
   const { projects, updateProject, getPendingProjects, getVerifiedProjects } = useData()
@@ -137,24 +138,182 @@ export default function AdminDashboard() {
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-              <h2 className="text-2xl font-bold text-white mb-4">📊 Platform Overview</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-white/5 rounded-xl p-4">
-                  <h3 className="text-lg font-semibold text-white mb-2">Recent Activity</h3>
-                  <ul className="space-y-2 text-gray-300 text-sm">
-                    <li>✅ {verifiedProjects.length} projects verified</li>
-                    <li>⏳ {pendingProjects.length} projects awaiting review</li>
-                    <li>💰 {verifiedProjects.reduce((acc, p) => acc + (p.creditsAvailable || 0), 0)} credits available</li>
-                  </ul>
+            {/* Charts Grid */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Project Status Distribution */}
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                <h3 className="text-xl font-bold text-white mb-4">📊 Project Status Distribution</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'Verified', value: verifiedProjects.length, color: '#10b981' },
+                        { name: 'Pending', value: pendingProjects.length, color: '#f59e0b' },
+                        { name: 'Total', value: projects.length - verifiedProjects.length - pendingProjects.length || 1, color: '#6b7280' }
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {[
+                        { name: 'Verified', value: verifiedProjects.length, color: '#10b981' },
+                        { name: 'Pending', value: pendingProjects.length, color: '#f59e0b' },
+                        { name: 'Total', value: projects.length - verifiedProjects.length - pendingProjects.length || 1, color: '#6b7280' }
+                      ].map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Carbon Credits Distribution */}
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                <h3 className="text-xl font-bold text-white mb-4">💰 Carbon Credits by Region</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={[
+                    { region: 'West Bengal', credits: verifiedProjects.filter(p => p.location.includes('West Bengal')).reduce((acc, p) => acc + (p.creditsAvailable || 0), 0) },
+                    { region: 'Odisha', credits: verifiedProjects.filter(p => p.location.includes('Odisha')).reduce((acc, p) => acc + (p.creditsAvailable || 0), 0) },
+                    { region: 'Tamil Nadu', credits: verifiedProjects.filter(p => p.location.includes('Tamil Nadu')).reduce((acc, p) => acc + (p.creditsAvailable || 0), 0) },
+                    { region: 'Kerala', credits: verifiedProjects.filter(p => p.location.includes('Kerala')).reduce((acc, p) => acc + (p.creditsAvailable || 0), 0) },
+                    { region: 'Others', credits: verifiedProjects.filter(p => !p.location.includes('West Bengal') && !p.location.includes('Odisha') && !p.location.includes('Tamil Nadu') && !p.location.includes('Kerala')).reduce((acc, p) => acc + (p.creditsAvailable || 0), 0) }
+                  ]}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="region" stroke="#9ca3af" />
+                    <YAxis stroke="#9ca3af" />
+                    <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
+                    <Bar dataKey="credits" fill="#8b5cf6" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* ML Confidence Trends */}
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                <h3 className="text-xl font-bold text-white mb-4">🤖 ML Confidence Distribution</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={[
+                    { range: '80-85%', count: projects.filter(p => p.mlAnalysis && p.mlAnalysis.confidence >= 80 && p.mlAnalysis.confidence < 85).length },
+                    { range: '85-90%', count: projects.filter(p => p.mlAnalysis && p.mlAnalysis.confidence >= 85 && p.mlAnalysis.confidence < 90).length },
+                    { range: '90-95%', count: projects.filter(p => p.mlAnalysis && p.mlAnalysis.confidence >= 90 && p.mlAnalysis.confidence < 95).length },
+                    { range: '95-100%', count: projects.filter(p => p.mlAnalysis && p.mlAnalysis.confidence >= 95).length }
+                  ]}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="range" stroke="#9ca3af" />
+                    <YAxis stroke="#9ca3af" />
+                    <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
+                    <Bar dataKey="count" fill="#3b82f6" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Health Score Distribution */}
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                <h3 className="text-xl font-bold text-white mb-4">🌱 Ecosystem Health Scores</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={projects.filter(p => p.mlAnalysis).slice(0, 10).map((p, i) => ({
+                    name: `Project ${i + 1}`,
+                    health: p.mlAnalysis?.healthScore || 0
+                  }))}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="name" stroke="#9ca3af" />
+                    <YAxis stroke="#9ca3af" domain={[0, 100]} />
+                    <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
+                    <Line type="monotone" dataKey="health" stroke="#10b981" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Detailed Statistics */}
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                <h3 className="text-lg font-bold text-white mb-4">📈 Recent Activity</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <span className="text-gray-300">Projects Verified</span>
+                    <span className="text-green-400 font-bold">{verifiedProjects.length}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <span className="text-gray-300">Awaiting Review</span>
+                    <span className="text-yellow-400 font-bold">{pendingProjects.length}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <span className="text-gray-300">Total Credits</span>
+                    <span className="text-blue-400 font-bold">{verifiedProjects.reduce((acc, p) => acc + (p.creditsAvailable || 0), 0).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <span className="text-gray-300">Total Area</span>
+                    <span className="text-purple-400 font-bold">{verifiedProjects.reduce((acc, p) => acc + parseFloat(p.area), 0).toFixed(0)} ha</span>
+                  </div>
                 </div>
-                <div className="bg-white/5 rounded-xl p-4">
-                  <h3 className="text-lg font-semibold text-white mb-2">System Status</h3>
-                  <ul className="space-y-2 text-gray-300 text-sm">
-                    <li>🟢 Blockchain: Online</li>
-                    <li>🟢 ML Analysis: Ready</li>
-                    <li>🟢 Database: Connected</li>
-                  </ul>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                <h3 className="text-lg font-bold text-white mb-4">🔬 ML Analysis Summary</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <span className="text-gray-300">Avg Confidence</span>
+                    <span className="text-blue-400 font-bold">
+                      {(projects.reduce((acc, p) => acc + (p.mlAnalysis?.confidence || 0), 0) / projects.length).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <span className="text-gray-300">Avg Health Score</span>
+                    <span className="text-green-400 font-bold">
+                      {(projects.reduce((acc, p) => acc + (p.mlAnalysis?.healthScore || 0), 0) / projects.length).toFixed(1)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <span className="text-gray-300">Total Trees</span>
+                    <span className="text-emerald-400 font-bold">
+                      {projects.reduce((acc, p) => acc + (p.mlAnalysis?.treeCount || 0), 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <span className="text-gray-300">Species Detected</span>
+                    <span className="text-teal-400 font-bold">
+                      {[...new Set(projects.flatMap(p => p.mlAnalysis?.speciesDetected || []))].length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                <h3 className="text-lg font-bold text-white mb-4">⚙️ System Status</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <span className="text-gray-300">Blockchain</span>
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      <span className="text-green-400 font-semibold">Online</span>
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <span className="text-gray-300">ML Analysis</span>
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      <span className="text-green-400 font-semibold">Ready</span>
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <span className="text-gray-300">Database</span>
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      <span className="text-green-400 font-semibold">Connected</span>
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                    <span className="text-gray-300">API</span>
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      <span className="text-green-400 font-semibold">Active</span>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

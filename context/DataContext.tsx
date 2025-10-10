@@ -558,6 +558,183 @@ const initialProjects: Project[] = [
       confidence: 95
     },
     documents: ['Ramsar Site NOC', 'Environmental Clearance', 'Survey Report']
+  },
+  {
+    id: 16,
+    name: 'Andaman Islands Coastal Restoration',
+    owner: 'Island Conservation Society',
+    location: 'Andaman & Nicobar Islands, India',
+    coordinates: { lat: 11.7401, lng: 92.6586 },
+    area: '195 hectares',
+    creditsAvailable: 990,
+    pricePerCredit: 28,
+    verified: false,
+    status: 'Pending Review',
+    impact: '2,475 tons CO₂/year',
+    image: '🏝️',
+    description: 'Island mangrove restoration with coral reef protection',
+    submittedDate: '2024-10-10',
+    images: ['📷', '📷', '📷'],
+    satelliteImages: [
+      'https://maps.googleapis.com/maps/api/staticmap?center=11.7401,92.6586&zoom=16&size=800x600&maptype=satellite&key='
+    ],
+    fieldData: {
+      trees: 9900,
+      species: 'Rhizophora apiculata',
+      soilType: 'Volcanic sand',
+      waterSalinity: '33 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 9850,
+      mangroveArea: 195,
+      healthScore: 91,
+      speciesDetected: ['Rhizophora apiculata', 'Bruguiera gymnorrhiza'],
+      carbonCredits: 990,
+      confidence: 94
+    },
+    documents: ['Land Deed', 'Survey Report', 'Environmental Impact Assessment']
+  },
+  {
+    id: 17,
+    name: 'Ratnagiri Coastal Belt',
+    owner: 'Maharashtra Coastal Trust',
+    location: 'Maharashtra, India',
+    coordinates: { lat: 16.9902, lng: 73.3120 },
+    area: '145 hectares',
+    creditsAvailable: 730,
+    pricePerCredit: 24,
+    verified: false,
+    status: 'Under Verification',
+    impact: '1,825 tons CO₂/year',
+    image: '🌊',
+    description: 'Coastal protection project along Konkan coast',
+    submittedDate: '2024-10-09',
+    images: ['📷', '📷'],
+    satelliteImages: [
+      'https://maps.googleapis.com/maps/api/staticmap?center=16.9902,73.3120&zoom=16&size=800x600&maptype=satellite&key='
+    ],
+    fieldData: {
+      trees: 7300,
+      species: 'Avicennia marina',
+      soilType: 'Sandy clay',
+      waterSalinity: '27 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 7280,
+      mangroveArea: 145,
+      healthScore: 87,
+      speciesDetected: ['Avicennia marina', 'Sonneratia apetala'],
+      carbonCredits: 730,
+      confidence: 90
+    },
+    documents: ['Land Deed', 'Survey Report']
+  },
+  {
+    id: 18,
+    name: 'Cauvery Delta Mangrove Project',
+    owner: 'Tamil Nadu Green Initiative',
+    location: 'Tamil Nadu, India',
+    coordinates: { lat: 10.7672, lng: 79.8449 },
+    area: '215 hectares',
+    creditsAvailable: 1080,
+    pricePerCredit: 25,
+    verified: false,
+    status: 'Pending Review',
+    impact: '2,700 tons CO₂/year',
+    image: '🌾',
+    description: 'Delta restoration with agricultural integration',
+    submittedDate: '2024-10-08',
+    images: ['📷', '📷', '📷', '📷'],
+    satelliteImages: [
+      'https://maps.googleapis.com/maps/api/staticmap?center=10.7672,79.8449&zoom=16&size=800x600&maptype=satellite&key=',
+      'https://maps.googleapis.com/maps/api/staticmap?center=10.7672,79.8449&zoom=17&size=800x600&maptype=satellite&key='
+    ],
+    fieldData: {
+      trees: 10800,
+      species: 'Rhizophora mucronata',
+      soilType: 'Deltaic alluvium',
+      waterSalinity: '21 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 10750,
+      mangroveArea: 215,
+      healthScore: 89,
+      speciesDetected: ['Rhizophora mucronata', 'Avicennia officinalis'],
+      carbonCredits: 1080,
+      confidence: 93
+    },
+    documents: ['Land Deed', 'Survey Report', 'Agricultural Department NOC']
+  },
+  {
+    id: 19,
+    name: 'Hooghly Estuary Conservation',
+    owner: 'Bengal Wetlands Foundation',
+    location: 'West Bengal, India',
+    coordinates: { lat: 22.3511, lng: 88.2250 },
+    area: '185 hectares',
+    creditsAvailable: 935,
+    pricePerCredit: 26,
+    verified: false,
+    status: 'Pending Review',
+    impact: '2,338 tons CO₂/year',
+    image: '🏭',
+    description: 'Urban mangrove restoration near Kolkata',
+    submittedDate: '2024-10-07',
+    images: ['📷', '📷', '📷'],
+    satelliteImages: [
+      'https://maps.googleapis.com/maps/api/staticmap?center=22.3511,88.2250&zoom=16&size=800x600&maptype=satellite&key='
+    ],
+    fieldData: {
+      trees: 9350,
+      species: 'Avicennia alba',
+      soilType: 'Estuarine silt',
+      waterSalinity: '23 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 9320,
+      mangroveArea: 185,
+      healthScore: 85,
+      speciesDetected: ['Avicennia alba', 'Sonneratia caseolaris'],
+      carbonCredits: 935,
+      confidence: 89
+    },
+    documents: ['Land Deed', 'Survey Report', 'Urban Development NOC']
+  },
+  {
+    id: 20,
+    name: 'Pulicat Lake Northern Extension',
+    owner: 'Andhra-Tamil Border Trust',
+    location: 'Andhra Pradesh-Tamil Nadu Border',
+    coordinates: { lat: 13.6667, lng: 80.3167 },
+    area: '255 hectares',
+    creditsAvailable: 1280,
+    pricePerCredit: 27,
+    verified: false,
+    status: 'Under Verification',
+    impact: '3,200 tons CO₂/year',
+    image: '🦅',
+    description: 'Lagoon ecosystem with bird sanctuary integration',
+    submittedDate: '2024-10-06',
+    images: ['📷', '📷', '📷', '📷', '📷'],
+    satelliteImages: [
+      'https://maps.googleapis.com/maps/api/staticmap?center=13.6667,80.3167&zoom=16&size=800x600&maptype=satellite&key=',
+      'https://maps.googleapis.com/maps/api/staticmap?center=13.6667,80.3167&zoom=17&size=800x600&maptype=satellite&key='
+    ],
+    fieldData: {
+      trees: 12800,
+      species: 'Bruguiera gymnorrhiza',
+      soilType: 'Lagoon sediment',
+      waterSalinity: '20 ppt'
+    },
+    mlAnalysis: {
+      treeCount: 12750,
+      mangroveArea: 255,
+      healthScore: 94,
+      speciesDetected: ['Bruguiera gymnorrhiza', 'Avicennia marina', 'Rhizophora mucronata'],
+      carbonCredits: 1280,
+      confidence: 96
+    },
+    documents: ['Land Deed', 'Survey Report', 'Bird Sanctuary NOC', 'Environmental Clearance']
   }
 ]
 
