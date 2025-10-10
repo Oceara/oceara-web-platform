@@ -1,10 +1,7 @@
-import type { Metadata } from 'next'
-import './globals.css'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Oceara - Blue Carbon Platform',
-  description: 'Mangrove restoration and carbon credit marketplace',
-}
+import './globals.css'
+import { DataProvider } from '@/context/DataContext'
 
 export default function RootLayout({
   children,
@@ -13,7 +10,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <DataProvider>
+          {children}
+        </DataProvider>
+      </body>
     </html>
   )
 }
