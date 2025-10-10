@@ -155,7 +155,7 @@ export default function AdminDashboard() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }: any) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -278,7 +278,7 @@ export default function AdminDashboard() {
                   <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
                     <span className="text-gray-300">Species Detected</span>
                     <span className="text-teal-400 font-bold">
-                      {[...new Set(projects.flatMap(p => p.mlAnalysis?.speciesDetected || []))].length}
+                      {Array.from(new Set(projects.flatMap(p => p.mlAnalysis?.speciesDetected || []))).length}
                     </span>
                   </div>
                 </div>
@@ -528,7 +528,7 @@ export default function AdminDashboard() {
                       'Average ML Confidence': `${(projects.reduce((acc, p) => acc + (p.mlAnalysis?.confidence || 0), 0) / projects.length).toFixed(1)}%`,
                       'Average Health Score': (projects.reduce((acc, p) => acc + (p.mlAnalysis?.healthScore || 0), 0) / projects.length).toFixed(1),
                       'Total Trees': projects.reduce((acc, p) => acc + (p.mlAnalysis?.treeCount || 0), 0),
-                      'Unique Species': [...new Set(projects.flatMap(p => p.mlAnalysis?.speciesDetected || []))].length,
+                      'Unique Species': Array.from(new Set(projects.flatMap(p => p.mlAnalysis?.speciesDetected || []))).length,
                       'Total Impact (CO₂/year)': verifiedProjects.reduce((acc, p) => acc + parseFloat(p.impact.split(' ')[0].replace(',', '')), 0).toFixed(0) + ' tons'
                     }
                     const csv = Object.entries(stats).map(([key, value]) => `${key},${value}`).join('\n')
