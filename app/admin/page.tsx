@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useData } from '@/context/DataContext'
 import Link from 'next/link'
 import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
 import toast from 'react-hot-toast'
+import SatelliteImageViewer from '@/components/SatelliteImageViewer'
 
 export default function AdminDashboard() {
   const { projects, updateProject, getPendingProjects, getVerifiedProjects } = useData()
@@ -618,72 +619,192 @@ export default function AdminDashboard() {
       </main>
 
       {/* Project Detail Modal */}
-      {showModal && selectedProject && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <AnimatePresence>
+        {showModal && selectedProject && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-slate-900 rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/20"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowModal(false)}
           >
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-2xl font-bold text-white">{selectedProject.name}</h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-white text-2xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-white font-semibold mb-2">📍 Location</h3>
-                <p className="text-gray-300">{selectedProject.location}</p>
-              </div>
-
-              <div>
-                <h3 className="text-white font-semibold mb-2">📊 ML Analysis</h3>
-                {selectedProject.mlAnalysis && (
-                  <div className="bg-white/5 rounded-lg p-4 space-y-2">
-                    <p className="text-gray-300">Tree Count: {selectedProject.mlAnalysis.treeCount}</p>
-                    <p className="text-gray-300">Area: {selectedProject.mlAnalysis.mangroveArea} ha</p>
-                    <p className="text-gray-300">Health Score: {selectedProject.mlAnalysis.healthScore}/100</p>
-                    <p className="text-gray-300">Confidence: {selectedProject.mlAnalysis.confidence}%</p>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-slate-900 rounded-3xl max-w-6xl w-full max-h-[95vh] overflow-y-auto border-2 border-blue-500/30 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-blue-600/30 to-cyan-600/30 p-6 border-b border-white/10 sticky top-0 z-10 backdrop-blur-xl">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="text-3xl font-bold text-white mb-2">{selectedProject.name}</h2>
+                    <p className="text-blue-300">{selectedProject.location}</p>
+                    <div className="flex gap-3 mt-3">
+                      <span className={`px-4 py-1 rounded-full text-sm font-semibold ${
+                        selectedProject.verified 
+                          ? 'bg-green-500/20 text-green-300 border border-green-500/30'
+                          : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
+                      }`}>
+                        {selectedProject.status}
+                      </span>
+                      <span className="px-4 py-1 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-full text-sm font-semibold">
+                        {selectedProject.area}
+                      </span>
+                    </div>
                   </div>
-                )}
-              </div>
-
-              <div>
-                <h3 className="text-white font-semibold mb-2">🌱 Field Data</h3>
-                {selectedProject.fieldData && (
-                  <div className="bg-white/5 rounded-lg p-4 space-y-2">
-                    <p className="text-gray-300">Trees: {selectedProject.fieldData.trees}</p>
-                    <p className="text-gray-300">Species: {selectedProject.fieldData.species}</p>
-                    <p className="text-gray-300">Soil: {selectedProject.fieldData.soilType}</p>
-                  </div>
-                )}
-              </div>
-
-              {!selectedProject.verified && (
-                <div className="flex gap-3 mt-6">
                   <button
-                    onClick={() => handleApprove(selectedProject.id)}
-                    className="flex-1 py-3 bg-green-500 hover:bg-green-600 rounded-lg text-white font-semibold transition-all"
+                    onClick={() => setShowModal(false)}
+                    className="text-gray-400 hover:text-white transition-colors text-3xl"
                   >
-                    ✅ Approve Project
-                  </button>
-                  <button
-                    onClick={() => handleReject(selectedProject.id)}
-                    className="flex-1 py-3 bg-red-500 hover:bg-red-600 rounded-lg text-white font-semibold transition-all"
-                  >
-                    ❌ Reject
+                    ✕
                   </button>
                 </div>
-              )}
-            </div>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* Satellite Imagery Section */}
+                {selectedProject.coordinates && (
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                      <span>🛰️</span>
+                      <span>Satellite Imagery Analysis</span>
+                    </h3>
+                    <SatelliteImageViewer
+                      coordinates={selectedProject.coordinates}
+                      projectName={selectedProject.name}
+                      area={selectedProject.area}
+                    />
+                  </div>
+                )}
+
+                {/* Project Details Grid */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* ML Analysis */}
+                  <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-2xl p-6 border border-blue-500/20">
+                    <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                      <span>🤖</span>
+                      <span>ML Analysis</span>
+                    </h3>
+                    {selectedProject.mlAnalysis && (
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                          <span className="text-gray-300">Tree Count:</span>
+                          <span className="text-white font-bold text-lg">{selectedProject.mlAnalysis.treeCount?.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                          <span className="text-gray-300">Mangrove Area:</span>
+                          <span className="text-white font-bold text-lg">{selectedProject.mlAnalysis.mangroveArea} ha</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                          <span className="text-gray-300">Health Score:</span>
+                          <span className={`font-bold text-lg ${
+                            selectedProject.mlAnalysis.healthScore >= 80 ? 'text-green-400' : 'text-yellow-400'
+                          }`}>
+                            {selectedProject.mlAnalysis.healthScore}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                          <span className="text-gray-300">AI Confidence:</span>
+                          <span className="text-blue-400 font-bold text-lg">{selectedProject.mlAnalysis.confidence}%</span>
+                        </div>
+                        <div className="p-3 bg-white/5 rounded-lg">
+                          <p className="text-gray-300 text-sm mb-2">Species Detected:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedProject.mlAnalysis.speciesDetected?.map((species: string, i: number) => (
+                              <span key={i} className="px-3 py-1 bg-green-500/20 text-green-300 rounded-full text-xs font-semibold">
+                                {species}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Field Data */}
+                  <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-2xl p-6 border border-green-500/20">
+                    <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                      <span>🌱</span>
+                      <span>Field Data</span>
+                    </h3>
+                    {selectedProject.fieldData && (
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                          <span className="text-gray-300">Trees Counted:</span>
+                          <span className="text-white font-bold text-lg">{selectedProject.fieldData.trees?.toLocaleString()}</span>
+                        </div>
+                        <div className="p-3 bg-white/5 rounded-lg">
+                          <p className="text-gray-300 text-sm mb-1">Dominant Species:</p>
+                          <p className="text-white font-semibold">{selectedProject.fieldData.species}</p>
+                        </div>
+                        <div className="p-3 bg-white/5 rounded-lg">
+                          <p className="text-gray-300 text-sm mb-1">Soil Type:</p>
+                          <p className="text-white font-semibold">{selectedProject.fieldData.soilType}</p>
+                        </div>
+                        <div className="p-3 bg-white/5 rounded-lg">
+                          <p className="text-gray-300 text-sm mb-1">Water Salinity:</p>
+                          <p className="text-white font-semibold">{selectedProject.fieldData.waterSalinity}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Carbon Impact */}
+                <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-2xl p-6 border border-purple-500/20">
+                  <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <span>💰</span>
+                    <span>Carbon Credits & Impact</span>
+                  </h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="text-center p-4 bg-white/5 rounded-xl">
+                      <p className="text-gray-400 text-sm mb-2">Credits Available</p>
+                      <p className="text-white font-bold text-3xl">{selectedProject.creditsAvailable?.toLocaleString()}</p>
+                      <p className="text-purple-300 text-xs mt-1">OCC Tokens</p>
+                    </div>
+                    <div className="text-center p-4 bg-white/5 rounded-xl">
+                      <p className="text-gray-400 text-sm mb-2">Price Per Credit</p>
+                      <p className="text-white font-bold text-3xl">${selectedProject.pricePerCredit}</p>
+                      <p className="text-blue-300 text-xs mt-1">USD</p>
+                    </div>
+                    <div className="text-center p-4 bg-white/5 rounded-xl">
+                      <p className="text-gray-400 text-sm mb-2">Annual Impact</p>
+                      <p className="text-white font-bold text-2xl">{selectedProject.impact}</p>
+                      <p className="text-green-300 text-xs mt-1">CO₂ Sequestered</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                {!selectedProject.verified && (
+                  <div className="flex gap-4 pt-4">
+                    <button
+                      onClick={() => {
+                        handleApprove(selectedProject.id)
+                        setShowModal(false)
+                      }}
+                      className="flex-1 py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl text-white font-bold text-lg transition-all shadow-lg hover:shadow-2xl"
+                    >
+                      ✅ Approve Project
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleReject(selectedProject.id)
+                        setShowModal(false)
+                      }}
+                      className="flex-1 py-4 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 rounded-xl text-white font-bold text-lg transition-all shadow-lg hover:shadow-2xl"
+                    >
+                      ❌ Reject Project
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
           </motion.div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   )
 }
