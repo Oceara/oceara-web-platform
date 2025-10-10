@@ -7,6 +7,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import PhoneOTPAuth from '@/components/PhoneOTPAuth'
 import toast, { Toaster } from 'react-hot-toast'
+import { authService } from '@/lib/simpleAuth'
 
 export default function SignupPage() {
   const searchParams = useSearchParams()
@@ -59,44 +60,53 @@ export default function SignupPage() {
 
     setLoading(true)
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName,
-            role: roleParam || 'user',
-          },
-        },
-      })
+      // Create user with simple auth
+      const user = authService.signup(
+        formData.email,
+        formData.password,
+        formData.fullName,
+        roleParam || 'buyer'
+      )
 
-      if (error) throw error
-
-      // Insert profile
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            email: formData.email,
-            full_name: formData.fullName,
-            role: roleParam || 'user',
-          })
-
-        if (profileError) console.error('Profile error:', profileError)
-      }
-
-      toast.success('Account created! Please check your email to verify.')
+      toast.success(`Account created! Welcome, ${user.name}!`)
       
+      // Auto-login and redirect
       setTimeout(() => {
-        router.push(`/auth/login?role=${roleParam}`)
-      }, 2000)
-    } catch (error: any) {
-      if (error.message.includes('already registered')) {
-        toast.error('Email already registered. Please login instead.')
-      } else {
-        toast.error(error.message || 'Failed to create account')
+        if (user.role === 'landowner') router.push('/landowner')
+        else if (user.role === 'buyer') router.push('/buyer')
+        else if (user.role === 'administrator') router.push('/admin')
+        else router.push('/')
+      }, 1000)
+      
+      // Also try to create in Supabase (optional)
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              full_name: formData.fullName,
+              role: roleParam || 'user',
+            },
+          },
+        })
+
+        if (!error && data.user) {
+          await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              email: formData.email,
+              full_name: formData.fullName,
+              role: roleParam || 'user',
+            })
+        }
+      } catch (supabaseError) {
+        // Ignore Supabase errors, simple auth is working
+        console.log('Supabase signup skipped:', supabaseError)
       }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create account')
     } finally {
       setLoading(false)
     }
@@ -332,15 +342,19 @@ export default function SignupPage() {
             <div className="flex items-start gap-3">
               <div className="text-2xl">👤</div>
               <div className="flex-1">
-                <h4 className="text-white font-semibold mb-1">Demo User Access</h4>
+                <h4 className="text-white font-semibold mb-1">Quick Demo Access</h4>
                 <p className="text-gray-300 text-sm mb-3">
                   Skip signup and explore the platform instantly
                 </p>
                 <button
                   onClick={() => {
-                    if (roleParam === 'landowner') window.location.href = '/landowner'
-                    else if (roleParam === 'buyer') window.location.href = '/buyer'
-                    else if (roleParam === 'admin') window.location.href = '/admin'
+                    const role = (roleParam || 'buyer') as 'landowner' | 'buyer' | 'administrator'
+                    authService.loginAsDemo(role)
+                    toast.success('Logged in as demo user!')
+                    
+                    if (role === 'landowner') window.location.href = '/landowner'
+                    else if (role === 'buyer') window.location.href = '/buyer'
+                    else if (role === 'administrator') window.location.href = '/admin'
                     else window.location.href = '/'
                   }}
                   className="w-full py-2 bg-green-500 hover:bg-green-600 rounded-lg text-white font-semibold transition-all"

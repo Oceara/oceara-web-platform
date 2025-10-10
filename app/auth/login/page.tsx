@@ -7,6 +7,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import PhoneOTPAuth from '@/components/PhoneOTPAuth'
 import toast, { Toaster } from 'react-hot-toast'
+import { authService, DEMO_CREDENTIALS } from '@/lib/simpleAuth'
 
 export default function LoginPage() {
   const searchParams = useSearchParams()
@@ -31,6 +32,31 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
+      // Try simple auth first (for demo users)
+      const user = authService.login(email, password)
+      
+      if (user) {
+        // Check if role matches (if specified)
+        if (roleParam && user.role !== roleParam) {
+          toast.error(`This account is not a ${roleParam}. Please use the correct login page.`)
+          authService.logout()
+          setLoading(false)
+          return
+        }
+        
+        toast.success(`Welcome back, ${user.name}!`)
+        
+        // Redirect based on user's role
+        setTimeout(() => {
+          if (user.role === 'landowner') router.push('/landowner')
+          else if (user.role === 'buyer') router.push('/buyer')
+          else if (user.role === 'administrator') router.push('/admin')
+          else router.push('/')
+        }, 500)
+        return
+      }
+
+      // If simple auth fails, try Supabase (for real users)
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -56,7 +82,7 @@ export default function LoginPage() {
         else router.push('/')
       }, 500)
     } catch (error: any) {
-      toast.error(error.message || 'Invalid email or password')
+      toast.error('Invalid email or password. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -243,20 +269,43 @@ export default function LoginPage() {
             </div>
           )}
 
+          {/* Demo Credentials */}
+          <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="text-2xl">🔑</div>
+              <div className="flex-1">
+                <h4 className="text-white font-semibold mb-1">Demo Credentials</h4>
+                <p className="text-gray-300 text-xs mb-2">
+                  Use these credentials to test the platform:
+                </p>
+                {roleParam && DEMO_CREDENTIALS[roleParam as keyof typeof DEMO_CREDENTIALS] && (
+                  <div className="bg-black/30 rounded p-2 font-mono text-xs">
+                    <div className="text-blue-300">Email: {DEMO_CREDENTIALS[roleParam as keyof typeof DEMO_CREDENTIALS].email}</div>
+                    <div className="text-blue-300">Password: {DEMO_CREDENTIALS[roleParam as keyof typeof DEMO_CREDENTIALS].password}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Demo User Section */}
-          <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+          <div className="mt-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
             <div className="flex items-start gap-3">
               <div className="text-2xl">👤</div>
               <div className="flex-1">
-                <h4 className="text-white font-semibold mb-1">Demo User Access</h4>
+                <h4 className="text-white font-semibold mb-1">Quick Demo Access</h4>
                 <p className="text-gray-300 text-sm mb-3">
-                  Skip login and explore the platform instantly
+                  Skip login and explore instantly (no validation)
                 </p>
                 <button
                   onClick={() => {
-                    if (roleParam === 'landowner') window.location.href = '/landowner'
-                    else if (roleParam === 'buyer') window.location.href = '/buyer'
-                    else if (roleParam === 'admin') window.location.href = '/admin'
+                    const role = (roleParam || 'buyer') as 'landowner' | 'buyer' | 'administrator'
+                    authService.loginAsDemo(role)
+                    toast.success('Logged in as demo user!')
+                    
+                    if (role === 'landowner') window.location.href = '/landowner'
+                    else if (role === 'buyer') window.location.href = '/buyer'
+                    else if (role === 'administrator') window.location.href = '/admin'
                     else window.location.href = '/'
                   }}
                   className="w-full py-2 bg-green-500 hover:bg-green-600 rounded-lg text-white font-semibold transition-all"
