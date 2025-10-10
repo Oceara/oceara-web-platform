@@ -26,24 +26,16 @@ interface EarthWithProjectsProps {
 function ProjectMarker({ 
   position, 
   project, 
-  onClick,
-  earthRotation
+  onClick
 }: { 
   position: [number, number, number]
   project: Project
   onClick: () => void
-  earthRotation: number
 }) {
-  const groupRef = useRef<THREE.Group>(null)
   const meshRef = useRef<THREE.Mesh>(null)
   const [hovered, setHovered] = useState(false)
 
   useFrame((state) => {
-    // Make marker rotate with Earth to stay fixed
-    if (groupRef.current) {
-      groupRef.current.rotation.y = earthRotation
-    }
-    
     // Only pulse animation on marker
     if (meshRef.current) {
       const scale = hovered ? 0.08 + Math.sin(state.clock.elapsedTime * 3) * 0.015 : 0.06
@@ -52,7 +44,7 @@ function ProjectMarker({
   })
 
   return (
-    <group ref={groupRef} position={position}>
+    <group position={position}>
       {/* Pin Point */}
       <mesh
         ref={meshRef}
@@ -109,10 +101,10 @@ function ProjectMarker({
 }
 
 function Earth({ projects, onProjectClick }: { projects: Project[], onProjectClick: (project: Project) => void }) {
+  const earthGroupRef = useRef<THREE.Group>(null)
   const meshRef = useRef<THREE.Mesh>(null)
   const cloudsRef = useRef<THREE.Mesh>(null)
   const atmosphereRef = useRef<THREE.Mesh>(null)
-  const [earthRotation, setEarthRotation] = useState(0)
 
   // Load textures
   const dayTexture = useLoader(THREE.TextureLoader, '/earth/day.jpg')
@@ -163,15 +155,18 @@ function Earth({ projects, onProjectClick }: { projects: Project[], onProjectCli
   )
 
   useFrame((state, delta) => {
-    // Slow down rotation significantly
-    if (meshRef.current) {
-      meshRef.current.rotation.y += delta * 0.02 // Reduced from 0.05
-      setEarthRotation(meshRef.current.rotation.y)
+    // Rotate entire Earth group (includes markers)
+    if (earthGroupRef.current) {
+      earthGroupRef.current.rotation.y += delta * 0.02
     }
+    
+    // Independent cloud rotation for realism
     if (cloudsRef.current) {
-      cloudsRef.current.rotation.y += delta * 0.025 // Reduced from 0.06
+      cloudsRef.current.rotation.y += delta * 0.005 // Slow independent rotation
       cloudsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.2) * 0.03
     }
+    
+    // Atmosphere pulse
     if (atmosphereRef.current) {
       const scale = 2.55 + Math.sin(state.clock.elapsedTime * 1.5) * 0.015
       atmosphereRef.current.scale.setScalar(scale)
@@ -191,14 +186,30 @@ function Earth({ projects, onProjectClick }: { projects: Project[], onProjectCli
   }
 
   return (
-    <group>
-      {/* Main Earth */}
-      <mesh ref={meshRef}>
-        <sphereGeometry args={[2, 64, 64]} />
-        <primitive object={earthMaterial.current} attach="material" />
-      </mesh>
+    <>
+      {/* Earth Group - Everything rotates together */}
+      <group ref={earthGroupRef}>
+        {/* Main Earth */}
+        <mesh ref={meshRef}>
+          <sphereGeometry args={[2, 64, 64]} />
+          <primitive object={earthMaterial.current} attach="material" />
+        </mesh>
 
-      {/* Clouds Layer */}
+        {/* Project Markers - Children of Earth group, rotate with it */}
+        {projects.map((project) => {
+          const position = latLngToVector3(project.coordinates.lat, project.coordinates.lng, 2.12)
+          return (
+            <ProjectMarker
+              key={project.id}
+              position={position}
+              project={project}
+              onClick={() => onProjectClick(project)}
+            />
+          )
+        })}
+      </group>
+
+      {/* Clouds Layer - Independent rotation */}
       <mesh ref={cloudsRef}>
         <sphereGeometry args={[2.02, 64, 64]} />
         <meshStandardMaterial
@@ -209,7 +220,7 @@ function Earth({ projects, onProjectClick }: { projects: Project[], onProjectCli
         />
       </mesh>
 
-      {/* Atmosphere */}
+      {/* Atmosphere - Outside, no rotation */}
       <mesh ref={atmosphereRef}>
         <sphereGeometry args={[2.5, 64, 64]} />
         <meshBasicMaterial
@@ -220,24 +231,10 @@ function Earth({ projects, onProjectClick }: { projects: Project[], onProjectCli
         />
       </mesh>
 
-      {/* Project Markers - Fixed to Earth surface */}
-      {projects.map((project) => {
-        const position = latLngToVector3(project.coordinates.lat, project.coordinates.lng, 2.12)
-        return (
-          <ProjectMarker
-            key={project.id}
-            position={position}
-            project={project}
-            onClick={() => onProjectClick(project)}
-            earthRotation={earthRotation}
-          />
-        )
-      })}
-
-      {/* Ambient markers for visual effect */}
+      {/* Ambient lighting */}
       <pointLight position={[5, 3, 5]} intensity={0.8} color="#ffffff" />
       <pointLight position={[-5, -3, -5]} intensity={0.3} color="#4da6ff" />
-    </group>
+    </>
   )
 }
 
