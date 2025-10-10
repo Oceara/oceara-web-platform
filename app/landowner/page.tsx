@@ -23,10 +23,49 @@ export default function LandownerDashboard() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [selectedProject, setSelectedProject] = useState<any>(null)
   const [showProjectDetails, setShowProjectDetails] = useState(false)
+  const [autoLocation, setAutoLocation] = useState<{lat: number, lng: number} | null>(null)
+  const [isGettingLocation, setIsGettingLocation] = useState(false)
+  const [formData, setFormData] = useState({
+    projectName: '',
+    area: '',
+    treeCount: '',
+    species: '',
+    description: ''
+  })
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   // Get landowner's projects (Demo Landowner)
   const myProjects = getProjectsByOwner('Demo Landowner')
+
+  // Auto-detect location
+  const detectLocation = () => {
+    setIsGettingLocation(true)
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setAutoLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          })
+          setIsGettingLocation(false)
+          alert(`✅ Location detected!\nLatitude: ${position.coords.latitude.toFixed(6)}\nLongitude: ${position.coords.longitude.toFixed(6)}`)
+        },
+        (error) => {
+          setIsGettingLocation(false)
+          alert('❌ Could not detect location. Please enable location services or enter manually.')
+          console.error('Geolocation error:', error)
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      )
+    } else {
+      setIsGettingLocation(false)
+      alert('❌ Geolocation is not supported by your browser.')
+    }
+  }
 
   // Calculate dynamic stats from user's projects
   const stats = [
@@ -123,23 +162,41 @@ export default function LandownerDashboard() {
   }
 
   const handleManualSubmit = () => {
-    // Simulate AI analysis with uploaded images
+    // Validate required fields
+    if (!formData.projectName || !formData.area) {
+      alert('⚠️ Please fill in Project Name and Area (required fields)')
+      return
+    }
+
+    if (!autoLocation && !formData.treeCount) {
+      alert('⚠️ Please detect your location or enter location manually')
+      return
+    }
+
+    // Use auto-detected location or default
+    const coordinates = autoLocation || { lat: 19.0760, lng: 72.8777 }
+    const estimatedArea = parseFloat(formData.area) || 125
+    const estimatedTrees = parseInt(formData.treeCount) || Math.round(estimatedArea * 50)
+
+    // Simulate AI analysis with or without images
     setAnalysisData({
-      coordinates: { lat: 19.0760, lng: 72.8777 },
-      area: 125,
+      coordinates,
+      area: estimatedArea,
       satelliteImages: imagePreviews.length > 0 ? imagePreviews : [
-        'https://via.placeholder.com/800x600/0ea5e9/ffffff?text=Uploaded+Image+1',
-        'https://via.placeholder.com/800x600/10b981/ffffff?text=Uploaded+Image+2',
-        'https://via.placeholder.com/800x600/3b82f6/ffffff?text=Uploaded+Image+3'
+        `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=16&size=800x600&maptype=satellite`,
+        `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=17&size=800x600&maptype=satellite`,
+        `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=18&size=800x600&maptype=satellite`
       ],
       mlAnalysis: {
-        treeCount: 11250,
-        mangroveArea: 125,
-        healthScore: 89,
-        speciesDetected: ['Rhizophora mucronata', 'Avicennia marina'],
-        carbonCredits: 575,
-        confidence: 94
-      }
+        treeCount: estimatedTrees,
+        mangroveArea: estimatedArea,
+        healthScore: 88,
+        speciesDetected: formData.species ? [formData.species] : ['Rhizophora mucronata', 'Avicennia marina'],
+        carbonCredits: Math.round(estimatedArea * 5),
+        confidence: imagePreviews.length > 0 ? 94 : 78 // Lower confidence without photos
+      },
+      projectName: formData.projectName,
+      description: formData.description
     })
   }
 
@@ -512,9 +569,11 @@ export default function LandownerDashboard() {
                 </div>
               </div>
 
-                      {/* File Upload */}
+                      {/* File Upload - Optional */}
                       <div>
-                        <label className="block text-white mb-2 font-semibold">Upload Images</label>
+                        <label className="block text-white mb-2 font-semibold">
+                          Upload Images <span className="text-gray-400 font-normal">(Optional - We use satellite imagery)</span>
+                        </label>
                         
                         {/* Upload Zone */}
                         <div
@@ -570,36 +629,67 @@ export default function LandownerDashboard() {
                       </div>
 
               <div>
-                <label className="block text-white mb-2">Project Description</label>
+                <label className="block text-white mb-2">
+                  Project Description <span className="text-gray-400">(optional)</span>
+                </label>
                 <textarea
                   rows={4}
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:ring-2 focus:ring-blue-500"
-                  placeholder="Describe your mangrove restoration project..."
+                  placeholder="Tell us about your mangrove conservation efforts..."
                 />
               </div>
 
-                      <button
-                        type="button"
-                        onClick={handleManualSubmit}
-                        disabled={imagePreviews.length === 0}
-                        className={`w-full py-4 rounded-full text-white font-bold text-lg transition-all ${
-                          imagePreviews.length === 0
-                            ? 'bg-gray-500 cursor-not-allowed'
-                            : 'bg-gradient-to-r from-blue-500 to-emerald-500 hover:shadow-2xl'
-                        }`}
-                      >
-                        {imagePreviews.length === 0 ? (
-                          <>📷 Please upload images first</>
-                        ) : (
-                          <>🤖 Analyze {imagePreviews.length} Image{imagePreviews.length !== 1 ? 's' : ''} with AI</>
-                        )}
-                      </button>
-                      
-                      {imagePreviews.length === 0 && (
-                        <p className="text-center text-gray-400 text-sm mt-2">
-                          Upload at least one image to proceed with AI analysis
-                        </p>
-                      )}
+              {/* Submit Button */}
+              <div className="space-y-4">
+                <button
+                  type="button"
+                  onClick={handleManualSubmit}
+                  disabled={!formData.projectName || !formData.area}
+                  className={`w-full py-4 rounded-full text-white font-bold text-lg transition-all ${
+                    !formData.projectName || !formData.area
+                      ? 'bg-gray-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-500 to-emerald-500 hover:shadow-2xl'
+                  }`}
+                >
+                  {!formData.projectName || !formData.area ? (
+                    <>⚠️ Please fill required fields (Name & Area)</>
+                  ) : imagePreviews.length > 0 ? (
+                    <>🤖 Analyze with {imagePreviews.length} Photo{imagePreviews.length !== 1 ? 's' : ''} + Satellite</>
+                  ) : (
+                    <>🛰️ Analyze with Satellite Imagery (No photos needed)</>
+                  )}
+                </button>
+                
+                {(!formData.projectName || !formData.area) ? (
+                  <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4">
+                    <p className="text-yellow-300 text-sm flex items-center gap-2">
+                      <span>ℹ️</span>
+                      <span>Required: Project Name and Area in hectares</span>
+                    </p>
+                  </div>
+                ) : !autoLocation ? (
+                  <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-4">
+                    <p className="text-blue-300 text-sm flex items-center gap-2">
+                      <span>💡</span>
+                      <span>
+                        {imagePreviews.length > 0 
+                          ? 'Great! Your photos will help improve accuracy.'
+                          : 'No photos? No problem! Click "Detect Location" above and we\'ll use satellite imagery to analyze your land.'}
+                      </span>
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
+                    <p className="text-green-300 text-sm flex items-center gap-2">
+                      <span>✅</span>
+                      <span>
+                        Ready to submit! We'll analyze your land at {autoLocation.lat.toFixed(4)}, {autoLocation.lng.toFixed(4)} using satellite imagery.
+                      </span>
+                    </p>
+                  </div>
+                )}
             </form>
           </motion.div>
         )}
