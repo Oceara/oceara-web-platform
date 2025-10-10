@@ -1,5 +1,7 @@
-// Simple authentication service for demo purposes
-// In production, this would connect to Supabase/Firebase
+// ⚠️ SECURITY NOTICE: This is a DEMO AUTHENTICATION system for development/testing ONLY
+// These are NOT real credentials and pose NO security risk
+// For production, use Supabase Auth or Firebase Auth (already integrated)
+// This file is ONLY for local testing and SIH presentation purposes
 
 interface User {
   id: string
@@ -8,26 +10,28 @@ interface User {
   role: 'landowner' | 'buyer' | 'administrator'
 }
 
-// Demo users database
+// ⚠️ DEMO USERS ONLY - NOT FOR PRODUCTION USE
+// These credentials are intentionally simple for testing purposes
+// Domain: oceara.com (not a real domain, demo only)
 const DEMO_USERS = [
   {
-    id: '1',
-    email: 'landowner@oceara.com',
-    password: 'landowner123',
+    id: 'demo_1',
+    email: 'landowner@oceara.demo',  // Changed to .demo to avoid confusion
+    password: 'demo_landowner_2024',
     name: 'Demo Landowner',
     role: 'landowner' as const
   },
   {
-    id: '2',
-    email: 'buyer@oceara.com',
-    password: 'buyer123',
+    id: 'demo_2',
+    email: 'buyer@oceara.demo',
+    password: 'demo_buyer_2024',
     name: 'Demo Buyer',
     role: 'buyer' as const
   },
   {
-    id: '3',
-    email: 'admin@oceara.com',
-    password: 'admin123',
+    id: 'demo_3',
+    email: 'admin@oceara.demo',
+    password: 'demo_admin_2024',
     name: 'Demo Administrator',
     role: 'administrator' as const
   }
@@ -128,23 +132,24 @@ export const authService = {
   }
 }
 
-// Get demo credentials for display
+// ⚠️ DEMO CREDENTIALS FOR TESTING ONLY
+// Display credentials for users during testing/presentation
 export const DEMO_CREDENTIALS = {
   landowner: {
-    email: 'landowner@oceara.com',
-    password: 'landowner123'
+    email: 'landowner@oceara.demo',
+    password: 'demo_landowner_2024'
   },
   buyer: {
-    email: 'buyer@oceara.com',
-    password: 'buyer123'
+    email: 'buyer@oceara.demo',
+    password: 'demo_buyer_2024'
   },
   administrator: {
-    email: 'admin@oceara.com',
-    password: 'admin123'
+    email: 'admin@oceara.demo',
+    password: 'demo_admin_2024'
   },
   admin: {
-    email: 'admin@oceara.com',
-    password: 'admin123'
+    email: 'admin@oceara.demo',
+    password: 'demo_admin_2024'
   }
 }
 
