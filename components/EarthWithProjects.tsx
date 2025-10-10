@@ -26,28 +26,33 @@ interface EarthWithProjectsProps {
 function ProjectMarker({ 
   position, 
   project, 
-  onClick 
+  onClick,
+  earthRotation
 }: { 
   position: [number, number, number]
   project: Project
-  onClick: () => void 
+  onClick: () => void
+  earthRotation: number
 }) {
+  const groupRef = useRef<THREE.Group>(null)
   const meshRef = useRef<THREE.Mesh>(null)
   const [hovered, setHovered] = useState(false)
 
   useFrame((state) => {
+    // Make marker rotate with Earth to stay fixed
+    if (groupRef.current) {
+      groupRef.current.rotation.y = earthRotation
+    }
+    
+    // Only pulse animation on marker
     if (meshRef.current) {
-      // Pulse animation
-      const scale = hovered ? 0.06 + Math.sin(state.clock.elapsedTime * 4) * 0.02 : 0.04
+      const scale = hovered ? 0.08 + Math.sin(state.clock.elapsedTime * 3) * 0.015 : 0.06
       meshRef.current.scale.setScalar(scale)
-      
-      // Rotate marker
-      meshRef.current.rotation.y = state.clock.elapsedTime * 2
     }
   })
 
   return (
-    <group position={position}>
+    <group ref={groupRef} position={position}>
       {/* Pin Point */}
       <mesh
         ref={meshRef}
@@ -59,30 +64,46 @@ function ProjectMarker({
         <meshStandardMaterial
           color={hovered ? '#fbbf24' : '#10b981'}
           emissive={hovered ? '#fbbf24' : '#10b981'}
-          emissiveIntensity={hovered ? 1.5 : 0.8}
+          emissiveIntensity={hovered ? 2 : 1.2}
+          metalness={0.3}
+          roughness={0.2}
         />
       </mesh>
 
-      {/* Glow Ring */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
-        <ringGeometry args={[0.8, 1.2, 32]} />
+      {/* Glow Ring - Horizontal */}
+      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.05, 0]}>
+        <ringGeometry args={[1, 1.4, 32]} />
         <meshBasicMaterial
-          color="#10b981"
+          color={hovered ? '#fbbf24' : '#10b981'}
           transparent
-          opacity={hovered ? 0.6 : 0.3}
+          opacity={hovered ? 0.8 : 0.5}
           side={THREE.DoubleSide}
         />
       </mesh>
 
-      {/* Vertical Line */}
-      <mesh position={[0, 0.5, 0]}>
-        <cylinderGeometry args={[0.01, 0.01, 1, 8]} />
+      {/* Vertical Beam */}
+      <mesh position={[0, 0.6, 0]}>
+        <cylinderGeometry args={[0.02, 0.02, 1.2, 8]} />
         <meshStandardMaterial
-          color="#10b981"
-          emissive="#10b981"
-          emissiveIntensity={0.5}
+          color={hovered ? '#fbbf24' : '#10b981'}
+          emissive={hovered ? '#fbbf24' : '#10b981'}
+          emissiveIntensity={0.8}
+          transparent
+          opacity={0.9}
         />
       </mesh>
+      
+      {/* Floating Label Plane */}
+      {hovered && (
+        <mesh position={[0, 2, 0]} rotation={[0, 0, 0]}>
+          <planeGeometry args={[0.1, 0.1]} />
+          <meshBasicMaterial
+            color="#10b981"
+            transparent
+            opacity={0}
+          />
+        </mesh>
+      )}
     </group>
   )
 }
@@ -91,6 +112,7 @@ function Earth({ projects, onProjectClick }: { projects: Project[], onProjectCli
   const meshRef = useRef<THREE.Mesh>(null)
   const cloudsRef = useRef<THREE.Mesh>(null)
   const atmosphereRef = useRef<THREE.Mesh>(null)
+  const [earthRotation, setEarthRotation] = useState(0)
 
   // Load textures
   const dayTexture = useLoader(THREE.TextureLoader, '/earth/day.jpg')
@@ -141,15 +163,17 @@ function Earth({ projects, onProjectClick }: { projects: Project[], onProjectCli
   )
 
   useFrame((state, delta) => {
+    // Slow down rotation significantly
     if (meshRef.current) {
-      meshRef.current.rotation.y += delta * 0.05
+      meshRef.current.rotation.y += delta * 0.02 // Reduced from 0.05
+      setEarthRotation(meshRef.current.rotation.y)
     }
     if (cloudsRef.current) {
-      cloudsRef.current.rotation.y += delta * 0.06
-      cloudsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.3) * 0.05
+      cloudsRef.current.rotation.y += delta * 0.025 // Reduced from 0.06
+      cloudsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.2) * 0.03
     }
     if (atmosphereRef.current) {
-      const scale = 2.55 + Math.sin(state.clock.elapsedTime * 2) * 0.02
+      const scale = 2.55 + Math.sin(state.clock.elapsedTime * 1.5) * 0.015
       atmosphereRef.current.scale.setScalar(scale)
     }
   })
@@ -196,15 +220,16 @@ function Earth({ projects, onProjectClick }: { projects: Project[], onProjectCli
         />
       </mesh>
 
-      {/* Project Markers */}
+      {/* Project Markers - Fixed to Earth surface */}
       {projects.map((project) => {
-        const position = latLngToVector3(project.coordinates.lat, project.coordinates.lng, 2.1)
+        const position = latLngToVector3(project.coordinates.lat, project.coordinates.lng, 2.12)
         return (
           <ProjectMarker
             key={project.id}
             position={position}
             project={project}
             onClick={() => onProjectClick(project)}
+            earthRotation={earthRotation}
           />
         )
       })}
@@ -249,8 +274,8 @@ export default function EarthWithProjects({ projects }: EarthWithProjectsProps) 
           enablePan={false}
           minDistance={4}
           maxDistance={10}
-          autoRotate
-          autoRotateSpeed={0.5}
+          autoRotate={false}
+          rotateSpeed={0.5}
         />
         
         {/* Stars Background */}
