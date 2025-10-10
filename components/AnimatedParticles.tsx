@@ -13,9 +13,9 @@ export default function AnimatedParticles({ hoveredRole }: AnimatedParticlesProp
 
   useFrame((state) => {
     if (groupRef.current && hoveredRole) {
-      // Rotate entire particle system
-      groupRef.current.rotation.y = state.clock.elapsedTime * 0.5
-      groupRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.3) * 0.2
+      // Smooth, elegant rotation
+      groupRef.current.rotation.y = state.clock.elapsedTime * 0.3
+      groupRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.2) * 0.05
     }
   })
 
@@ -27,48 +27,25 @@ export default function AnimatedParticles({ hoveredRole }: AnimatedParticlesProp
 
   return (
     <group ref={groupRef}>
-      {/* Orbiting particles */}
-      {[...Array(30)].map((_, i) => {
-        const angle = (i / 30) * Math.PI * 2
-        const radius = 4 + Math.sin(i * 0.5) * 0.5
+      {/* Gentle orbiting particles */}
+      {[...Array(16)].map((_, i) => {
+        const angle = (i / 16) * Math.PI * 2
+        const radius = 3.8
         const x = Math.cos(angle) * radius
         const z = Math.sin(angle) * radius
-        const y = Math.sin(i * 0.3) * 0.8
+        const y = Math.sin(angle * 2) * 0.3
         
         return (
           <mesh key={`orbit-${i}`} position={[x, y, z]}>
-            <sphereGeometry args={[0.05, 8, 8]} />
-            <meshBasicMaterial
+            <sphereGeometry args={[0.03, 12, 12]} />
+            <meshStandardMaterial
               color={color}
+              emissive={color}
+              emissiveIntensity={0.5}
               transparent
-              opacity={0.8}
+              opacity={0.7}
             />
           </mesh>
-        )
-      })}
-
-      {/* Energy trails */}
-      {[...Array(8)].map((_, i) => {
-        const angle = (i / 8) * Math.PI * 2
-        return (
-          <group key={`trail-${i}`} rotation={[0, angle, 0]}>
-            {[...Array(10)].map((_, j) => {
-              const distance = 2.5 + j * 0.3
-              return (
-                <mesh
-                  key={`trail-part-${j}`}
-                  position={[distance, 0, 0]}
-                >
-                  <boxGeometry args={[0.08, 0.08, 0.08]} />
-                  <meshBasicMaterial
-                    color={color}
-                    transparent
-                    opacity={1 - j * 0.1}
-                  />
-                </mesh>
-              )
-            })}
-          </group>
         )
       })}
     </group>
