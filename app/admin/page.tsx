@@ -1,70 +1,58 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import dynamic from 'next/dynamic'
+import { useData } from '@/context/DataContext'
+
+const ProjectDetailModal = dynamic(() => import('@/components/admin/ProjectDetailModal'), {
+  ssr: false
+})
 
 export default function AdminDashboard() {
+  const { projects, updateProject, getPendingProjects, getVerifiedProjects } = useData()
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedProject, setSelectedProject] = useState<any>(null)
   const [showModal, setShowModal] = useState(false)
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'verified'>('all')
 
-  // Mock data for projects awaiting approval
-  const pendingProjects = [
-    {
-      id: 1,
-      name: 'Mumbai Coastal Mangrove',
-      owner: 'Rajesh Kumar',
-      location: 'Mumbai, Maharashtra',
-      area: '150 hectares',
-      submittedDate: '2024-10-05',
-      status: 'Pending Review',
-      images: ['📷', '📷', '📷'],
-      gpsData: { lat: 19.0760, lng: 72.8777 },
-      fieldData: {
-        trees: 12500,
-        species: 'Rhizophora mucronata',
-        soilType: 'Muddy clay',
-        waterSalinity: '25 ppt'
-      },
-      aiResults: {
-        treeCount: 12450,
-        healthScore: 87,
-        carbonPotential: 625,
-        confidence: 92
-      },
-      documents: ['Land Deed', 'Survey Report', 'Environmental Clearance']
-    },
-    {
-      id: 2,
-      name: 'Tamil Nadu Estuary Project',
-      owner: 'Priya Sharma',
-      location: 'Tamil Nadu',
-      area: '200 hectares',
-      submittedDate: '2024-10-08',
-      status: 'Under Verification',
-      images: ['📷', '📷'],
-      gpsData: { lat: 11.1271, lng: 78.6569 },
-      fieldData: {
-        trees: 18000,
-        species: 'Avicennia marina',
-        soilType: 'Sandy loam',
-        waterSalinity: '30 ppt'
-      },
-      aiResults: {
-        treeCount: 17980,
-        healthScore: 91,
-        carbonPotential: 900,
-        confidence: 95
-      },
-      documents: ['Land Deed', 'Survey Report']
-    }
-  ]
-
+  // Get pending and verified projects
+  const pendingProjects = getPendingProjects()
+  const verifiedProjects = getVerifiedProjects()
+  
   const stats = [
-    { label: 'Pending Approvals', value: '12', icon: '⏳', color: 'bg-yellow-500' },
-    { label: 'Verified Projects', value: '48', icon: '✅', color: 'bg-green-500' },
-    { label: 'Credits Minted', value: '125K', icon: '💰', color: 'bg-blue-500' },
-    { label: 'Active Users', value: '234', icon: '👥', color: 'bg-purple-500' }
+    { 
+      label: 'Pending Approvals', 
+      value: pendingProjects.length.toString(), 
+      icon: '⏳', 
+      color: 'from-yellow-500 to-orange-500',
+      trend: '+2 today',
+      trendUp: true
+    },
+    { 
+      label: 'Verified Projects', 
+      value: verifiedProjects.length.toString(), 
+      icon: '✅', 
+      color: 'from-green-500 to-emerald-500',
+      trend: '+5 this week',
+      trendUp: true
+    },
+    { 
+      label: 'Credits Minted', 
+      value: `${(verifiedProjects.reduce((acc, p) => acc + (p.mlAnalysis?.carbonCredits || 0), 0) / 1000).toFixed(1)}K`, 
+      icon: '💰', 
+      color: 'from-blue-500 to-cyan-500',
+      trend: '+12% growth',
+      trendUp: true
+    },
+    { 
+      label: 'Total Area', 
+      value: `${verifiedProjects.reduce((acc, p) => acc + parseFloat(p.area), 0).toFixed(0)} ha`, 
+      icon: '🌍', 
+      color: 'from-purple-500 to-pink-500',
+      trend: 'Verified',
+      trendUp: true
+    }
   ]
 
   const recentActivity = [
@@ -80,77 +68,115 @@ export default function AdminDashboard() {
     { txHash: '0x7g8h9i...', action: 'Mint Credits', amount: '890', status: 'Pending', time: '2024-10-09 12:00' }
   ]
 
-  const handleApprove = (projectId: number) => {
-    alert(`Project ${projectId} approved! Credits will be minted.`)
-    // In real app: API call to approve and mint credits
+  const handleApprove = (projectId: number, carbonCredits: number) => {
+    updateProject(projectId, {
+      status: 'Verified',
+      verified: true,
+      creditsAvailable: carbonCredits
+    })
+    setShowModal(false)
+    setSelectedProject(null)
   }
 
   const handleReject = (projectId: number, reason: string) => {
-    alert(`Project ${projectId} rejected. Reason: ${reason}`)
-    // In real app: API call to reject with reason
+    updateProject(projectId, {
+      status: 'Rejected',
+      verified: false
+    })
+    setShowModal(false)
+    setSelectedProject(null)
   }
 
-  const handleManualOverride = (projectId: number, newValue: number) => {
-    alert(`Manual override applied. New carbon value: ${newValue} tons`)
-    // In real app: Update carbon calculation
-  }
+  const filteredProjects = filterStatus === 'all' 
+    ? [...pendingProjects, ...verifiedProjects]
+    : filterStatus === 'pending'
+    ? pendingProjects
+    : verifiedProjects
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900">
       {/* Header */}
-      <header className="bg-white/10 backdrop-blur-md border-b border-white/20">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-white">🌊 Oceara - Administrator</h1>
-            <p className="text-gray-300 text-sm">Project Verification & Management</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <div className="text-gray-300 text-sm">Admin</div>
-              <div className="text-white font-bold">John Doe</div>
+      <header className="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-40">
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white">
+                <span className="hidden sm:inline">🌊 Oceara - Administrator</span>
+                <span className="sm:hidden">🌊 Admin</span>
+              </h1>
+              <p className="text-gray-300 text-xs sm:text-sm hidden sm:block">Project Verification & Management</p>
             </div>
-            <button className="px-6 py-2 bg-indigo-500 rounded-full text-white hover:bg-indigo-600">
-              Profile
-            </button>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="text-right hidden sm:block">
+                <div className="text-gray-300 text-xs sm:text-sm">Admin</div>
+                <div className="text-white font-bold text-sm">John Doe</div>
+              </div>
+              <button className="px-3 sm:px-6 py-1.5 sm:py-2 bg-indigo-500 rounded-full text-white hover:bg-indigo-600 text-sm sm:text-base">
+                Profile
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-6 py-8">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
+        {/* Stats Grid - Enhanced */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           {stats.map((stat, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20"
+              className="relative overflow-hidden bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 hover:border-white/40 transition-all group"
             >
-              <div className="flex items-center justify-between mb-2">
-                <div className={`w-12 h-12 rounded-full ${stat.color} flex items-center justify-center text-2xl`}>
-                  {stat.icon}
+              {/* Gradient Background */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-10 group-hover:opacity-20 transition-opacity`} />
+              
+              <div className="relative">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center text-2xl shadow-lg`}>
+                    {stat.icon}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl sm:text-4xl font-bold text-white mb-1">{stat.value}</div>
+                    <div className={`text-xs font-semibold ${stat.trendUp ? 'text-green-400' : 'text-red-400'} flex items-center gap-1 justify-end`}>
+                      {stat.trendUp ? '↗' : '↘'} {stat.trend}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-3xl font-bold text-white">{stat.value}</div>
+                <div className="text-gray-300 font-medium">{stat.label}</div>
               </div>
-              <div className="text-gray-300">{stat.label}</div>
             </motion.div>
           ))}
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-4 mb-6 overflow-x-auto">
-          {['overview', 'approvals', 'verification', 'blockchain', 'reports', 'audit'].map((tab) => (
+        {/* Tabs - Enhanced with Icons */}
+        <div className="flex gap-2 sm:gap-4 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+          {[
+            { id: 'overview', label: 'Overview', icon: '📊' },
+            { id: 'approvals', label: 'Approvals', icon: '✅', badge: pendingProjects.length },
+            { id: 'analytics', label: 'Analytics', icon: '📈' },
+            { id: 'blockchain', label: 'Blockchain', icon: '🔗' },
+            { id: 'reports', label: 'Reports', icon: '📄' },
+            { id: 'audit', label: 'Audit Log', icon: '📝' }
+          ].map((tab) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 rounded-full font-semibold transition-all whitespace-nowrap ${
-                activeTab === tab
-                  ? 'bg-indigo-500 text-white'
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`relative px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold transition-all whitespace-nowrap text-sm sm:text-base ${
+                activeTab === tab.id
+                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg'
                   : 'bg-white/10 text-gray-300 hover:bg-white/20'
               }`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              <span className="mr-2">{tab.icon}</span>
+              {tab.label}
+              {tab.badge && tab.badge > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs flex items-center justify-center font-bold">
+                  {tab.badge}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -205,73 +231,150 @@ export default function AdminDashboard() {
         {/* Project Approval Tab */}
         {activeTab === 'approvals' && (
           <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-              <h2 className="text-2xl font-bold text-white mb-4">📋 Projects Awaiting Approval</h2>
-              <div className="space-y-4">
-                {pendingProjects.map((project) => (
+            {/* Filter Bar */}
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">📋 Project Management</h2>
+                  <p className="text-gray-400 text-sm">{filteredProjects.length} projects • {pendingProjects.length} pending review</p>
+                </div>
+                <div className="flex gap-2">
+                  {(['all', 'pending', 'verified'] as const).map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => setFilterStatus(status)}
+                      className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                        filterStatus === status
+                          ? 'bg-indigo-500 text-white'
+                          : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                      }`}
+                    >
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Projects List */}
+            <div className="space-y-4">
+              {filteredProjects.length === 0 ? (
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-12 border border-white/20 text-center">
+                  <div className="text-6xl mb-4">📭</div>
+                  <h3 className="text-white text-xl font-bold mb-2">No Projects Found</h3>
+                  <p className="text-gray-400">All projects in this category have been processed</p>
+                </div>
+              ) : (
+                filteredProjects.map((project) => (
                   <motion.div
                     key={project.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="bg-white/5 rounded-xl p-6 border border-white/10"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.01 }}
+                    className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/20 hover:border-indigo-500/50 transition-all group overflow-hidden"
                   >
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-xl font-bold text-white">{project.name}</h3>
-                        <p className="text-gray-300">Owner: {project.owner}</p>
-                        <p className="text-gray-400 text-sm">📍 {project.location}</p>
+                    {/* Status Indicator Bar */}
+                    <div className={`absolute top-0 left-0 right-0 h-1 ${
+                      project.status === 'Verified' || project.status === 'Active' 
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
+                        : project.status === 'Rejected'
+                        ? 'bg-gradient-to-r from-red-500 to-orange-500'
+                        : 'bg-gradient-to-r from-yellow-500 to-orange-500'
+                    }`} />
+
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
+                      <div className="flex-1">
+                        <div className="flex items-start gap-3 mb-2">
+                          <div className="text-4xl">{project.image || '🌴'}</div>
+                          <div>
+                            <h3 className="text-xl font-bold text-white mb-1">{project.name}</h3>
+                            <p className="text-gray-300 text-sm">Owner: <span className="font-semibold">{project.owner}</span></p>
+                            <p className="text-gray-400 text-sm flex items-center gap-1">
+                              <span>📍</span>
+                              {project.location}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
-                        project.status === 'Pending Review' ? 'bg-yellow-500' : 'bg-blue-500'
-                      }`}>
-                        {project.status}
-                      </span>
+                      <div className="flex flex-col gap-2">
+                        <span className={`px-4 py-2 rounded-full text-sm font-bold text-center whitespace-nowrap ${
+                          project.status === 'Verified' || project.status === 'Active'
+                            ? 'bg-gradient-to-r from-green-500 to-emerald-500'
+                            : project.status === 'Rejected'
+                            ? 'bg-gradient-to-r from-red-500 to-orange-500'
+                            : 'bg-gradient-to-r from-yellow-500 to-orange-500'
+                        }`}>
+                          {project.status}
+                        </span>
+                        {project.verified && (
+                          <span className="text-center text-green-400 text-xs font-semibold">
+                            ✓ Verified
+                          </span>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                      <div className="bg-white/5 rounded-lg p-3">
-                        <div className="text-gray-400 text-xs">Area</div>
-                        <div className="text-white font-semibold">{project.area}</div>
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                      <div className="bg-white/10 rounded-xl p-4 border border-white/10">
+                        <div className="text-gray-400 text-xs mb-1">Total Area</div>
+                        <div className="text-white font-bold text-lg">{project.area}</div>
                       </div>
-                      <div className="bg-white/5 rounded-lg p-3">
-                        <div className="text-gray-400 text-xs">Submitted</div>
-                        <div className="text-white font-semibold">{project.submittedDate}</div>
+                      <div className="bg-white/10 rounded-xl p-4 border border-white/10">
+                        <div className="text-gray-400 text-xs mb-1">Submitted</div>
+                        <div className="text-white font-bold text-lg">{project.submittedDate}</div>
                       </div>
-                      <div className="bg-white/5 rounded-lg p-3">
-                        <div className="text-gray-400 text-xs">AI Confidence</div>
-                        <div className="text-white font-semibold">{project.aiResults.confidence}%</div>
+                      <div className="bg-white/10 rounded-xl p-4 border border-white/10">
+                        <div className="text-gray-400 text-xs mb-1">AI Confidence</div>
+                        <div className={`font-bold text-lg ${
+                          (project.mlAnalysis?.confidence || 0) >= 90 ? 'text-green-400' : 
+                          (project.mlAnalysis?.confidence || 0) >= 70 ? 'text-yellow-400' : 
+                          'text-red-400'
+                        }`}>
+                          {project.mlAnalysis?.confidence || 0}%
+                        </div>
                       </div>
-                      <div className="bg-white/5 rounded-lg p-3">
-                        <div className="text-gray-400 text-xs">Carbon Potential</div>
-                        <div className="text-white font-semibold">{project.aiResults.carbonPotential}t</div>
+                      <div className="bg-white/10 rounded-xl p-4 border border-white/10">
+                        <div className="text-gray-400 text-xs mb-1">Carbon Credits</div>
+                        <div className="text-blue-400 font-bold text-lg">{project.mlAnalysis?.carbonCredits || 0}</div>
                       </div>
                     </div>
 
-                    <div className="flex gap-3 mt-4">
+                    {/* Actions */}
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <button
                         onClick={() => {
                           setSelectedProject(project)
                           setShowModal(true)
                         }}
-                        className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg text-white font-semibold transition-all"
+                        className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 rounded-xl text-white font-semibold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
                       >
-                        🔍 Review Details
+                        <span>🔍</span>
+                        <span>Review Details</span>
                       </button>
-                      <button
-                        onClick={() => handleApprove(project.id)}
-                        className="flex-1 py-3 bg-green-500 hover:bg-green-600 rounded-lg text-white font-semibold transition-all"
-                      >
-                        ✅ Approve & Mint
-                      </button>
-                      <button
-                        onClick={() => handleReject(project.id, 'Incomplete documentation')}
-                        className="px-6 py-3 bg-red-500 hover:bg-red-600 rounded-lg text-white font-semibold transition-all"
-                      >
-                        ❌ Reject
-                      </button>
+                      {(project.status === 'Pending Review' || project.status === 'Under Verification') && (
+                        <>
+                          <button
+                            onClick={() => handleApprove(project.id, project.mlAnalysis?.carbonCredits || 0)}
+                            className="flex-1 py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-xl text-white font-semibold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                          >
+                            <span>✅</span>
+                            <span>Approve</span>
+                          </button>
+                          <button
+                            onClick={() => handleReject(project.id, 'Requires additional documentation')}
+                            className="px-6 py-3 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 rounded-xl text-white font-semibold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                          >
+                            <span>❌</span>
+                            <span>Reject</span>
+                          </button>
+                        </>
+                      )}
                     </div>
                   </motion.div>
-                ))}
+                ))
+              )}
               </div>
             </div>
           </div>

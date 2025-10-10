@@ -48,16 +48,21 @@ export default function LandownerDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
-      <header className="bg-white/10 backdrop-blur-md border-b border-white/20">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">🌊 Oceara - Landowner</h1>
-          <button className="px-6 py-2 bg-blue-500 rounded-full text-white hover:bg-blue-600">
-            Profile
-          </button>
+      <header className="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-40">
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white">
+              <span className="hidden sm:inline">🌊 Oceara - Landowner</span>
+              <span className="sm:hidden">🌊 Oceara</span>
+            </h1>
+            <button className="px-3 sm:px-6 py-1.5 sm:py-2 bg-blue-500 rounded-full text-white hover:bg-blue-600 text-sm sm:text-base">
+              Profile
+            </button>
+          </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (

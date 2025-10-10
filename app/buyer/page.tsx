@@ -54,29 +54,34 @@ export default function BuyerDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Header */}
-      <header className="bg-white/10 backdrop-blur-md border-b border-white/20">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">🌊 Oceara - Carbon Credit Buyer</h1>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <div className="text-gray-300 text-sm">My Credits</div>
-              <div className="text-white font-bold">{totalCreditsOwned} Credits</div>
+      <header className="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-40">
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white">
+              <span className="hidden sm:inline">🌊 Oceara - Carbon Credit Buyer</span>
+              <span className="sm:hidden">🌊 Oceara Buyer</span>
+            </h1>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="text-right">
+                <div className="text-gray-300 text-xs sm:text-sm">My Credits</div>
+                <div className="text-white font-bold text-sm sm:text-base">{totalCreditsOwned}</div>
+              </div>
+              <button className="px-3 sm:px-6 py-1.5 sm:py-2 bg-purple-500 rounded-full text-white hover:bg-purple-600 text-sm sm:text-base">
+                Profile
+              </button>
             </div>
-            <button className="px-6 py-2 bg-purple-500 rounded-full text-white hover:bg-purple-600">
-              Profile
-            </button>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
         {/* Tabs */}
-        <div className="flex gap-4 mb-6">
+        <div className="flex gap-2 sm:gap-4 mb-4 sm:mb-6 overflow-x-auto pb-2 scrollbar-hide">
           {['marketplace', 'globe', 'portfolio'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 rounded-full font-semibold transition-all ${
+              className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold transition-all whitespace-nowrap text-sm sm:text-base ${
                 activeTab === tab
                   ? 'bg-purple-500 text-white'
                   : 'bg-white/10 text-gray-300 hover:bg-white/20'

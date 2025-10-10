@@ -47,20 +47,20 @@ export default function Home() {
       </div>
 
       {/* Content Overlay */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-8">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
         <motion.div
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-12"
         >
-          <h1 className="text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-3 sm:mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
             Oceara
           </h1>
-          <p className="text-2xl text-gray-300 mb-2">
+          <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-2 px-2">
             Blue Carbon Ecosystem Platform
           </p>
-          <p className="text-lg text-gray-400">
+          <p className="text-sm sm:text-base md:text-lg text-gray-400 px-4">
             Protecting Mangroves • Generating Carbon Credits • Fighting Climate Change
           </p>
         </motion.div>
@@ -69,7 +69,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl w-full"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl w-full px-2"
         >
           {roles.map((role, index) => (
             <motion.div
@@ -92,7 +92,7 @@ export default function Home() {
             <motion.button
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-8 px-8 py-4 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full text-white font-bold text-lg hover:shadow-2xl transition-all duration-300"
+              className="mt-6 sm:mt-8 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full text-white font-bold text-base sm:text-lg hover:shadow-2xl transition-all duration-300 w-full sm:w-auto max-w-md"
               onClick={() => {
                 if (selectedRole === 'landowner') window.location.href = '/auth/login?role=landowner'
                 else if (selectedRole === 'buyer') window.location.href = '/auth/login?role=buyer'
@@ -107,9 +107,9 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 1 }}
-          className="absolute bottom-8 text-center text-gray-400"
+          className="absolute bottom-4 sm:bottom-8 text-center text-gray-400 px-4"
         >
-          <p className="text-sm">
+          <p className="text-xs sm:text-sm">
             Join us in protecting 100,000+ hectares of mangrove ecosystems
           </p>
         </motion.div>

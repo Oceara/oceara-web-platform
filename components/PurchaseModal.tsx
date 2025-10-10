@@ -51,26 +51,26 @@ export default function PurchaseModal({ project, onClose, onPurchase }: Purchase
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
-          className="bg-gradient-to-br from-slate-900 to-purple-900 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/30"
+          className="bg-gradient-to-br from-slate-900 to-purple-900 rounded-xl sm:rounded-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto border border-purple-500/30 my-4"
         >
           {/* Header */}
-          <div className="p-6 border-b border-white/10">
-            <div className="flex justify-between items-start">
-              <div className="flex items-center gap-4">
-                <span className="text-5xl">{project.image}</span>
+          <div className="p-4 sm:p-6 border-b border-white/10">
+            <div className="flex justify-between items-start gap-3">
+              <div className="flex items-center gap-2 sm:gap-4">
+                <span className="text-3xl sm:text-5xl">{project.image}</span>
                 <div>
-                  <h2 className="text-2xl font-bold text-white">{project.name}</h2>
-                  <p className="text-gray-300 text-sm">📍 {project.location}</p>
+                  <h2 className="text-lg sm:text-2xl font-bold text-white">{project.name}</h2>
+                  <p className="text-gray-300 text-xs sm:text-sm">📍 {project.location}</p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="text-white hover:text-red-400 text-2xl transition-colors"
+                className="text-white hover:text-red-400 text-xl sm:text-2xl transition-colors flex-shrink-0"
               >
                 ✕
               </button>
@@ -80,18 +80,18 @@ export default function PurchaseModal({ project, onClose, onPurchase }: Purchase
           {!purchaseComplete ? (
             <>
               {/* Purchase Form */}
-              <div className="p-6 space-y-6">
+              <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 {/* Credit Selection */}
                 <div>
-                  <label className="block text-white font-semibold mb-3">
+                  <label className="block text-white font-semibold mb-3 text-sm sm:text-base">
                     How many credits do you want to purchase?
                   </label>
-                  <div className="grid grid-cols-4 gap-3 mb-4">
+                  <div className="grid grid-cols-4 gap-2 sm:gap-3 mb-4">
                     {[10, 25, 50, 100].map((amount) => (
                       <button
                         key={amount}
                         onClick={() => setCredits(amount)}
-                        className={`py-3 rounded-lg font-semibold transition-all ${
+                        className={`py-2 sm:py-3 rounded-lg font-semibold transition-all text-sm sm:text-base ${
                           credits === amount
                             ? 'bg-purple-500 text-white'
                             : 'bg-white/10 text-gray-300 hover:bg-white/20'
