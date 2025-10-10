@@ -9,13 +9,9 @@ const Earth = dynamic(() => import('@/components/Earth'), {
   loading: () => <div className="flex items-center justify-center h-screen">Loading Earth...</div>
 })
 
-const InteractiveRoleCard = dynamic(() => import('@/components/InteractiveRoleCard'), {
-  ssr: false,
-  loading: () => <div className="h-96 bg-white/10 rounded-2xl animate-pulse" />
-})
-
 export default function Home() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
+  const [hoveredRole, setHoveredRole] = useState<string | null>(null)
 
   const roles = [
     {
@@ -45,7 +41,7 @@ export default function Home() {
     <main className="relative w-full h-screen overflow-hidden">
       {/* 3D Earth Background */}
       <div className="absolute inset-0 z-0">
-        <Earth />
+        <Earth hoveredRole={hoveredRole} />
       </div>
 
       {/* Content Overlay */}
@@ -79,12 +75,25 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+              whileHover={{ scale: 1.05 }}
+              className={`
+                bg-white/10 backdrop-blur-lg rounded-2xl p-8 cursor-pointer
+                border border-white/20 hover:border-white/40
+                transition-all duration-300
+                ${selectedRole === role.id ? 'ring-4 ring-white/50' : ''}
+              `}
+              onClick={() => setSelectedRole(role.id)}
+              onMouseEnter={() => setHoveredRole(role.id)}
+              onMouseLeave={() => setHoveredRole(null)}
             >
-              <InteractiveRoleCard
-                role={role}
-                isSelected={selectedRole === role.id}
-                onSelect={() => setSelectedRole(role.id)}
-              />
+              <div className="text-6xl mb-4">{role.icon}</div>
+              <h3 className="text-2xl font-bold mb-3 text-white">
+                {role.title}
+              </h3>
+              <p className="text-gray-300">
+                {role.description}
+              </p>
+              <div className={`mt-6 h-1 rounded-full bg-gradient-to-r ${role.color}`} />
             </motion.div>
           ))}
         </motion.div>
@@ -95,9 +104,9 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               className="mt-8 px-8 py-4 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full text-white font-bold text-lg hover:shadow-2xl transition-all duration-300"
               onClick={() => {
-                if (selectedRole === 'landowner') window.location.href = '/landowner'
-                else if (selectedRole === 'buyer') window.location.href = '/buyer'
-                else alert('Admin dashboard coming soon!')
+                if (selectedRole === 'landowner') window.location.href = '/auth/login?role=landowner'
+                else if (selectedRole === 'buyer') window.location.href = '/auth/login?role=buyer'
+                else if (selectedRole === 'admin') window.location.href = '/auth/login?role=admin'
               }}
             >
               Continue as {roles.find(r => r.id === selectedRole)?.title}
