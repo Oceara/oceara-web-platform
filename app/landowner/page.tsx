@@ -2,10 +2,20 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import dynamic from 'next/dynamic'
+import MapLocationPicker from '@/components/MapLocationPicker'
+import MLAnalysisDisplay from '@/components/MLAnalysisDisplay'
+
+const MapComponent = dynamic(() => import('@/components/MapLocationPicker'), {
+  ssr: false,
+  loading: () => <div className="text-white text-center py-12">Loading map...</div>
+})
 
 export default function LandownerDashboard() {
   const [activeTab, setActiveTab] = useState('overview')
   const [showUploadModal, setShowUploadModal] = useState(false)
+  const [registrationMethod, setRegistrationMethod] = useState<'upload' | 'map' | null>(null)
+  const [analysisData, setAnalysisData] = useState<any>(null)
 
   const ecosystems = [
     {
@@ -66,18 +76,22 @@ export default function LandownerDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-6">
-          {['overview', 'map', 'upload'].map((tab) => (
+        <div className="flex gap-4 mb-6 overflow-x-auto">
+          {['overview', 'myprojects', 'register', 'map'].map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 rounded-full font-semibold transition-all ${
+              onClick={() => {
+                setActiveTab(tab)
+                setRegistrationMethod(null)
+                setAnalysisData(null)
+              }}
+              className={`px-6 py-3 rounded-full font-semibold transition-all whitespace-nowrap ${
                 activeTab === tab
                   ? 'bg-blue-500 text-white'
                   : 'bg-white/10 text-gray-300 hover:bg-white/20'
               }`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === 'myprojects' ? 'My Projects' : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
         </div>
@@ -121,15 +135,15 @@ export default function LandownerDashboard() {
           </div>
         )}
 
-        {/* Map Tab */}
-        {activeTab === 'map' && (
+        {/* My Projects Tab */}
+        {activeTab === 'myprojects' && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20"
           >
             <h2 className="text-2xl font-bold text-white mb-4">Your Mangrove Locations</h2>
-            <div className="aspect-video bg-slate-800 rounded-xl overflow-hidden relative">
+            <div className="aspect-video bg-slate-800 rounded-xl overflow-hidden relative mb-4">
               <iframe
                 src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3651.9!2d88.8837!3d21.9497!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjHCsDU2JzU4LjkiTiA4OMKwNTMnMDEuMyJF!5e0!3m2!1sen!2sin!4v1234567890`}
                 width="100%"
@@ -139,7 +153,7 @@ export default function LandownerDashboard() {
                 loading="lazy"
               />
             </div>
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {ecosystems.map((eco) => (
                 <div key={eco.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
                   <div className="text-2xl">📍</div>
@@ -153,14 +167,93 @@ export default function LandownerDashboard() {
           </motion.div>
         )}
 
-        {/* Upload Tab */}
-        {activeTab === 'upload' && (
+        {/* Register Tab */}
+        {activeTab === 'register' && !registrationMethod && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-6"
+          >
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
+              <h2 className="text-3xl font-bold text-white mb-4">Register New Mangrove Site</h2>
+              <p className="text-gray-300 mb-8">Choose how you want to register your mangrove land</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Option 1: Upload Photos */}
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => setRegistrationMethod('upload')}
+                  className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/50 rounded-2xl p-8 cursor-pointer hover:border-blue-400 transition-all"
+                >
+                  <div className="text-6xl mb-4 text-center">📷</div>
+                  <h3 className="text-2xl font-bold text-white mb-3 text-center">Upload Photos</h3>
+                  <p className="text-gray-300 text-center mb-4">
+                    Have photos of your land? Upload them and we'll analyze them with AI
+                  </p>
+                  <div className="space-y-2 text-sm text-gray-400">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-400">✓</span>
+                      <span>Upload your own images</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-400">✓</span>
+                      <span>Manual GPS input</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-400">✓</span>
+                      <span>AI analysis of uploaded images</span>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Option 2: Point on Map */}
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => setRegistrationMethod('map')}
+                  className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-2 border-green-500/50 rounded-2xl p-8 cursor-pointer hover:border-green-400 transition-all"
+                >
+                  <div className="text-6xl mb-4 text-center">🗺️</div>
+                  <h3 className="text-2xl font-bold text-white mb-3 text-center">Point on Map</h3>
+                  <p className="text-gray-300 text-center mb-4">
+                    Don't have photos? Just point to your location and we'll fetch satellite imagery
+                  </p>
+                  <div className="space-y-2 text-sm text-gray-400">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-400">✓</span>
+                      <span>Automatic satellite imagery</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-400">✓</span>
+                      <span>AI/ML analysis included</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-400">✓</span>
+                      <span>Instant carbon credit calculation</span>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Manual Upload Form */}
+        {activeTab === 'register' && registrationMethod === 'upload' && !analysisData && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20"
           >
-            <h2 className="text-2xl font-bold text-white mb-6">Register New Mangrove Site</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <button
+                onClick={() => setRegistrationMethod(null)}
+                className="text-white hover:text-blue-400 text-2xl"
+              >
+                ← Back
+              </button>
+              <h2 className="text-2xl font-bold text-white">Upload Photos & Details</h2>
+            </div>
+            
             <form className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -203,7 +296,7 @@ export default function LandownerDashboard() {
                 <div className="border-2 border-dashed border-white/30 rounded-lg p-8 text-center hover:border-blue-500 transition-colors cursor-pointer">
                   <div className="text-4xl mb-2">📷</div>
                   <p className="text-gray-300">Click to upload or drag and drop</p>
-                  <p className="text-gray-500 text-sm">PNG, JPG up to 10MB</p>
+                  <p className="text-gray-500 text-sm">PNG, JPG up to 10MB (Multiple images supported)</p>
                 </div>
               </div>
 
@@ -217,12 +310,130 @@ export default function LandownerDashboard() {
               </div>
 
               <button
-                type="submit"
+                type="button"
+                onClick={() => {
+                  // Simulate analysis
+                  setAnalysisData({
+                    coordinates: { lat: 19.0760, lng: 72.8777 },
+                    area: 125,
+                    satelliteImages: [
+                      'https://via.placeholder.com/800x600/0ea5e9/ffffff?text=Satellite+Image+1',
+                      'https://via.placeholder.com/800x600/10b981/ffffff?text=Satellite+Image+2',
+                      'https://via.placeholder.com/800x600/3b82f6/ffffff?text=Satellite+Image+3'
+                    ],
+                    mlAnalysis: {
+                      treeCount: 11250,
+                      mangroveArea: 125,
+                      healthScore: 89,
+                      speciesDetected: ['Rhizophora mucronata', 'Avicennia marina'],
+                      carbonCredits: 575,
+                      confidence: 94
+                    }
+                  })
+                }}
                 className="w-full py-4 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full text-white font-bold text-lg hover:shadow-2xl transition-all"
               >
-                Submit for Verification
+                🤖 Analyze with AI & Submit
               </button>
             </form>
+          </motion.div>
+        )}
+
+        {/* Map Location Picker */}
+        {activeTab === 'register' && registrationMethod === 'map' && !analysisData && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <button
+                onClick={() => setRegistrationMethod(null)}
+                className="text-white hover:text-blue-400 text-2xl"
+              >
+                ← Back
+              </button>
+              <h2 className="text-2xl font-bold text-white">Select Location on Map</h2>
+            </div>
+            
+            <MapComponent onLocationSelect={setAnalysisData} />
+          </motion.div>
+        )}
+
+        {/* ML Analysis Results */}
+        {activeTab === 'register' && analysisData && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <button
+                onClick={() => {
+                  setAnalysisData(null)
+                  setRegistrationMethod(null)
+                }}
+                className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white font-semibold"
+              >
+                ← Start New Registration
+              </button>
+            </div>
+            
+            <MLAnalysisDisplay data={analysisData} />
+            
+            <div className="mt-6 bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4">Project Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-gray-400 text-sm mb-2">Project Name</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white"
+                    placeholder="Enter project name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-400 text-sm mb-2">Contact Number</label>
+                  <input
+                    type="tel"
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white"
+                    placeholder="Your phone number"
+                  />
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  alert('Project submitted for admin verification!')
+                  setActiveTab('overview')
+                  setAnalysisData(null)
+                  setRegistrationMethod(null)
+                }}
+                className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full text-white font-bold text-lg hover:shadow-2xl transition-all"
+              >
+                ✅ Submit for Admin Verification
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Map View Tab */}
+        {activeTab === 'map' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20"
+          >
+            <h2 className="text-2xl font-bold text-white mb-4">Global Mangrove Map</h2>
+            <p className="text-gray-300 mb-4">View mangrove forests around the world</p>
+            <div className="aspect-video bg-slate-800 rounded-xl overflow-hidden relative">
+              <iframe
+                src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3651.9!2d88.8837!3d21.9497!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjHCsDU2JzU4LjkiTiA4OMKwNTMnMDEuMyJF!5e0!3m2!1sen!2sin!4v1234567890`}
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+              />
+            </div>
           </motion.div>
         )}
       </div>
