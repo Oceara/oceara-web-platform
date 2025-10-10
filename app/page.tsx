@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
+import HolographicCard from '@/components/HolographicCard'
+import '@/styles/holographic.css'
 
 const RealisticEarth = dynamic(() => import('@/components/RealisticEarth'), {
   ssr: false,
@@ -67,7 +69,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full"
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full"
         >
           {roles.map((role, index) => (
             <motion.div
@@ -75,25 +77,13 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
-              whileHover={{ scale: 1.05 }}
-              className={`
-                bg-white/10 backdrop-blur-lg rounded-2xl p-8 cursor-pointer
-                border border-white/20 hover:border-white/40
-                transition-all duration-300
-                ${selectedRole === role.id ? 'ring-4 ring-white/50' : ''}
-              `}
-              onClick={() => setSelectedRole(role.id)}
-              onMouseEnter={() => setHoveredRole(role.id)}
-              onMouseLeave={() => setHoveredRole(null)}
             >
-              <div className="text-6xl mb-4">{role.icon}</div>
-              <h3 className="text-2xl font-bold mb-3 text-white">
-                {role.title}
-              </h3>
-              <p className="text-gray-300">
-                {role.description}
-              </p>
-              <div className={`mt-6 h-1 rounded-full bg-gradient-to-r ${role.color}`} />
+              <HolographicCard
+                role={role}
+                isSelected={selectedRole === role.id}
+                onSelect={() => setSelectedRole(role.id)}
+                onHover={(isHovered) => setHoveredRole(isHovered ? role.id : null)}
+              />
             </motion.div>
           ))}
         </motion.div>
