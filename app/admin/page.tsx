@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import { useData } from '@/context/DataContext'
+import { blockchainService } from '@/services/blockchain'
+import BlockchainWallet from '@/components/BlockchainWallet'
 
 const ProjectDetailModal = dynamic(() => import('@/components/admin/ProjectDetailModal'), {
   ssr: false
@@ -15,6 +17,7 @@ export default function AdminDashboard() {
   const [selectedProject, setSelectedProject] = useState<any>(null)
   const [showModal, setShowModal] = useState(false)
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'verified'>('all')
+  const [isMinting, setIsMinting] = useState(false)
 
   // Get pending and verified projects
   const pendingProjects = getPendingProjects()
@@ -71,14 +74,40 @@ export default function AdminDashboard() {
     { txHash: '0x7g8h9i...', action: 'Mint Credits', amount: '890', status: 'Pending', time: '2024-10-09 12:00' }
   ];
 
-  const handleApprove = (projectId: number, carbonCredits: number) => {
-    updateProject(projectId, {
-      status: 'Verified',
-      verified: true,
-      creditsAvailable: carbonCredits
-    });
-    setShowModal(false);
-    setSelectedProject(null);
+  const handleApprove = async (projectId: number, carbonCredits: number) => {
+    const wallet = blockchainService.getWallet();
+    
+    if (!wallet) {
+      alert('⚠️ Please connect your wallet first to mint credits on blockchain');
+      return;
+    }
+
+    setIsMinting(true);
+    
+    try {
+      // Mint credits on blockchain
+      const tx = await blockchainService.mintCredits(
+        projectId,
+        carbonCredits,
+        wallet.address
+      );
+      
+      // Update project status
+      updateProject(projectId, {
+        status: 'Verified',
+        verified: true,
+        creditsAvailable: carbonCredits
+      });
+      
+      alert(`✅ Project approved and ${carbonCredits} credits minted!\nTx: ${tx.txHash.substring(0, 20)}...`);
+      setShowModal(false);
+      setSelectedProject(null);
+    } catch (error) {
+      console.error('Failed to mint credits:', error);
+      alert('❌ Failed to mint credits on blockchain. Please try again.');
+    } finally {
+      setIsMinting(false);
+    }
   };
 
   const handleReject = (projectId: number, reason: string) => {
@@ -117,9 +146,7 @@ export default function AdminDashboard() {
                 <div className="text-gray-300 text-xs sm:text-sm">Admin</div>
                 <div className="text-white font-bold text-sm">John Doe</div>
               </div>
-              <button className="px-3 sm:px-6 py-1.5 sm:py-2 bg-indigo-500 rounded-full text-white hover:bg-indigo-600 text-sm sm:text-base">
-                Profile
-              </button>
+              <BlockchainWallet />
             </div>
           </div>
         </div>

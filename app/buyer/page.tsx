@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import { useData } from '@/context/DataContext'
 import PurchaseModal from '@/components/PurchaseModal'
+import BlockchainWallet from '@/components/BlockchainWallet'
 
 const EarthWithProjects = dynamic(() => import('@/components/EarthWithProjects'), {
   ssr: false,
@@ -61,15 +62,13 @@ export default function BuyerDashboard() {
               <span className="hidden sm:inline">🌊 Oceara - Carbon Credit Buyer</span>
               <span className="sm:hidden">🌊 Oceara Buyer</span>
             </h1>
-            <div className="flex items-center gap-2 sm:gap-4">
-              <div className="text-right">
-                <div className="text-gray-300 text-xs sm:text-sm">My Credits</div>
-                <div className="text-white font-bold text-sm sm:text-base">{totalCreditsOwned}</div>
-              </div>
-              <button className="px-3 sm:px-6 py-1.5 sm:py-2 bg-purple-500 rounded-full text-white hover:bg-purple-600 text-sm sm:text-base">
-                Profile
-              </button>
-            </div>
+                    <div className="flex items-center gap-2 sm:gap-4">
+                      <div className="text-right hidden sm:block">
+                        <div className="text-gray-300 text-xs sm:text-sm">My Credits</div>
+                        <div className="text-white font-bold text-sm sm:text-base">{totalCreditsOwned}</div>
+                      </div>
+                      <BlockchainWallet />
+                    </div>
           </div>
         </div>
       </header>
