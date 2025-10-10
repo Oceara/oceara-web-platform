@@ -348,13 +348,17 @@ export default function SignupPage() {
                 </p>
                 <button
                   onClick={() => {
-                    const role = (roleParam || 'buyer') as 'landowner' | 'buyer' | 'administrator'
-                    authService.loginAsDemo(role)
+                    // Handle both 'admin' and 'administrator' role params
+                    let role = roleParam || 'buyer'
+                    if (role === 'admin') role = 'administrator'
+                    
+                    authService.loginAsDemo(role as 'landowner' | 'buyer' | 'administrator')
                     toast.success('Logged in as demo user!')
                     
+                    // Redirect based on role
                     if (role === 'landowner') window.location.href = '/landowner'
                     else if (role === 'buyer') window.location.href = '/buyer'
-                    else if (role === 'administrator') window.location.href = '/admin'
+                    else if (role === 'administrator' || roleParam === 'admin') window.location.href = '/admin'
                     else window.location.href = '/'
                   }}
                   className="w-full py-2 bg-green-500 hover:bg-green-600 rounded-lg text-white font-semibold transition-all"

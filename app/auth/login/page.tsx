@@ -36,8 +36,11 @@ export default function LoginPage() {
       const user = authService.login(email, password)
       
       if (user) {
+        // Normalize role param (admin -> administrator)
+        const normalizedRoleParam = roleParam === 'admin' ? 'administrator' : roleParam
+        
         // Check if role matches (if specified)
-        if (roleParam && user.role !== roleParam) {
+        if (normalizedRoleParam && user.role !== normalizedRoleParam) {
           toast.error(`This account is not a ${roleParam}. Please use the correct login page.`)
           authService.logout()
           setLoading(false)
@@ -299,13 +302,17 @@ export default function LoginPage() {
                 </p>
                 <button
                   onClick={() => {
-                    const role = (roleParam || 'buyer') as 'landowner' | 'buyer' | 'administrator'
-                    authService.loginAsDemo(role)
+                    // Handle both 'admin' and 'administrator' role params
+                    let role = roleParam || 'buyer'
+                    if (role === 'admin') role = 'administrator'
+                    
+                    authService.loginAsDemo(role as 'landowner' | 'buyer' | 'administrator')
                     toast.success('Logged in as demo user!')
                     
+                    // Redirect based on role
                     if (role === 'landowner') window.location.href = '/landowner'
                     else if (role === 'buyer') window.location.href = '/buyer'
-                    else if (role === 'administrator') window.location.href = '/admin'
+                    else if (role === 'administrator' || roleParam === 'admin') window.location.href = '/admin'
                     else window.location.href = '/'
                   }}
                   className="w-full py-2 bg-green-500 hover:bg-green-600 rounded-lg text-white font-semibold transition-all"

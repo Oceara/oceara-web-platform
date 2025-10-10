@@ -141,6 +141,10 @@ export const DEMO_CREDENTIALS = {
   administrator: {
     email: 'admin@oceara.com',
     password: 'admin123'
+  },
+  admin: {
+    email: 'admin@oceara.com',
+    password: 'admin123'
   }
 }
 
