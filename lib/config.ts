@@ -6,6 +6,16 @@ export const GOOGLE_MAPS_API_KEY =
   process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 
   'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8' // Fallback demo key
 
+// Google Earth Engine API Key - For real-time satellite imagery and vegetation analysis
+// Get your key from: https://earthengine.google.com/
+export const EARTH_ENGINE_API_KEY =
+  process.env.NEXT_PUBLIC_EARTH_ENGINE_API_KEY || ''
+
+// Sentinel Hub API Key - For Sentinel-2 satellite imagery
+// Get your key from: https://www.sentinel-hub.com/
+export const SENTINEL_HUB_INSTANCE_ID =
+  process.env.NEXT_PUBLIC_SENTINEL_HUB_INSTANCE_ID || ''
+
 // Mapbox Token - Fallback for satellite imagery if Google Maps quota exceeded
 export const MAPBOX_TOKEN = 
   process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 
