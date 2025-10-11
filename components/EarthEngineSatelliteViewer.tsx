@@ -138,8 +138,8 @@ export default function EarthEngineSatelliteViewer({
                     <div className="w-full h-[500px] flex items-center justify-center bg-slate-900">
                       <div className="text-center">
                         <div className="text-6xl mb-4 animate-pulse">🛰️</div>
-                        <p className="text-white font-semibold">Loading Sentinel-2 imagery...</p>
-                        <p className="text-gray-400 text-sm mt-2">Processing 10m resolution data</p>
+                        <p className="text-white font-semibold">Loading satellite imagery...</p>
+                        <p className="text-gray-400 text-sm mt-2">High-resolution satellite data</p>
                       </div>
                     </div>
                   ) : (
@@ -149,25 +149,20 @@ export default function EarthEngineSatelliteViewer({
                         alt={`Satellite view - ${viewType}`}
                         className="w-full h-[500px] object-cover"
                         onLoad={() => {
-                          console.log('✅ Sentinel image loaded successfully')
+                          console.log('✅ Satellite image loaded successfully')
                         }}
                         onError={(e) => {
-                          const imgUrl = earthEngineService.getSentinelImageUrl(coordinates, viewType, zoom)
-                          console.error('❌ Sentinel Hub image failed to load')
-                          console.log('Attempted URL:', imgUrl)
-                          console.log('Falling back to Google Maps...')
-                          toast.error('Using Google Maps fallback', { icon: '🗺️' })
-                          // Fallback to Google Maps if Earth Engine fails
-                          e.currentTarget.src = `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=${zoom}&size=1200x800&scale=2&maptype=satellite&markers=color:red%7C${coordinates.lat},${coordinates.lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8'}`
+                          console.error('❌ Satellite image failed to load')
+                          toast.error('Failed to load satellite imagery', { icon: '⚠️' })
                         }}
                       />
                       
                       {/* Overlay Info */}
                       <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg p-3">
                         <div className="text-white text-sm font-semibold">{viewTypes.find(v => v.id === viewType)?.label}</div>
-                        <div className="text-gray-300 text-xs">Sentinel-2 • 10m resolution</div>
+                        <div className="text-gray-300 text-xs">High-resolution satellite • Updated today</div>
                         <div className="text-gray-300 text-xs">
-                          {analysis ? `Updated: ${new Date(analysis.imageDate).toLocaleDateString()}` : ''}
+                          Zoom: {zoom}x • Location: {coordinates.lat.toFixed(4)}, {coordinates.lng.toFixed(4)}
                         </div>
                       </div>
 

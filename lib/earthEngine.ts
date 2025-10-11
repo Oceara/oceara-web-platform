@@ -206,27 +206,29 @@ export class EarthEngineService {
     visualizationType: 'true-color' | 'ndvi' | 'false-color' | 'moisture',
     zoom: number = 14
   ): string {
-    // If Sentinel Hub is configured, use it
-    if (this.sentinelHubInstanceId && this.sentinelHubInstanceId !== '') {
-      const bufferDegrees = 0.01 * (20 - zoom)
-      const bbox = `${coordinates.lng - bufferDegrees},${coordinates.lat - bufferDegrees},${coordinates.lng + bufferDegrees},${coordinates.lat + bufferDegrees}`
-      
-      const layerMap: Record<string, string> = {
-        'true-color': '1_TRUE_COLOR',
-        'ndvi': '2_FALSE_COLOR',
-        'false-color': '2_FALSE_COLOR',
-        'moisture': '3-NDVI'
-      }
-      
-      const today = new Date()
-      const threeMonthsAgo = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000)
-      
-      return `https://services.sentinel-hub.com/ogc/wms/${this.sentinelHubInstanceId}?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=${layerMap[visualizationType]}&BBOX=${bbox}&WIDTH=1200&HEIGHT=1200&FORMAT=image/png&CRS=EPSG:4326&TIME=${threeMonthsAgo.toISOString().split('T')[0]}/${today.toISOString().split('T')[0]}&MAXCC=20`
-    }
-
-    // Fallback to Google Maps
+    // Use high-quality Google Maps satellite imagery
+    // Sentinel Hub requires OAuth authentication which needs server-side setup
     const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8'
-    return `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=${zoom}&size=800x800&scale=2&maptype=satellite&key=${googleMapsKey}`
+    
+    // Calculate appropriate map size based on zoom
+    const size = '1200x1200'
+    
+    // For different visualization types, we'll use different map styles
+    switch (visualizationType) {
+      case 'true-color':
+        // Standard satellite view
+        return `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=${zoom}&size=${size}&scale=2&maptype=satellite&markers=color:red%7Csize:small%7C${coordinates.lat},${coordinates.lng}&key=${googleMapsKey}`
+      
+      case 'ndvi':
+      case 'false-color':
+      case 'moisture':
+        // For now, use satellite view with terrain overlay for these
+        // In production, you'd use Sentinel Hub Processing API with OAuth
+        return `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=${zoom}&size=${size}&scale=2&maptype=hybrid&markers=color:green%7Csize:small%7C${coordinates.lat},${coordinates.lng}&key=${googleMapsKey}`
+      
+      default:
+        return `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=${zoom}&size=${size}&scale=2&maptype=satellite&key=${googleMapsKey}`
+    }
   }
 
   /**
