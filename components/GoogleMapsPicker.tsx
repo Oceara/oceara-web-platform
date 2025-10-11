@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { GOOGLE_MAPS_API_KEY, loadGoogleMapsScript, getGoogleMapsStaticUrl } from '@/lib/config'
 
 interface GoogleMapsPickerProps {
   onLocationSelect: (data: {
@@ -28,14 +29,11 @@ export default function GoogleMapsPicker({ onLocationSelect }: GoogleMapsPickerP
   const [analysisStage, setAnalysisStage] = useState('')
 
   useEffect(() => {
-    const initMap = () => {
-      // Load Google Maps script dynamically
-      const script = document.createElement('script')
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8'}&libraries=places,drawing,geometry`
-      script.async = true
-      script.defer = true
-      
-      script.onload = () => {
+    const initMap = async () => {
+      try {
+        // Load Google Maps script using centralized function
+        await loadGoogleMapsScript(['places', 'drawing', 'geometry'])
+        
         if (!mapRef.current) return
 
         const mapInstance = new google.maps.Map(mapRef.current, {
@@ -61,13 +59,8 @@ export default function GoogleMapsPicker({ onLocationSelect }: GoogleMapsPickerP
             handleMapClick(e.latLng.lat(), e.latLng.lng(), mapInstance)
           }
         })
-      }
-      
-      // Check if script already exists
-      if (!document.querySelector(`script[src*="maps.googleapis.com"]`)) {
-        document.head.appendChild(script)
-      } else {
-        script.onload(new Event('load'))
+      } catch (error) {
+        console.error('Error loading Google Maps:', error)
       }
     }
 
@@ -127,9 +120,9 @@ export default function GoogleMapsPicker({ onLocationSelect }: GoogleMapsPickerP
       
       // Generate Google Static Maps API images at different zoom levels
       const satelliteImages = [
-        `https://maps.googleapis.com/maps/api/staticmap?center=${coords.lat},${coords.lng}&zoom=18&size=800x600&maptype=satellite&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8'}`,
-        `https://maps.googleapis.com/maps/api/staticmap?center=${coords.lat},${coords.lng}&zoom=17&size=800x600&maptype=satellite&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8'}`,
-        `https://maps.googleapis.com/maps/api/staticmap?center=${coords.lat},${coords.lng}&zoom=16&size=800x600&maptype=satellite&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8'}`
+        getGoogleMapsStaticUrl(coords.lat, coords.lng, 18, '800x600', 'satellite'),
+        getGoogleMapsStaticUrl(coords.lat, coords.lng, 17, '800x600', 'satellite'),
+        getGoogleMapsStaticUrl(coords.lat, coords.lng, 16, '800x600', 'satellite')
       ]
 
       // Stage 3: ML Analysis

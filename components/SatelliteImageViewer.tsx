@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { GOOGLE_MAPS_API_KEY, getGoogleMapsStaticUrl } from '@/lib/config'
 
 interface SatelliteImageViewerProps {
   coordinates: { lat: number; lng: number }
@@ -20,9 +21,6 @@ export default function SatelliteImageViewer({
   const [selectedMapType, setSelectedMapType] = useState<'satellite' | 'hybrid' | 'terrain'>('satellite')
   const [showComparison, setShowComparison] = useState(false)
   const [loading, setLoading] = useState(true)
-
-  // Use a demo API key for development (users should replace with their own)
-  const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
   const zoomLevels = [
     { level: 14, label: 'Wide Area', description: 'Regional view' },

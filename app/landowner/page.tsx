@@ -7,6 +7,7 @@ import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { LineChart, Line, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import BlockchainWallet from '@/components/BlockchainWallet'
+import { getGoogleMapsStaticUrl } from '@/lib/config'
 
 export default function LandownerDashboard() {
   const { projects, addProject, getProjectsByOwner } = useData()
@@ -440,7 +441,7 @@ export default function LandownerDashboard() {
                     <div className="bg-white/5 rounded-lg p-3 border border-green-500/30">
                       <p className="text-white text-sm font-semibold mb-2">📍 Location Preview</p>
                       <img
-                        src={`https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=14&size=600x200&markers=color:green%7C${coordinates.lat},${coordinates.lng}&key=`}
+                        src={getGoogleMapsStaticUrl(coordinates.lat, coordinates.lng, 14, '600x200', 'satellite', true)}
                         alt="Location map"
                         className="w-full h-32 object-cover rounded-lg bg-slate-800"
                         onError={(e) => {
@@ -449,7 +450,7 @@ export default function LandownerDashboard() {
                         }}
                       />
                       <div className="hidden bg-slate-800 w-full h-32 rounded-lg flex items-center justify-center">
-                        <p className="text-gray-400 text-sm">🗺️ Map preview (Add Google Maps API key for image)</p>
+                        <p className="text-gray-400 text-sm">🗺️ Map preview</p>
                       </div>
                     </div>
                   </div>
