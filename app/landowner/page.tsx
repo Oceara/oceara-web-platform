@@ -446,6 +446,14 @@ export default function LandownerDashboard() {
                     <div className="bg-white/5 rounded-lg p-3 border border-green-500/30">
                       <p className="text-white text-sm font-semibold mb-2">📍 Location Preview</p>
                       <div className="w-full h-48 bg-slate-800 rounded-lg overflow-hidden relative">
+                        <iframe
+                          src={`https://www.openstreetmap.org/export/embed.html?bbox=${coordinates.lng-0.01},${coordinates.lat-0.01},${coordinates.lng+0.01},${coordinates.lat+0.01}&layer=mapnik&marker=${coordinates.lat},${coordinates.lng}`}
+                          className="w-full h-full border-0"
+                          onLoad={() => {
+                            console.log('✅ Map preview loaded successfully')
+                            setMapLoading(false)
+                          }}
+                        />
                         {mapLoading && (
                           <div className="absolute inset-0 flex items-center justify-center bg-slate-800 z-10">
                             <div className="text-center">
@@ -454,27 +462,18 @@ export default function LandownerDashboard() {
                             </div>
                           </div>
                         )}
-                        <img
-                          src={`https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=15&size=600x400&scale=2&maptype=satellite&markers=color:red%7C${coordinates.lat},${coordinates.lng}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`}
-                          alt="Location map"
-                          className="w-full h-full object-cover"
-                          onLoad={() => {
-                            console.log('✅ Map preview loaded successfully')
-                            setMapLoading(false)
-                          }}
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            console.error('❌ Map preview failed to load')
-                            console.log('Coordinates:', coordinates)
-                            target.onerror = null
-                            setMapLoading(false)
-                            toast.error('Map preview failed to load', { icon: '🗺️' })
-                          }}
-                        />
                       </div>
                       <p className="text-gray-400 text-xs mt-2">
-                        🗺️ Satellite view at coordinates: {coordinates.lat.toFixed(6)}, {coordinates.lng.toFixed(6)}
+                        🗺️ Interactive map at coordinates: {coordinates.lat.toFixed(6)}, {coordinates.lng.toFixed(6)}
                       </p>
+                      <a
+                        href={`https://www.google.com/maps?q=${coordinates.lat},${coordinates.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block mt-2 text-blue-400 hover:text-blue-300 text-xs underline"
+                      >
+                        🔗 Open in Google Maps
+                      </a>
                     </div>
                   </div>
                 )}
