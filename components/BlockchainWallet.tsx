@@ -220,7 +220,7 @@ export default function BlockchainWallet({ onTransactionComplete }: BlockchainWa
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute top-full right-0 mt-2 w-96 bg-slate-800 border-2 border-purple-500 rounded-xl shadow-2xl z-[100] max-h-[70vh] overflow-y-auto"
+                  className="absolute top-full right-0 mt-2 w-96 bg-slate-800 border-2 border-purple-500 rounded-xl shadow-2xl z-[9999] max-h-[70vh] overflow-y-auto"
                 >
                   {/* Header */}
                   <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-5 border-b-2 border-purple-400">
