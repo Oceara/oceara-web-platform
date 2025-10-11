@@ -323,7 +323,7 @@ export default function SignupPage() {
                 className={`w-full py-3 rounded-lg text-gray-800 font-semibold flex items-center justify-center gap-3 transition-all ${
                   loading
                     ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-white hover:bg-gray-100'
+                    : 'bg-white hover:bg-gray-100 shadow-md hover:shadow-lg'
                 }`}
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -335,43 +335,27 @@ export default function SignupPage() {
                 {loading ? 'Connecting...' : 'Sign up with Google'}
               </button>
 
-              <div className="text-center text-gray-400 text-xs mt-4">
-                <p>💡 Note: Requires Google OAuth configuration</p>
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/20"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-slate-900/50 text-gray-400">or use email</span>
+                </div>
               </div>
+
+              <Link
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  setSignupMethod('email')
+                }}
+                className="block w-full text-center py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white font-semibold transition-all"
+              >
+                📧 Sign up with Email
+              </Link>
             </div>
           )}
-
-          {/* Demo User Section */}
-          <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-            <div className="flex items-start gap-3">
-              <div className="text-2xl">👤</div>
-              <div className="flex-1">
-                <h4 className="text-white font-semibold mb-1">Quick Demo Access</h4>
-                <p className="text-gray-300 text-sm mb-3">
-                  Skip signup and explore the platform instantly
-                </p>
-                <button
-                  onClick={() => {
-                    // Handle both 'admin' and 'administrator' role params
-                    let role = roleParam || 'buyer'
-                    if (role === 'admin') role = 'administrator'
-                    
-                    authService.loginAsDemo(role as 'landowner' | 'buyer' | 'administrator')
-                    toast.success('Logged in as demo user!')
-                    
-                    // Redirect based on role
-                    if (role === 'landowner') window.location.href = '/landowner'
-                    else if (role === 'buyer') window.location.href = '/buyer'
-                    else if (role === 'administrator' || roleParam === 'admin') window.location.href = '/admin'
-                    else window.location.href = '/'
-                  }}
-                  className="w-full py-2 bg-green-500 hover:bg-green-600 rounded-lg text-white font-semibold transition-all"
-                >
-                  🚀 Continue as Demo {roleName}
-                </button>
-              </div>
-            </div>
-          </div>
 
           {/* Divider */}
           <div className="mt-6 text-center">
