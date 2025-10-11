@@ -1,619 +1,78 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { blockchainService, WalletInfo, Transaction } from '@/services/blockchain'
-import toast from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
+import { blockchainService, WalletInfo } from '@/services/blockchain'
 
 interface BlockchainWalletProps {
-  onTransactionComplete?: (tx: Transaction) => void
-}
-
-type WalletProvider = 'metamask' | 'walletconnect' | 'coinbase' | 'trust' | 'phantom'
-
-interface WalletOption {
-  id: WalletProvider
-  name: string
-  icon: string
-  description: string
-  available: boolean
+  onTransactionComplete?: (tx?: any) => void
 }
 
 export default function BlockchainWallet({ onTransactionComplete }: BlockchainWalletProps) {
+  const router = useRouter()
   const [wallet, setWallet] = useState<WalletInfo | null>(null)
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [isConnecting, setIsConnecting] = useState(false)
-  const [showWalletModal, setShowWalletModal] = useState(false)
-  const [showMenu, setShowMenu] = useState(false)
-  const [showTransactions, setShowTransactions] = useState(false)
-  const [networkInfo, setNetworkInfo] = useState(blockchainService.getNetworkInfo())
-
-  const walletOptions: WalletOption[] = [
-    {
-      id: 'metamask',
-      name: 'MetaMask',
-      icon: '🦊',
-      description: 'Most popular Ethereum wallet',
-      available: typeof window !== 'undefined' && !!(window as any).ethereum
-    },
-    {
-      id: 'walletconnect',
-      name: 'WalletConnect',
-      icon: '🔗',
-      description: 'Connect via QR code',
-      available: true
-    },
-    {
-      id: 'coinbase',
-      name: 'Coinbase Wallet',
-      icon: '🔵',
-      description: 'Coinbase\'s self-custody wallet',
-      available: true
-    },
-    {
-      id: 'trust',
-      name: 'Trust Wallet',
-      icon: '🛡️',
-      description: 'Mobile-first crypto wallet',
-      available: true
-    },
-    {
-      id: 'phantom',
-      name: 'Phantom',
-      icon: '👻',
-      description: 'Solana & Ethereum wallet',
-      available: true
-    }
-  ]
 
   useEffect(() => {
-    const existingWallet = blockchainService.getWallet()
-    if (existingWallet) {
-      setWallet(existingWallet)
-      loadTransactions()
+    const savedWallet = localStorage.getItem('connectedWallet')
+    if (savedWallet) {
+      setWallet(JSON.parse(savedWallet))
     }
   }, [])
 
-  const loadTransactions = () => {
-    const txs = blockchainService.getTransactions()
-    setTransactions(txs)
-  }
-
-  const handleConnect = async (provider: WalletProvider) => {
-    setIsConnecting(true)
-    setShowWalletModal(false)
-    
-    try {
-      const connectedWallet = await blockchainService.connectWallet()
-      setWallet(connectedWallet)
-      loadTransactions()
-      toast.success(`${provider.charAt(0).toUpperCase() + provider.slice(1)} connected!`, {
-        icon: '🎉',
-        duration: 3000
-      })
-    } catch (error) {
-      console.error('Failed to connect wallet:', error)
-      toast.error('Failed to connect wallet. Please try again.')
-    } finally {
-      setIsConnecting(false)
-    }
-  }
-
-  const handleDisconnect = () => {
-    blockchainService.disconnectWallet()
-    setWallet(null)
-    setTransactions([])
-    setShowMenu(false)
-    toast.success('Wallet disconnected')
-  }
-
-  const copyAddress = () => {
-    if (wallet?.address) {
-      navigator.clipboard.writeText(wallet.address)
-      toast.success('Address copied!', { icon: '📋' })
-    }
-  }
-
-  const addToMetaMask = async () => {
-    try {
-      await (window as any).ethereum.request({
-        method: 'wallet_watchAsset',
-        params: {
-          type: 'ERC20',
-          options: {
-            address: blockchainService.getContractAddress(),
-            symbol: 'OCC',
-            decimals: 18,
-            image: 'https://oceara.com/token-icon.png'
-          }
-        }
-      })
-      toast.success('Token added to MetaMask!')
-    } catch (error) {
-      toast.error('Failed to add token')
-    }
-  }
-
-  const switchNetwork = async () => {
-    try {
-      await (window as any).ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: `0x${networkInfo.chainId.toString(16)}` }]
-      })
-      toast.success('Network switched!')
-    } catch (error) {
-      toast.error('Failed to switch network')
-    }
-  }
-
   const formatAddress = (address: string) => {
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
-  const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString()
+  const handleWalletClick = () => {
+    router.push('/wallet')
   }
 
+  if (!wallet) {
+    // Not connected - Show connect button
+    return (
+      <button
+        onClick={handleWalletClick}
+        className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-6 py-3 rounded-xl text-white font-semibold transition-all shadow-lg hover:shadow-purple-500/50 flex items-center gap-2"
+      >
+        <span className="text-xl">👛</span>
+        <span>Connect Wallet</span>
+      </button>
+    )
+  }
+
+  // Connected - Show wallet info button
   return (
-    <div className="relative">
-      {/* Connect Wallet Button */}
-      {!wallet ? (
-        <button
-          onClick={() => setShowWalletModal(true)}
-          disabled={isConnecting}
-          className="px-6 py-2.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-700 hover:via-indigo-700 hover:to-blue-700 rounded-xl text-white font-bold transition-all shadow-lg hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 group"
-        >
-          {isConnecting ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Connecting...</span>
-            </>
-          ) : (
-            <>
-              <span className="text-lg group-hover:scale-110 transition-transform">👛</span>
-              <span>Connect Wallet</span>
-            </>
-          )}
-        </button>
-      ) : (
-        <div className="flex items-center gap-2">
-          {/* Connected Wallet Info - Enhanced Design */}
-          <div className="relative">
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="bg-slate-800 hover:bg-slate-700 border-2 border-purple-500 hover:border-purple-400 rounded-xl px-5 py-3 flex items-center gap-4 transition-all shadow-lg hover:shadow-purple-500/50"
-            >
-              {/* Status Indicator */}
-              <div className="relative flex items-center justify-center">
-                <div className="w-3 h-3 bg-green-400 rounded-full" />
-                <div className="absolute w-5 h-5 bg-green-400/30 rounded-full animate-ping" />
-              </div>
+    <button
+      onClick={handleWalletClick}
+      className="bg-slate-800 hover:bg-slate-700 border-2 border-purple-500 hover:border-purple-400 rounded-xl px-5 py-3 flex items-center gap-4 transition-all shadow-lg hover:shadow-purple-500/50"
+    >
+      {/* Status Indicator */}
+      <div className="relative flex items-center justify-center">
+        <div className="w-3 h-3 bg-green-400 rounded-full" />
+        <div className="absolute w-5 h-5 bg-green-400/30 rounded-full animate-ping" />
+      </div>
 
-              {/* Wallet Info */}
-              <div className="text-left">
-                <div className="text-white text-sm font-mono font-bold flex items-center gap-2">
-                  <span>👛</span>
-                  <span>{formatAddress(wallet.address)}</span>
-                </div>
-                <div className="text-purple-300 text-sm font-bold flex items-center gap-2 mt-1">
-                  <span className="text-yellow-400">💰</span>
-                  <span>{wallet.balance.toLocaleString()} OCC</span>
-                </div>
-              </div>
-
-              {/* Dropdown Arrow */}
-              <svg 
-                className={`w-5 h-5 text-purple-300 transition-transform ${showMenu ? 'rotate-180' : ''}`}
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-
-            {/* Dropdown Menu */}
-            <AnimatePresence>
-              {showMenu && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute top-full right-0 mt-2 w-96 bg-slate-800 border-2 border-purple-500 rounded-xl shadow-2xl z-[9999] max-h-[70vh] overflow-y-auto"
-                >
-                  {/* Header */}
-                  <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-5 border-b-2 border-purple-400">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl backdrop-blur-sm">
-                        👛
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-white font-bold text-xl">My Wallet</p>
-                        <p className="text-purple-100 text-sm flex items-center gap-2">
-                          <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                          {networkInfo.name}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-purple-100 text-sm font-semibold">Total Balance</span>
-                        <span className="text-white font-mono text-xs bg-white/20 px-2 py-1 rounded">
-                          {formatAddress(wallet.address)}
-                        </span>
-                      </div>
-                      <div className="text-white font-bold text-2xl flex items-center gap-2">
-                        <span className="text-yellow-300">💎</span>
-                        <span>{wallet.balance.toLocaleString()}</span>
-                        <span className="text-lg text-purple-200">OCC</span>
-                      </div>
-                      <div className="text-purple-100 text-sm mt-1">
-                        ≈ ${(wallet.balance * 0.85).toFixed(2)} USD
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Quick Actions */}
-                  <div className="p-4 bg-slate-900 border-b border-slate-700">
-                    <p className="text-gray-400 text-xs font-semibold mb-3 uppercase tracking-wide">Quick Actions</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => {
-                          toast.success('Send feature coming soon!', { icon: '💸' })
-                        }}
-                        className="bg-slate-700 hover:bg-blue-600 rounded-lg p-3 transition-all text-center"
-                      >
-                        <div className="text-2xl mb-1">💸</div>
-                        <div className="text-white text-xs font-semibold">Send</div>
-                      </button>
-                      <button
-                        onClick={() => {
-                          toast.success('Receive address copied!', { icon: '📥' })
-                          copyAddress()
-                        }}
-                        className="bg-slate-700 hover:bg-green-600 rounded-lg p-3 transition-all text-center"
-                      >
-                        <div className="text-2xl mb-1">📥</div>
-                        <div className="text-white text-xs font-semibold">Receive</div>
-                      </button>
-                      <button
-                        onClick={() => {
-                          toast.success('Swap feature coming soon!', { icon: '🔄' })
-                        }}
-                        className="bg-slate-700 hover:bg-purple-600 rounded-lg p-3 transition-all text-center"
-                      >
-                        <div className="text-2xl mb-1">🔄</div>
-                        <div className="text-white text-xs font-semibold">Swap</div>
-                      </button>
-                      <button
-                        onClick={() => {
-                          toast.success('Buy feature coming soon!', { icon: '🛒' })
-                        }}
-                        className="bg-slate-700 hover:bg-yellow-600 rounded-lg p-3 transition-all text-center"
-                      >
-                        <div className="text-2xl mb-1">🛒</div>
-                        <div className="text-white text-xs font-semibold">Buy</div>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Menu Items */}
-                  <div className="p-3">
-                    <p className="text-gray-400 text-xs font-semibold mb-2 px-2 uppercase tracking-wide">Wallet Options</p>
-                    
-                    <button
-                      onClick={copyAddress}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-700 rounded-lg transition-all text-left group mb-1"
-                    >
-                      <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <span className="text-lg">📋</span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-white font-semibold text-sm">Copy Address</p>
-                        <p className="text-gray-400 text-xs">Copy to clipboard</p>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setShowTransactions(true)
-                        setShowMenu(false)
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-700 rounded-lg transition-all text-left group mb-1"
-                    >
-                      <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <span className="text-lg">📜</span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-white font-semibold text-sm">Transaction History</p>
-                        <p className="text-gray-400 text-xs">View all transactions</p>
-                      </div>
-                      {transactions.length > 0 && (
-                        <span className="px-2 py-1 bg-purple-500 rounded-full text-white text-xs font-bold">
-                          {transactions.length}
-                        </span>
-                      )}
-                    </button>
-
-                    <button
-                      onClick={addToMetaMask}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-700 rounded-lg transition-all text-left group mb-1"
-                    >
-                      <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <span className="text-lg">🦊</span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-white font-semibold text-sm">Add to MetaMask</p>
-                        <p className="text-gray-400 text-xs">Watch OCC token</p>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={switchNetwork}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-700 rounded-lg transition-all text-left group mb-1"
-                    >
-                      <div className="w-8 h-8 bg-cyan-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <span className="text-lg">🌐</span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-white font-semibold text-sm">Switch Network</p>
-                        <p className="text-gray-400 text-xs">Change blockchain</p>
-                      </div>
-                    </button>
-
-                    <a
-                      href={blockchainService.getExplorerUrl(wallet.address)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-700 rounded-lg transition-all text-left group mb-1"
-                    >
-                      <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <span className="text-lg">🔍</span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-white font-semibold text-sm">View on Explorer</p>
-                        <p className="text-gray-400 text-xs">Polygonscan</p>
-                      </div>
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                    </a>
-
-                    <div className="my-3 border-t-2 border-slate-700" />
-
-                    <button
-                      onClick={handleDisconnect}
-                      className="w-full flex items-center gap-3 px-4 py-3 bg-red-600/20 hover:bg-red-600 rounded-lg transition-all text-left group"
-                    >
-                      <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <span className="text-lg">🚪</span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-white font-semibold text-sm">Disconnect Wallet</p>
-                        <p className="text-gray-300 text-xs">Sign out from wallet</p>
-                      </div>
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+      {/* Wallet Info */}
+      <div className="text-left">
+        <div className="text-white text-sm font-mono font-bold flex items-center gap-2">
+          <span>👛</span>
+          <span>{formatAddress(wallet.address)}</span>
         </div>
-      )}
+        <div className="text-purple-300 text-sm font-bold flex items-center gap-2 mt-1">
+          <span className="text-yellow-400">💰</span>
+          <span>{wallet.balance.toLocaleString()} OCC</span>
+        </div>
+      </div>
 
-      {/* Wallet Selection Modal */}
-      <AnimatePresence>
-        {showWalletModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] p-4 overflow-y-auto"
-            onClick={() => setShowWalletModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="bg-slate-900 rounded-2xl p-8 max-w-2xl w-full border-2 border-purple-500 shadow-2xl my-8"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h3 className="text-3xl font-bold text-white mb-2">Connect Wallet</h3>
-                  <p className="text-gray-400">Choose your preferred wallet to connect</p>
-                </div>
-                <button
-                  onClick={() => setShowWalletModal(false)}
-                  className="text-gray-400 hover:text-white transition-colors text-2xl"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* Wallet Options Grid */}
-              <div className="grid md:grid-cols-2 gap-4 mb-6">
-                {walletOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => option.available && handleConnect(option.id)}
-                    disabled={!option.available}
-                    className={`relative p-6 rounded-xl border-2 transition-all text-left group ${
-                      option.available
-                        ? 'bg-slate-800 border-purple-500 hover:border-purple-400 hover:bg-slate-700 cursor-pointer'
-                        : 'bg-slate-800/50 border-gray-700 cursor-not-allowed opacity-50'
-                    }`}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="text-4xl group-hover:scale-110 transition-transform">
-                        {option.icon}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-white font-bold text-lg mb-1 flex items-center gap-2">
-                          {option.name}
-                          {!option.available && (
-                            <span className="text-xs bg-gray-700 px-2 py-1 rounded">Soon</span>
-                          )}
-                        </h4>
-                        <p className="text-gray-400 text-sm">{option.description}</p>
-                      </div>
-                    </div>
-                    {option.available && (
-                      <div className="mt-3 flex items-center text-purple-400 text-sm font-semibold">
-                        <span>Connect</span>
-                        <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              {/* Info Box */}
-              <div className="bg-slate-800 border-2 border-blue-500 rounded-xl p-4">
-                <div className="flex gap-3">
-                  <span className="text-2xl">ℹ️</span>
-                  <div>
-                    <p className="text-blue-300 font-semibold mb-1">First time connecting?</p>
-                    <p className="text-gray-300 text-sm">
-                      We recommend MetaMask for beginners. Make sure you're on Polygon Mumbai Testnet. 
-                      No wallet? <a href="https://metamask.io" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">Download MetaMask</a>
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Transaction History Modal */}
-      <AnimatePresence>
-        {showTransactions && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] p-4"
-            onClick={() => setShowTransactions(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="bg-slate-900 rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-hidden border-2 border-purple-500 shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="bg-slate-800 p-6 border-b-2 border-purple-500/50">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-2xl font-bold text-white mb-1">Transaction History</h3>
-                    <p className="text-purple-300 text-sm">Network: {networkInfo.name}</p>
-                  </div>
-                  <button
-                    onClick={() => setShowTransactions(false)}
-                    className="text-gray-400 hover:text-white transition-colors text-2xl"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-
-              {/* Transactions List */}
-              <div className="max-h-[60vh] overflow-y-auto p-6">
-                {transactions.length === 0 ? (
-                  <div className="text-center py-16">
-                    <div className="text-7xl mb-4">📜</div>
-                    <p className="text-gray-400 text-lg">No transactions yet</p>
-                    <p className="text-gray-500 text-sm mt-2">Your transaction history will appear here</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {transactions.map((tx) => (
-                      <div
-                        key={tx.txHash}
-                        className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl p-5 transition-all"
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center text-2xl">
-                              {tx.type === 'MINT' && '🪙'}
-                              {tx.type === 'TRANSFER' && '➡️'}
-                              {tx.type === 'APPROVE' && '✅'}
-                              {tx.type === 'BURN' && '🔥'}
-                            </div>
-                            <div>
-                              <span className="text-white font-bold text-lg">{tx.type}</span>
-                              <p className="text-gray-400 text-sm">{formatTimestamp(tx.timestamp)}</p>
-                            </div>
-                          </div>
-                          <span
-                            className={`px-4 py-2 rounded-xl text-sm font-bold ${
-                              tx.status === 'confirmed'
-                                ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                                : tx.status === 'pending'
-                                ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                                : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                            }`}
-                          >
-                            {tx.status.toUpperCase()}
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 mb-3">
-                          <div className="bg-white/5 rounded-lg p-3">
-                            <p className="text-gray-400 text-xs mb-1">Amount</p>
-                            <p className="text-white font-bold text-lg">{tx.amount} OCC</p>
-                          </div>
-                          {tx.blockNumber && (
-                            <div className="bg-white/5 rounded-lg p-3">
-                              <p className="text-gray-400 text-xs mb-1">Block</p>
-                              <p className="text-purple-300 font-mono font-bold">#{tx.blockNumber}</p>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex justify-between items-center pt-3 border-t border-white/10">
-                          <p className="text-gray-400 text-xs">Transaction Hash:</p>
-                          <a
-                            href={blockchainService.getExplorerUrl(tx.txHash)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-purple-400 hover:text-purple-300 text-xs font-mono flex items-center gap-1 transition-colors"
-                          >
-                            <span>🔍</span>
-                            <span>{tx.txHash.substring(0, 12)}...{tx.txHash.substring(tx.txHash.length - 8)}</span>
-                          </a>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="bg-white/5 p-4 border-t border-white/10">
-                <div className="flex justify-between items-center text-xs text-gray-400">
-                  <div>
-                    <span>Contract: </span>
-                    <span className="text-purple-300 font-mono">
-                      {formatAddress(blockchainService.getContractAddress())}
-                    </span>
-                  </div>
-                  <div>
-                    <span>Chain ID: </span>
-                    <span className="text-blue-300 font-bold">{networkInfo.chainId}</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+      {/* Arrow */}
+      <svg 
+        className="w-5 h-5 text-purple-300"
+        fill="none" 
+        stroke="currentColor" 
+        viewBox="0 0 24 24"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
   )
 }
