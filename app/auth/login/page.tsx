@@ -292,6 +292,55 @@ export default function LoginPage() {
             </div>
           )}
 
+          {/* Demo Credentials for Current Role */}
+          {roleParam && DEMO_CREDENTIALS[roleParam as keyof typeof DEMO_CREDENTIALS] && (
+            <div className="mt-6 p-4 bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-xl">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl">🔑</div>
+                <div className="flex-1">
+                  <h4 className="text-white font-semibold mb-1">Demo Credentials</h4>
+                  <p className="text-gray-300 text-xs mb-3">
+                    Use these credentials to test as {roleName}:
+                  </p>
+                  <div className="bg-black/30 rounded-lg p-3 space-y-2">
+                    <div>
+                      <div className="text-gray-400 text-xs mb-1">Email:</div>
+                      <div className="text-blue-300 font-mono text-sm flex items-center justify-between">
+                        <span>{DEMO_CREDENTIALS[roleParam as keyof typeof DEMO_CREDENTIALS].email}</span>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(DEMO_CREDENTIALS[roleParam as keyof typeof DEMO_CREDENTIALS].email)
+                            toast.success('Email copied!', { icon: '📋' })
+                          }}
+                          className="text-blue-400 hover:text-blue-300 text-xs"
+                        >
+                          📋 Copy
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400 text-xs mb-1">Password:</div>
+                      <div className="text-blue-300 font-mono text-sm flex items-center justify-between">
+                        <span>{DEMO_CREDENTIALS[roleParam as keyof typeof DEMO_CREDENTIALS].password}</span>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(DEMO_CREDENTIALS[roleParam as keyof typeof DEMO_CREDENTIALS].password)
+                            toast.success('Password copied!', { icon: '📋' })
+                          }}
+                          className="text-blue-400 hover:text-blue-300 text-xs"
+                        >
+                          📋 Copy
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-3">
+                    💡 Copy and paste these credentials above to login
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Divider */}
           <div className="mt-6 text-center">

@@ -103,69 +103,6 @@ export default function Home() {
             </motion.button>
         )}
 
-        {/* Demo Credentials Info */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 1.5 }}
-          className="mt-8 sm:mt-12 max-w-2xl w-full px-4"
-        >
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-6 border border-white/20">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-2xl">🔑</span>
-              <h3 className="text-white font-bold text-lg">Demo Account Credentials</h3>
-            </div>
-            <p className="text-gray-300 text-sm mb-4">
-              Use these credentials to test the platform without registration:
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Landowner */}
-              <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3">
-                <div className="text-green-400 font-semibold text-sm mb-2 flex items-center gap-2">
-                  <span>🌴</span>
-                  <span>Land Owner</span>
-                </div>
-                <div className="space-y-1 text-xs font-mono">
-                  <div className="text-gray-400">Email:</div>
-                  <div className="text-white break-all">landowner@oceara.demo</div>
-                  <div className="text-gray-400 mt-2">Password:</div>
-                  <div className="text-white">demo_landowner_2024</div>
-                </div>
-              </div>
-
-              {/* Buyer */}
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3">
-                <div className="text-blue-400 font-semibold text-sm mb-2 flex items-center gap-2">
-                  <span>💰</span>
-                  <span>Buyer</span>
-                </div>
-                <div className="space-y-1 text-xs font-mono">
-                  <div className="text-gray-400">Email:</div>
-                  <div className="text-white break-all">buyer@oceara.demo</div>
-                  <div className="text-gray-400 mt-2">Password:</div>
-                  <div className="text-white">demo_buyer_2024</div>
-                </div>
-              </div>
-
-              {/* Admin */}
-              <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-3">
-                <div className="text-purple-400 font-semibold text-sm mb-2 flex items-center gap-2">
-                  <span>👤</span>
-                  <span>Administrator</span>
-                </div>
-                <div className="space-y-1 text-xs font-mono">
-                  <div className="text-gray-400">Email:</div>
-                  <div className="text-white break-all">admin@oceara.demo</div>
-                  <div className="text-gray-400 mt-2">Password:</div>
-                  <div className="text-white">demo_admin_2024</div>
-                </div>
-              </div>
-            </div>
-            <p className="text-xs text-gray-400 mt-4 text-center">
-              💡 Select a role above and use these credentials to login
-            </p>
-          </div>
-        </motion.div>
 
         <motion.div
           initial={{ opacity: 0 }}
