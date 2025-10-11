@@ -30,10 +30,13 @@ interface EarthEngineImage {
 
 export class EarthEngineService {
   private apiKey: string
+  private sentinelHubInstanceId: string
   
   constructor() {
-    // Earth Engine API key (would be in .env in production)
+    // Earth Engine API key
     this.apiKey = process.env.NEXT_PUBLIC_EARTH_ENGINE_API_KEY || ''
+    // Sentinel Hub Instance ID
+    this.sentinelHubInstanceId = process.env.NEXT_PUBLIC_SENTINEL_HUB_INSTANCE_ID || '04bb8400-d48c-4b67-8f2b-81d2cf95802e'
   }
 
   /**
@@ -203,26 +206,27 @@ export class EarthEngineService {
     visualizationType: 'true-color' | 'ndvi' | 'false-color' | 'moisture',
     zoom: number = 14
   ): string {
-    // Calculate bounding box
-    const bufferDegrees = 0.01 * (20 - zoom) // Larger buffer for lower zoom
-    const bbox = {
-      west: coordinates.lng - bufferDegrees,
-      south: coordinates.lat - bufferDegrees,
-      east: coordinates.lng + bufferDegrees,
-      north: coordinates.lat + bufferDegrees
+    // If Sentinel Hub is configured, use it
+    if (this.sentinelHubInstanceId && this.sentinelHubInstanceId !== '') {
+      const bufferDegrees = 0.01 * (20 - zoom)
+      const bbox = `${coordinates.lng - bufferDegrees},${coordinates.lat - bufferDegrees},${coordinates.lng + bufferDegrees},${coordinates.lat + bufferDegrees}`
+      
+      const layerMap: Record<string, string> = {
+        'true-color': 'TRUE-COLOR',
+        'ndvi': 'NDVI',
+        'false-color': 'FALSE-COLOR',
+        'moisture': 'MOISTURE-INDEX'
+      }
+      
+      const today = new Date()
+      const sixMonthsAgo = new Date(today.getTime() - 180 * 24 * 60 * 60 * 1000)
+      
+      return `https://services.sentinel-hub.com/ogc/wms/${this.sentinelHubInstanceId}?REQUEST=GetMap&BBOX=${bbox}&WIDTH=800&HEIGHT=800&LAYERS=${layerMap[visualizationType]}&MAXCC=20&TIME=${sixMonthsAgo.toISOString().split('T')[0]}/${today.toISOString().split('T')[0]}&FORMAT=image/png`
     }
 
-    // Define visualization parameters for different types
-    const visParams: Record<string, string> = {
-      'true-color': 'bands=B4,B3,B2&min=0&max=3000',
-      'ndvi': 'bands=B8,B4&min=-1&max=1&palette=red,yellow,green',
-      'false-color': 'bands=B8,B4,B3&min=0&max=3000',
-      'moisture': 'bands=B11,B8,B2&min=0&max=3000'
-    }
-
-    // In production, this would be a real Earth Engine endpoint
-    // For now, return a formatted URL structure
-    return `https://sentinel-hub.com/api/v1/process?bbox=${bbox.west},${bbox.south},${bbox.east},${bbox.north}&${visParams[visualizationType]}&width=800&height=800`
+    // Fallback to Google Maps
+    const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8'
+    return `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=${zoom}&size=800x800&scale=2&maptype=satellite&key=${googleMapsKey}`
   }
 
   /**
@@ -260,16 +264,24 @@ export class EarthEngineService {
   }
 
   /**
-   * Get real-time satellite imagery using Sentinel Hub (fallback)
+   * Get real-time satellite imagery using Sentinel Hub
    */
   async getSentinelHubImage(
     coordinates: Coordinates,
     width: number = 800,
-    height: number = 800
+    height: number = 800,
+    layer: string = 'TRUE-COLOR'
   ): Promise<string> {
-    // This would integrate with Sentinel Hub API in production
-    // For now, return a placeholder structure
-    const sentinelHubUrl = `https://services.sentinel-hub.com/ogc/wms/YOUR_INSTANCE_ID?REQUEST=GetMap&BBOX=${coordinates.lng - 0.01},${coordinates.lat - 0.01},${coordinates.lng + 0.01},${coordinates.lat + 0.01}&WIDTH=${width}&HEIGHT=${height}&LAYERS=TRUE_COLOR&TIME=2024-01-01/2024-12-31`
+    if (!this.sentinelHubInstanceId) {
+      console.warn('Sentinel Hub Instance ID not configured')
+      return ''
+    }
+
+    const bbox = `${coordinates.lng - 0.01},${coordinates.lat - 0.01},${coordinates.lng + 0.01},${coordinates.lat + 0.01}`
+    const today = new Date()
+    const sixMonthsAgo = new Date(today.getTime() - 180 * 24 * 60 * 60 * 1000)
+    
+    const sentinelHubUrl = `https://services.sentinel-hub.com/ogc/wms/${this.sentinelHubInstanceId}?REQUEST=GetMap&BBOX=${bbox}&WIDTH=${width}&HEIGHT=${height}&LAYERS=${layer}&MAXCC=20&TIME=${sixMonthsAgo.toISOString().split('T')[0]}/${today.toISOString().split('T')[0]}&FORMAT=image/png`
     
     return sentinelHubUrl
   }

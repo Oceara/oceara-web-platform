@@ -14,7 +14,7 @@ export const EARTH_ENGINE_API_KEY =
 // Sentinel Hub API Key - For Sentinel-2 satellite imagery
 // Get your key from: https://www.sentinel-hub.com/
 export const SENTINEL_HUB_INSTANCE_ID =
-  process.env.NEXT_PUBLIC_SENTINEL_HUB_INSTANCE_ID || ''
+  process.env.NEXT_PUBLIC_SENTINEL_HUB_INSTANCE_ID || '04bb8400-d48c-4b67-8f2b-81d2cf95802e'
 
 // Mapbox Token - Fallback for satellite imagery if Google Maps quota exceeded
 export const MAPBOX_TOKEN = 
