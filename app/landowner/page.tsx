@@ -5,6 +5,8 @@ import { motion } from 'framer-motion'
 import { useData } from '@/context/DataContext'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
+import { LineChart, Line, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import BlockchainWallet from '@/components/BlockchainWallet'
 
 export default function LandownerDashboard() {
   const { projects, addProject, getProjectsByOwner } = useData()
@@ -28,24 +30,48 @@ export default function LandownerDashboard() {
     { 
       label: 'Total Area', 
       value: `${myProjects.reduce((acc, p) => acc + parseFloat(p.area), 0).toFixed(0)} ha`, 
-      icon: '🌴' 
+      icon: '🌴',
+      color: 'from-green-500 to-emerald-600'
     },
     { 
       label: 'Carbon Credits', 
       value: myProjects.reduce((acc, p) => acc + p.creditsAvailable, 0).toLocaleString(), 
-      icon: '💰' 
+      icon: '💰',
+      color: 'from-yellow-500 to-orange-600'
     },
     { 
       label: 'Active Projects', 
       value: myProjects.length.toString(), 
-      icon: '📊' 
+      icon: '📊',
+      color: 'from-blue-500 to-cyan-600'
     },
     { 
       label: 'Pending Approval', 
       value: myProjects.filter(p => !p.verified).length.toString(), 
-      icon: '⏳' 
+      icon: '⏳',
+      color: 'from-purple-500 to-pink-600'
     }
   ]
+
+  // Chart data
+  const projectStatusData = [
+    { name: 'Verified', value: myProjects.filter(p => p.verified).length, color: '#10b981' },
+    { name: 'Pending', value: myProjects.filter(p => !p.verified).length, color: '#f59e0b' }
+  ]
+
+  const creditsOverTime = myProjects.map((p, i) => ({
+    name: p.name.substring(0, 15) + '...',
+    credits: p.creditsAvailable,
+    area: parseFloat(p.area)
+  }))
+
+  const healthScoreData = myProjects
+    .filter(p => p.mlAnalysis)
+    .map(p => ({
+      name: p.name.substring(0, 20),
+      health: p.mlAnalysis?.healthScore || 0,
+      confidence: p.mlAnalysis?.confidence || 0
+    }))
 
   // Auto-detect location
   const detectLocation = () => {
@@ -149,7 +175,7 @@ export default function LandownerDashboard() {
     }
 
     addProject(newProject as any)
-    toast.success('Project registered successfully! Pending admin approval.')
+    toast.success('🎉 Project registered successfully! Redirecting to your projects...')
     
     // Reset form
     setProjectName('')
@@ -159,7 +185,12 @@ export default function LandownerDashboard() {
     setPhotos([])
     setDescription('')
     setShowRegisterModal(false)
-    setActiveTab('myprojects')
+    
+    // Wait a moment for state to update, then switch to myprojects tab
+    setTimeout(() => {
+      setActiveTab('myprojects')
+      toast.success('✅ Your project is now visible in "My Projects"!')
+    }, 500)
   }
 
   return (
@@ -169,9 +200,12 @@ export default function LandownerDashboard() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-white">🌊 Oceara - Landowner</h1>
-            <Link href="/" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition-all">
-              Home
-            </Link>
+            <div className="flex gap-3 items-center">
+              <BlockchainWallet />
+              <Link href="/" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition-all">
+                Home
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -185,11 +219,13 @@ export default function LandownerDashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20"
+              className={`bg-gradient-to-br ${stat.color} p-1 rounded-2xl`}
             >
-              <div className="text-4xl mb-2">{stat.icon}</div>
-              <div className="text-3xl font-bold text-white">{stat.value}</div>
-              <div className="text-gray-300">{stat.label}</div>
+              <div className="bg-slate-900/90 backdrop-blur-lg rounded-2xl p-6 h-full">
+                <div className="text-4xl mb-2">{stat.icon}</div>
+                <div className="text-3xl font-bold text-white">{stat.value}</div>
+                <div className="text-gray-300">{stat.label}</div>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -215,35 +251,110 @@ export default function LandownerDashboard() {
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4">Quick Actions</h3>
-              <button
-                onClick={() => setActiveTab('register')}
-                className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl text-white font-semibold text-lg transition-all mb-3"
-              >
-                ➕ Register New Project
-              </button>
-              <button
-                onClick={() => setActiveTab('myprojects')}
-                className="w-full py-4 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 rounded-xl text-white font-semibold text-lg transition-all"
-              >
-                📊 View My Projects
-              </button>
+          <div className="space-y-6">
+            {/* Quick Actions */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                <h3 className="text-xl font-bold text-white mb-4">🚀 Quick Actions</h3>
+                <button
+                  onClick={() => setActiveTab('register')}
+                  className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl text-white font-semibold text-lg transition-all mb-3"
+                >
+                  ➕ Register New Project
+                </button>
+                <button
+                  onClick={() => setActiveTab('myprojects')}
+                  className="w-full py-4 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 rounded-xl text-white font-semibold text-lg transition-all"
+                >
+                  📊 View My Projects ({myProjects.length})
+                </button>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                <h3 className="text-xl font-bold text-white mb-4">📌 Recent Activity</h3>
+                {myProjects.slice(0, 3).map((project) => (
+                  <div key={project.id} className="mb-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-all cursor-pointer">
+                    <p className="text-white font-semibold">{project.name}</p>
+                    <div className="flex justify-between items-center mt-1">
+                      <p className="text-gray-400 text-sm">{project.status}</p>
+                      <p className="text-green-400 text-sm font-semibold">{project.creditsAvailable} credits</p>
+                    </div>
+                  </div>
+                ))}
+                {myProjects.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-400 mb-2">No projects yet</p>
+                    <button
+                      onClick={() => setActiveTab('register')}
+                      className="text-blue-400 hover:text-blue-300 font-semibold"
+                    >
+                      Register your first project →
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4">Recent Activity</h3>
-              {myProjects.slice(0, 3).map((project) => (
-                <div key={project.id} className="mb-3 p-3 bg-white/5 rounded-lg">
-                  <p className="text-white font-semibold">{project.name}</p>
-                  <p className="text-gray-400 text-sm">{project.status}</p>
+            {/* Analytics Charts */}
+            {myProjects.length > 0 && (
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Project Status Pie Chart */}
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                  <h3 className="text-xl font-bold text-white mb-4">📊 Project Status</h3>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={projectStatusData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, value }) => `${name}: ${value}`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {projectStatusData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
-              ))}
-              {myProjects.length === 0 && (
-                <p className="text-gray-400">No projects yet. Register your first project!</p>
-              )}
-            </div>
+
+                {/* Carbon Credits Bar Chart */}
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                  <h3 className="text-xl font-bold text-white mb-4">💰 Carbon Credits by Project</h3>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={creditsOverTime}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                      <XAxis dataKey="name" stroke="#94a3b8" style={{ fontSize: '12px' }} />
+                      <YAxis stroke="#94a3b8" />
+                      <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }} />
+                      <Bar dataKey="credits" fill="#10b981" radius={[8, 8, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Health Score Line Chart */}
+                {healthScoreData.length > 0 && (
+                  <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 md:col-span-2">
+                    <h3 className="text-xl font-bold text-white mb-4">🌿 Ecosystem Health & ML Confidence</h3>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <LineChart data={healthScoreData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                        <XAxis dataKey="name" stroke="#94a3b8" style={{ fontSize: '12px' }} />
+                        <YAxis stroke="#94a3b8" />
+                        <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }} />
+                        <Legend />
+                        <Line type="monotone" dataKey="health" stroke="#10b981" strokeWidth={2} name="Health Score %" />
+                        <Line type="monotone" dataKey="confidence" stroke="#3b82f6" strokeWidth={2} name="ML Confidence %" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -322,9 +433,26 @@ export default function LandownerDashboard() {
                   </button>
                 </div>
                 {coordinates && (
-                  <p className="text-green-400 text-sm mt-2">
-                    ✅ Coordinates: {coordinates.lat.toFixed(4)}, {coordinates.lng.toFixed(4)}
-                  </p>
+                  <div className="mt-3">
+                    <p className="text-green-400 text-sm mb-2">
+                      ✅ Coordinates: {coordinates.lat.toFixed(4)}, {coordinates.lng.toFixed(4)}
+                    </p>
+                    <div className="bg-white/5 rounded-lg p-3 border border-green-500/30">
+                      <p className="text-white text-sm font-semibold mb-2">📍 Location Preview</p>
+                      <img
+                        src={`https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=14&size=600x200&markers=color:green%7C${coordinates.lat},${coordinates.lng}&key=`}
+                        alt="Location map"
+                        className="w-full h-32 object-cover rounded-lg bg-slate-800"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                        }}
+                      />
+                      <div className="hidden bg-slate-800 w-full h-32 rounded-lg flex items-center justify-center">
+                        <p className="text-gray-400 text-sm">🗺️ Map preview (Add Google Maps API key for image)</p>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 
