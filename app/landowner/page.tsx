@@ -440,18 +440,16 @@ export default function LandownerDashboard() {
                     </p>
                     <div className="bg-white/5 rounded-lg p-3 border border-green-500/30">
                       <p className="text-white text-sm font-semibold mb-2">📍 Location Preview</p>
-                      <img
-                        src={getGoogleMapsStaticUrl(coordinates.lat, coordinates.lng, 14, '600x200', 'satellite', true)}
-                        alt="Location map"
-                        className="w-full h-32 object-cover rounded-lg bg-slate-800"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none'
-                          e.currentTarget.nextElementSibling?.classList.remove('hidden')
-                        }}
-                      />
-                      <div className="hidden bg-slate-800 w-full h-32 rounded-lg flex items-center justify-center">
-                        <p className="text-gray-400 text-sm">🗺️ Map preview</p>
+                      <div className="w-full h-32 bg-slate-800 rounded-lg overflow-hidden">
+                        <img
+                          src={getGoogleMapsStaticUrl(coordinates.lat, coordinates.lng, 15, '600x200', 'satellite', true)}
+                          alt="Location map"
+                          className="w-full h-full object-cover"
+                        />
                       </div>
+                      <p className="text-gray-400 text-xs mt-2">
+                        🗺️ Satellite view at coordinates: {coordinates.lat.toFixed(6)}, {coordinates.lng.toFixed(6)}
+                      </p>
                     </div>
                   </div>
                 )}
