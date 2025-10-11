@@ -455,16 +455,20 @@ export default function LandownerDashboard() {
                           </div>
                         )}
                         <img
-                          src={getGoogleMapsStaticUrl(coordinates.lat, coordinates.lng, 15, '600x400', 'satellite', true)}
+                          src={`https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=15&size=600x400&scale=2&maptype=satellite&markers=color:red%7C${coordinates.lat},${coordinates.lng}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`}
                           alt="Location map"
                           className="w-full h-full object-cover"
-                          onLoad={() => setMapLoading(false)}
+                          onLoad={() => {
+                            console.log('✅ Map preview loaded successfully')
+                            setMapLoading(false)
+                          }}
                           onError={(e) => {
                             const target = e.target as HTMLImageElement
+                            console.error('❌ Map preview failed to load')
+                            console.log('Coordinates:', coordinates)
                             target.onerror = null
                             setMapLoading(false)
-                            // Fallback to Mapbox satellite
-                            target.src = `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${coordinates.lng},${coordinates.lat},15,0/600x400@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw`
+                            toast.error('Map preview failed to load', { icon: '🗺️' })
                           }}
                         />
                       </div>
