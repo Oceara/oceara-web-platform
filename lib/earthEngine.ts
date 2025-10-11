@@ -212,16 +212,16 @@ export class EarthEngineService {
       const bbox = `${coordinates.lng - bufferDegrees},${coordinates.lat - bufferDegrees},${coordinates.lng + bufferDegrees},${coordinates.lat + bufferDegrees}`
       
       const layerMap: Record<string, string> = {
-        'true-color': 'TRUE-COLOR',
-        'ndvi': 'NDVI',
-        'false-color': 'FALSE-COLOR',
-        'moisture': 'MOISTURE-INDEX'
+        'true-color': '1_TRUE_COLOR',
+        'ndvi': '2_FALSE_COLOR',
+        'false-color': '2_FALSE_COLOR',
+        'moisture': '3-NDVI'
       }
       
       const today = new Date()
-      const sixMonthsAgo = new Date(today.getTime() - 180 * 24 * 60 * 60 * 1000)
+      const threeMonthsAgo = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000)
       
-      return `https://services.sentinel-hub.com/ogc/wms/${this.sentinelHubInstanceId}?REQUEST=GetMap&BBOX=${bbox}&WIDTH=800&HEIGHT=800&LAYERS=${layerMap[visualizationType]}&MAXCC=20&TIME=${sixMonthsAgo.toISOString().split('T')[0]}/${today.toISOString().split('T')[0]}&FORMAT=image/png`
+      return `https://services.sentinel-hub.com/ogc/wms/${this.sentinelHubInstanceId}?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=${layerMap[visualizationType]}&BBOX=${bbox}&WIDTH=1200&HEIGHT=1200&FORMAT=image/png&CRS=EPSG:4326&TIME=${threeMonthsAgo.toISOString().split('T')[0]}/${today.toISOString().split('T')[0]}&MAXCC=20`
     }
 
     // Fallback to Google Maps
@@ -270,7 +270,7 @@ export class EarthEngineService {
     coordinates: Coordinates,
     width: number = 800,
     height: number = 800,
-    layer: string = 'TRUE-COLOR'
+    layer: string = '1_TRUE_COLOR'
   ): Promise<string> {
     if (!this.sentinelHubInstanceId) {
       console.warn('Sentinel Hub Instance ID not configured')
@@ -279,9 +279,9 @@ export class EarthEngineService {
 
     const bbox = `${coordinates.lng - 0.01},${coordinates.lat - 0.01},${coordinates.lng + 0.01},${coordinates.lat + 0.01}`
     const today = new Date()
-    const sixMonthsAgo = new Date(today.getTime() - 180 * 24 * 60 * 60 * 1000)
+    const threeMonthsAgo = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000)
     
-    const sentinelHubUrl = `https://services.sentinel-hub.com/ogc/wms/${this.sentinelHubInstanceId}?REQUEST=GetMap&BBOX=${bbox}&WIDTH=${width}&HEIGHT=${height}&LAYERS=${layer}&MAXCC=20&TIME=${sixMonthsAgo.toISOString().split('T')[0]}/${today.toISOString().split('T')[0]}&FORMAT=image/png`
+    const sentinelHubUrl = `https://services.sentinel-hub.com/ogc/wms/${this.sentinelHubInstanceId}?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=${layer}&BBOX=${bbox}&WIDTH=${width}&HEIGHT=${height}&FORMAT=image/png&CRS=EPSG:4326&TIME=${threeMonthsAgo.toISOString().split('T')[0]}/${today.toISOString().split('T')[0]}&MAXCC=20`
     
     return sentinelHubUrl
   }

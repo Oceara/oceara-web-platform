@@ -148,9 +148,17 @@ export default function EarthEngineSatelliteViewer({
                         src={earthEngineService.getSentinelImageUrl(coordinates, viewType, zoom)}
                         alt={`Satellite view - ${viewType}`}
                         className="w-full h-[500px] object-cover"
+                        onLoad={() => {
+                          console.log('✅ Sentinel image loaded successfully')
+                        }}
                         onError={(e) => {
+                          const imgUrl = earthEngineService.getSentinelImageUrl(coordinates, viewType, zoom)
+                          console.error('❌ Sentinel Hub image failed to load')
+                          console.log('Attempted URL:', imgUrl)
+                          console.log('Falling back to Google Maps...')
+                          toast.error('Using Google Maps fallback', { icon: '🗺️' })
                           // Fallback to Google Maps if Earth Engine fails
-                          e.currentTarget.src = `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=${zoom}&size=1200x800&scale=2&maptype=satellite&markers=color:red%7C${coordinates.lat},${coordinates.lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}`
+                          e.currentTarget.src = `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=${zoom}&size=1200x800&scale=2&maptype=satellite&markers=color:red%7C${coordinates.lat},${coordinates.lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8'}`
                         }}
                       />
                       
