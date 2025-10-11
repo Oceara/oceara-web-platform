@@ -219,35 +219,35 @@ export default function BlockchainWallet({ onTransactionComplete }: BlockchainWa
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute top-full right-0 mt-2 w-80 bg-slate-900/95 backdrop-blur-xl border-2 border-purple-500/30 rounded-2xl shadow-2xl z-50 overflow-hidden max-h-[80vh] overflow-y-auto"
+                  className="absolute top-full right-0 mt-2 w-96 bg-slate-800 border-2 border-purple-500 rounded-xl shadow-2xl z-[100] max-h-[70vh] overflow-y-auto"
                 >
                   {/* Header */}
-                  <div className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 p-4 border-b border-white/10">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-xl">
+                  <div className="bg-slate-900 p-4 border-b-2 border-purple-500/50">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center text-xl">
                         👛
                       </div>
                       <div>
-                        <p className="text-white font-bold">My Wallet</p>
-                        <p className="text-purple-300 text-xs">Connected to {networkInfo.name}</p>
+                        <p className="text-white font-bold text-lg">My Wallet</p>
+                        <p className="text-purple-300 text-sm">{networkInfo.name}</p>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                      <span className="text-gray-400 text-sm">Balance:</span>
+                    <div className="flex items-center justify-between p-3 bg-slate-700 rounded-lg">
+                      <span className="text-gray-300 text-sm">Balance:</span>
                       <span className="text-white font-bold text-lg">{wallet.balance.toLocaleString()} OCC</span>
                     </div>
                   </div>
 
                   {/* Menu Items */}
-                  <div className="p-2">
+                  <div className="p-3">
                     <button
                       onClick={copyAddress}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-left group"
+                      className="w-full flex items-center gap-3 px-3 py-3 hover:bg-purple-600 rounded-lg transition-all text-left group mb-2"
                     >
-                      <span className="text-2xl group-hover:scale-110 transition-transform">📋</span>
+                      <span className="text-xl group-hover:scale-110 transition-transform">📋</span>
                       <div>
-                        <p className="text-white font-semibold">Copy Address</p>
-                        <p className="text-gray-400 text-xs">Copy wallet address to clipboard</p>
+                        <p className="text-white font-semibold text-sm">Copy Address</p>
+                        <p className="text-gray-300 text-xs">Clipboard</p>
                       </div>
                     </button>
 
@@ -256,12 +256,12 @@ export default function BlockchainWallet({ onTransactionComplete }: BlockchainWa
                         setShowTransactions(true)
                         setShowMenu(false)
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-left group"
+                      className="w-full flex items-center gap-3 px-3 py-3 hover:bg-purple-600 rounded-lg transition-all text-left group mb-2"
                     >
-                      <span className="text-2xl group-hover:scale-110 transition-transform">📜</span>
+                      <span className="text-xl group-hover:scale-110 transition-transform">📜</span>
                       <div className="flex-1">
-                        <p className="text-white font-semibold">Transaction History</p>
-                        <p className="text-gray-400 text-xs">View all transactions</p>
+                        <p className="text-white font-semibold text-sm">Transaction History</p>
+                        <p className="text-gray-300 text-xs">View all</p>
                       </div>
                       {transactions.length > 0 && (
                         <span className="px-2 py-1 bg-purple-500 rounded-full text-white text-xs font-bold">
@@ -272,23 +272,23 @@ export default function BlockchainWallet({ onTransactionComplete }: BlockchainWa
 
                     <button
                       onClick={addToMetaMask}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-left group"
+                      className="w-full flex items-center gap-3 px-3 py-3 hover:bg-purple-600 rounded-lg transition-all text-left group mb-2"
                     >
-                      <span className="text-2xl group-hover:scale-110 transition-transform">🦊</span>
+                      <span className="text-xl group-hover:scale-110 transition-transform">🦊</span>
                       <div>
-                        <p className="text-white font-semibold">Add Token to MetaMask</p>
-                        <p className="text-gray-400 text-xs">Watch OCC token in wallet</p>
+                        <p className="text-white font-semibold text-sm">Add Token to MetaMask</p>
+                        <p className="text-gray-300 text-xs">Watch OCC</p>
                       </div>
                     </button>
 
                     <button
                       onClick={switchNetwork}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-left group"
+                      className="w-full flex items-center gap-3 px-3 py-3 hover:bg-purple-600 rounded-lg transition-all text-left group mb-2"
                     >
-                      <span className="text-2xl group-hover:scale-110 transition-transform">🔄</span>
+                      <span className="text-xl group-hover:scale-110 transition-transform">🔄</span>
                       <div>
-                        <p className="text-white font-semibold">Switch Network</p>
-                        <p className="text-gray-400 text-xs">Change blockchain network</p>
+                        <p className="text-white font-semibold text-sm">Switch Network</p>
+                        <p className="text-gray-300 text-xs">Change chain</p>
                       </div>
                     </button>
 
@@ -296,25 +296,25 @@ export default function BlockchainWallet({ onTransactionComplete }: BlockchainWa
                       href={blockchainService.getExplorerUrl(wallet.address)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-left group"
+                      className="w-full flex items-center gap-3 px-3 py-3 hover:bg-purple-600 rounded-lg transition-all text-left group mb-2"
                     >
-                      <span className="text-2xl group-hover:scale-110 transition-transform">🔍</span>
+                      <span className="text-xl group-hover:scale-110 transition-transform">🔍</span>
                       <div>
-                        <p className="text-white font-semibold">View on Explorer</p>
-                        <p className="text-gray-400 text-xs">Open in Polygonscan</p>
+                        <p className="text-white font-semibold text-sm">View on Explorer</p>
+                        <p className="text-gray-300 text-xs">Polygonscan</p>
                       </div>
                     </a>
 
-                    <div className="my-2 border-t border-white/10" />
+                    <div className="my-2 border-t-2 border-slate-700" />
 
                     <button
                       onClick={handleDisconnect}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-500/20 rounded-xl transition-all text-left group"
+                      className="w-full flex items-center gap-3 px-3 py-3 hover:bg-red-600 rounded-lg transition-all text-left group"
                     >
-                      <span className="text-2xl group-hover:scale-110 transition-transform">🚪</span>
+                      <span className="text-xl group-hover:scale-110 transition-transform">🚪</span>
                       <div>
-                        <p className="text-red-400 font-semibold">Disconnect Wallet</p>
-                        <p className="text-gray-400 text-xs">Sign out from wallet</p>
+                        <p className="text-red-400 font-semibold text-sm">Disconnect Wallet</p>
+                        <p className="text-gray-300 text-xs">Sign out</p>
                       </div>
                     </button>
                   </div>
@@ -332,14 +332,14 @@ export default function BlockchainWallet({ onTransactionComplete }: BlockchainWa
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] p-4 overflow-y-auto"
             onClick={() => setShowWalletModal(false)}
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900 rounded-3xl p-8 max-w-2xl w-full border-2 border-purple-500/30 shadow-2xl"
+              className="bg-slate-900 rounded-2xl p-8 max-w-2xl w-full border-2 border-purple-500 shadow-2xl my-8"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -363,10 +363,10 @@ export default function BlockchainWallet({ onTransactionComplete }: BlockchainWa
                     key={option.id}
                     onClick={() => option.available && handleConnect(option.id)}
                     disabled={!option.available}
-                    className={`relative p-6 rounded-2xl border-2 transition-all text-left group ${
+                    className={`relative p-6 rounded-xl border-2 transition-all text-left group ${
                       option.available
-                        ? 'bg-white/5 border-purple-500/30 hover:border-purple-400 hover:bg-white/10 cursor-pointer'
-                        : 'bg-gray-800/30 border-gray-700/30 cursor-not-allowed opacity-50'
+                        ? 'bg-slate-800 border-purple-500 hover:border-purple-400 hover:bg-slate-700 cursor-pointer'
+                        : 'bg-slate-800/50 border-gray-700 cursor-not-allowed opacity-50'
                     }`}
                   >
                     <div className="flex items-start gap-4">
@@ -396,12 +396,12 @@ export default function BlockchainWallet({ onTransactionComplete }: BlockchainWa
               </div>
 
               {/* Info Box */}
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+              <div className="bg-slate-800 border-2 border-blue-500 rounded-xl p-4">
                 <div className="flex gap-3">
                   <span className="text-2xl">ℹ️</span>
                   <div>
                     <p className="text-blue-300 font-semibold mb-1">First time connecting?</p>
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-gray-300 text-sm">
                       We recommend MetaMask for beginners. Make sure you're on Polygon Mumbai Testnet. 
                       No wallet? <a href="https://metamask.io" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">Download MetaMask</a>
                     </p>
@@ -420,18 +420,18 @@ export default function BlockchainWallet({ onTransactionComplete }: BlockchainWa
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] p-4"
             onClick={() => setShowTransactions(false)}
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-slate-900 rounded-3xl max-w-3xl w-full max-h-[80vh] overflow-hidden border-2 border-purple-500/30 shadow-2xl"
+              className="bg-slate-900 rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-hidden border-2 border-purple-500 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 p-6 border-b border-white/10">
+              <div className="bg-slate-800 p-6 border-b-2 border-purple-500/50">
                 <div className="flex justify-between items-center">
                   <div>
                     <h3 className="text-2xl font-bold text-white mb-1">Transaction History</h3>
