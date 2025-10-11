@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { useData } from '@/context/DataContext'
 import PurchaseModal from '@/components/PurchaseModal'
 import BlockchainWallet from '@/components/BlockchainWallet'
+import EarthEngineSatelliteViewer from '@/components/EarthEngineSatelliteViewer'
 
 const EarthWithProjects = dynamic(() => import('@/components/EarthWithProjects'), {
   ssr: false,
@@ -17,6 +18,7 @@ export default function BuyerDashboard() {
   const [activeTab, setActiveTab] = useState('marketplace')
   const [selectedProject, setSelectedProject] = useState<any | null>(null)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
+  const [showEarthEngine, setShowEarthEngine] = useState(false)
   const [myPurchases, setMyPurchases] = useState<any[]>([])
   const [totalCreditsOwned, setTotalCreditsOwned] = useState(80)
   const [totalSpent, setTotalSpent] = useState(1910)
@@ -190,12 +192,22 @@ export default function BuyerDashboard() {
                       </button>
                       <button
                         onClick={() => {
+                          setSelectedProject(project)
+                          setShowEarthEngine(true)
+                        }}
+                        className="px-6 py-3 bg-green-600 rounded-full text-white hover:bg-green-700 transition-all"
+                        title="Satellite Analysis"
+                      >
+                        🛰️
+                      </button>
+                      <button
+                        onClick={() => {
                           const { lat, lng } = project.coordinates
                           window.open(`https://www.google.com/maps?q=${lat},${lng}&z=15&t=k`, '_blank')
                         }}
                         className="px-6 py-3 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all"
                       >
-                        🗺️ Map
+                        🗺️
                       </button>
                     </div>
                   </div>
@@ -251,6 +263,16 @@ export default function BuyerDashboard() {
                         className="flex-1 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg text-white text-xs font-semibold transition-all"
                       >
                         💳 Buy
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedProject(project)
+                          setShowEarthEngine(true)
+                        }}
+                        className="px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white text-xs transition-all"
+                        title="View Satellite Analysis"
+                      >
+                        🛰️
                       </button>
                       <button
                         onClick={() => {
@@ -335,6 +357,19 @@ export default function BuyerDashboard() {
             setSelectedProject(null)
           }}
           onPurchase={handlePurchase}
+        />
+      )}
+
+      {/* Earth Engine Satellite Viewer */}
+      {showEarthEngine && selectedProject && (
+        <EarthEngineSatelliteViewer
+          coordinates={selectedProject.coordinates}
+          projectName={selectedProject.name}
+          area={parseFloat(selectedProject.area) || 10}
+          onClose={() => {
+            setShowEarthEngine(false)
+            setSelectedProject(null)
+          }}
         />
       )}
     </div>

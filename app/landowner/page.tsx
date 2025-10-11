@@ -7,12 +7,15 @@ import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { LineChart, Line, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import BlockchainWallet from '@/components/BlockchainWallet'
+import EarthEngineSatelliteViewer from '@/components/EarthEngineSatelliteViewer'
 import { getGoogleMapsStaticUrl } from '@/lib/config'
 
 export default function LandownerDashboard() {
   const { projects, addProject, getProjectsByOwner } = useData()
   const [activeTab, setActiveTab] = useState('overview')
   const [showRegisterModal, setShowRegisterModal] = useState(false)
+  const [showEarthEngine, setShowEarthEngine] = useState(false)
+  const [selectedProjectForAnalysis, setSelectedProjectForAnalysis] = useState<any>(null)
   const [selectedProject, setSelectedProject] = useState<any>(null)
   
   // Registration form
@@ -626,15 +629,42 @@ export default function LandownerDashboard() {
                 </div>
               )}
 
+              {selectedProject.coordinates && (
+                <button
+                  onClick={() => {
+                    setSelectedProjectForAnalysis(selectedProject)
+                    setSelectedProject(null)
+                    setShowEarthEngine(true)
+                  }}
+                  className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-lg text-white font-semibold transition-all flex items-center justify-center gap-2"
+                >
+                  <span>🛰️</span>
+                  <span>View Satellite Analysis</span>
+                </button>
+              )}
+
               <button
                 onClick={() => setSelectedProject(null)}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition-all"
+                className="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-lg text-white font-semibold transition-all"
               >
                 Close
               </button>
             </div>
           </motion.div>
         </div>
+      )}
+
+      {/* Earth Engine Satellite Viewer */}
+      {showEarthEngine && selectedProjectForAnalysis && (
+        <EarthEngineSatelliteViewer
+          coordinates={selectedProjectForAnalysis.coordinates}
+          projectName={selectedProjectForAnalysis.name}
+          area={parseFloat(selectedProjectForAnalysis.area) || 10}
+          onClose={() => {
+            setShowEarthEngine(false)
+            setSelectedProjectForAnalysis(null)
+          }}
+        />
       )}
     </div>
   )
