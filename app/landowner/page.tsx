@@ -27,6 +27,7 @@ export default function LandownerDashboard() {
   const [uploadMethod, setUploadMethod] = useState<'photos' | 'details'>('details')
   const [photos, setPhotos] = useState<string[]>([])
   const [description, setDescription] = useState('')
+  const [mapLoading, setMapLoading] = useState(true)
   
   const myProjects = getProjectsByOwner('Demo Landowner')
   
@@ -86,6 +87,7 @@ export default function LandownerDashboard() {
           const lat = position.coords.latitude
           const lng = position.coords.longitude
           setCoordinates({ lat, lng })
+          setMapLoading(true) // Reset loading state for new coordinates
           
           // Reverse geocode to get address
           fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
@@ -443,11 +445,27 @@ export default function LandownerDashboard() {
                     </p>
                     <div className="bg-white/5 rounded-lg p-3 border border-green-500/30">
                       <p className="text-white text-sm font-semibold mb-2">📍 Location Preview</p>
-                      <div className="w-full h-32 bg-slate-800 rounded-lg overflow-hidden">
+                      <div className="w-full h-48 bg-slate-800 rounded-lg overflow-hidden relative">
+                        {mapLoading && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-slate-800 z-10">
+                            <div className="text-center">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
+                              <div className="text-white text-sm">Loading map preview...</div>
+                            </div>
+                          </div>
+                        )}
                         <img
-                          src={getGoogleMapsStaticUrl(coordinates.lat, coordinates.lng, 15, '600x200', 'satellite', true)}
+                          src={getGoogleMapsStaticUrl(coordinates.lat, coordinates.lng, 15, '600x400', 'satellite', true)}
                           alt="Location map"
                           className="w-full h-full object-cover"
+                          onLoad={() => setMapLoading(false)}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.onerror = null
+                            setMapLoading(false)
+                            // Fallback to Mapbox satellite
+                            target.src = `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${coordinates.lng},${coordinates.lat},15,0/600x400@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw`
+                          }}
                         />
                       </div>
                       <p className="text-gray-400 text-xs mt-2">
