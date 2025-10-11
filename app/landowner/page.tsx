@@ -443,37 +443,46 @@ export default function LandownerDashboard() {
                     <p className="text-green-400 text-sm mb-2">
                       ✅ Coordinates: {coordinates.lat.toFixed(4)}, {coordinates.lng.toFixed(4)}
                     </p>
-                    <div className="bg-white/5 rounded-lg p-3 border border-green-500/30">
-                      <p className="text-white text-sm font-semibold mb-2">📍 Location Preview</p>
-                      <div className="w-full h-48 bg-slate-800 rounded-lg overflow-hidden relative">
+                    <div className="bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-lg p-4 border-2 border-green-500/50">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="text-3xl">📍</div>
+                        <div>
+                          <p className="text-white font-semibold">Location Detected Successfully!</p>
+                          <p className="text-gray-300 text-sm">
+                            Lat: {coordinates.lat.toFixed(6)}, Lng: {coordinates.lng.toFixed(6)}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Interactive Map Preview */}
+                      <div className="w-full h-48 bg-slate-900 rounded-lg overflow-hidden mb-3">
                         <iframe
                           src={`https://www.openstreetmap.org/export/embed.html?bbox=${coordinates.lng-0.01},${coordinates.lat-0.01},${coordinates.lng+0.01},${coordinates.lat+0.01}&layer=mapnik&marker=${coordinates.lat},${coordinates.lng}`}
                           className="w-full h-full border-0"
-                          onLoad={() => {
-                            console.log('✅ Map preview loaded successfully')
-                            setMapLoading(false)
-                          }}
+                          title="Location Map"
+                          loading="lazy"
                         />
-                        {mapLoading && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-slate-800 z-10">
-                            <div className="text-center">
-                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
-                              <div className="text-white text-sm">Loading map preview...</div>
-                            </div>
-                          </div>
-                        )}
                       </div>
-                      <p className="text-gray-400 text-xs mt-2">
-                        🗺️ Interactive map at coordinates: {coordinates.lat.toFixed(6)}, {coordinates.lng.toFixed(6)}
-                      </p>
-                      <a
-                        href={`https://www.google.com/maps?q=${coordinates.lat},${coordinates.lng}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block mt-2 text-blue-400 hover:text-blue-300 text-xs underline"
-                      >
-                        🔗 Open in Google Maps
-                      </a>
+                      
+                      {/* Map Links */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <a
+                          href={`https://www.google.com/maps?q=${coordinates.lat},${coordinates.lng}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm font-semibold text-center transition-all"
+                        >
+                          🌍 Open in Google Maps
+                        </a>
+                        <a
+                          href={`https://www.openstreetmap.org/?mlat=${coordinates.lat}&mlon=${coordinates.lng}#map=15/${coordinates.lat}/${coordinates.lng}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white text-sm font-semibold text-center transition-all"
+                        >
+                          🗺️ Open in OpenStreetMap
+                        </a>
+                      </div>
                     </div>
                   </div>
                 )}
