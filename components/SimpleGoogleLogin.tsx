@@ -7,24 +7,35 @@ export default function SimpleGoogleLogin() {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleGoogleLogin = () => {
-    setIsLoading(true)
-    
-    // Simple Google OAuth URL approach
-    const clientId = '187601325863-45db1i9onqndts56g42ccub6gf0onqss.apps.googleusercontent.com'
-    const redirectUri = encodeURIComponent(window.location.origin + '/auth/callback')
-    const scope = encodeURIComponent('openid email profile')
-    
-    const googleAuthUrl = `https://accounts.google.com/oauth/authorize?` +
-      `client_id=${clientId}&` +
-      `redirect_uri=${redirectUri}&` +
-      `scope=${scope}&` +
-      `response_type=code&` +
-      `access_type=offline`
-    
-    console.log('🔗 Redirecting to Google OAuth:', googleAuthUrl)
-    
-    // Redirect to Google OAuth
-    window.location.href = googleAuthUrl
+    try {
+      setIsLoading(true)
+      
+      // Simple Google OAuth URL approach
+      const clientId = '187601325863-45db1i9onqndts56g42ccub6gf0onqss.apps.googleusercontent.com'
+      const redirectUri = encodeURIComponent(window.location.origin + '/auth/callback')
+      const scope = encodeURIComponent('openid email profile')
+      
+      const googleAuthUrl = `https://accounts.google.com/oauth/authorize?` +
+        `client_id=${clientId}&` +
+        `redirect_uri=${redirectUri}&` +
+        `scope=${scope}&` +
+        `response_type=code&` +
+        `access_type=offline`
+      
+      console.log('🔗 Redirecting to Google OAuth:', googleAuthUrl)
+      console.log('📍 Current origin:', window.location.origin)
+      console.log('🔑 Client ID:', clientId.substring(0, 20) + '...')
+      
+      // Show success message
+      toast.success('Redirecting to Google OAuth...', { icon: '🔗' })
+      
+      // Redirect to Google OAuth
+      window.location.href = googleAuthUrl
+    } catch (error) {
+      console.error('❌ Google OAuth error:', error)
+      toast.error('Failed to initiate Google OAuth', { icon: '❌' })
+      setIsLoading(false)
+    }
   }
 
   return (
