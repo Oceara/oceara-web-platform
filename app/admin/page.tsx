@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
 import toast from 'react-hot-toast'
 import SatelliteImageViewer from '@/components/SatelliteImageViewer'
-import SimpleSatelliteViewer from '@/components/SimpleSatelliteViewer'
+import WorkingSatelliteViewer from '@/components/WorkingSatelliteViewer'
 
 export default function AdminDashboard() {
   const { projects, updateProject, getPendingProjects, getVerifiedProjects } = useData()
@@ -822,7 +822,7 @@ export default function AdminDashboard() {
 
       {/* Earth Engine Satellite Viewer */}
       {showEarthEngine && selectedProject && (
-        <SimpleSatelliteViewer
+        <WorkingSatelliteViewer
           coordinates={selectedProject.coordinates}
           projectName={selectedProject.name}
           area={selectedProject.area}
