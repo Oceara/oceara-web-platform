@@ -7,7 +7,13 @@ export default function TestGooglePage() {
 
   const generateGoogleAuthUrl = () => {
     const clientId = '187601325863-45db1i9onqndts56g42ccub6gf0onqss.apps.googleusercontent.com'
-    const redirectUri = encodeURIComponent(window.location.origin + '/auth/callback')
+    
+    // Show both localhost and production URLs
+    const isLocalhost = window.location.hostname === 'localhost'
+    const redirectUri = isLocalhost 
+      ? encodeURIComponent('http://localhost:3000/auth/callback')
+      : encodeURIComponent('https://oceara-web-platform.vercel.app/auth/callback')
+    
     const scope = encodeURIComponent('openid email profile')
     
     const googleAuthUrl = `https://accounts.google.com/oauth/authorize?` +
@@ -19,6 +25,7 @@ export default function TestGooglePage() {
     
     setTestUrl(googleAuthUrl)
     console.log('🔗 Generated Google Auth URL:', googleAuthUrl)
+    console.log('📍 Current environment:', isLocalhost ? 'localhost' : 'production')
   }
 
   const testGoogleAuth = () => {
@@ -67,8 +74,16 @@ export default function TestGooglePage() {
               <span className="ml-2 text-white">187601325863-45db1i9onqndts56g42ccub6gf0onqss.apps.googleusercontent.com</span>
             </div>
             <div>
-              <span className="text-gray-400">Redirect URI:</span>
-              <span className="ml-2 text-white">{window.location.origin}/auth/callback</span>
+              <span className="text-gray-400">Current Environment:</span>
+              <span className="ml-2 text-white">{window.location.hostname === 'localhost' ? 'localhost' : 'production'}</span>
+            </div>
+            <div>
+              <span className="text-gray-400">Redirect URI (localhost):</span>
+              <span className="ml-2 text-white">http://localhost:3000/auth/callback</span>
+            </div>
+            <div>
+              <span className="text-gray-400">Redirect URI (production):</span>
+              <span className="ml-2 text-white">https://oceara-web-platform.vercel.app/auth/callback</span>
             </div>
             <div>
               <span className="text-gray-400">Scope:</span>
@@ -81,9 +96,11 @@ export default function TestGooglePage() {
           <h2 className="text-xl font-bold text-yellow-400 mb-4">Troubleshooting</h2>
           <ul className="space-y-2 text-yellow-200">
             <li>• If the URL doesn't work, check Google Cloud Console OAuth settings</li>
-            <li>• Make sure redirect URI is authorized: <code className="bg-gray-700 px-2 py-1 rounded">{window.location.origin}/auth/callback</code></li>
+            <li>• For localhost: Add <code className="bg-gray-700 px-2 py-1 rounded">http://localhost:3000/auth/callback</code></li>
+            <li>• For production: Add <code className="bg-gray-700 px-2 py-1 rounded">https://oceara-web-platform.vercel.app/auth/callback</code></li>
             <li>• Check that the Client ID is correct and active</li>
             <li>• Verify OAuth consent screen is configured</li>
+            <li>• <strong>Try the production URL:</strong> <a href="https://oceara-web-platform.vercel.app" target="_blank" className="text-blue-300 hover:text-blue-200">https://oceara-web-platform.vercel.app</a></li>
           </ul>
         </div>
 

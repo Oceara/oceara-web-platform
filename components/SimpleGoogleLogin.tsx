@@ -12,7 +12,13 @@ export default function SimpleGoogleLogin() {
       
       // Simple Google OAuth URL approach
       const clientId = '187601325863-45db1i9onqndts56g42ccub6gf0onqss.apps.googleusercontent.com'
-      const redirectUri = encodeURIComponent(window.location.origin + '/auth/callback')
+      
+      // Use production URL if available, otherwise localhost
+      const isLocalhost = window.location.hostname === 'localhost'
+      const redirectUri = isLocalhost 
+        ? encodeURIComponent('http://localhost:3000/auth/callback')
+        : encodeURIComponent('https://oceara-web-platform.vercel.app/auth/callback')
+      
       const scope = encodeURIComponent('openid email profile')
       
       const googleAuthUrl = `https://accounts.google.com/oauth/authorize?` +
