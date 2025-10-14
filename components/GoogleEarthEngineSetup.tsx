@@ -10,7 +10,7 @@ interface GoogleEarthEngineSetupProps {
 }
 
 export default function GoogleEarthEngineSetup({ onClose }: GoogleEarthEngineSetupProps) {
-  const [apiKey, setApiKey] = useState('')
+  const [clientId, setClientId] = useState('')
   const [projectId, setProjectId] = useState('')
   const [isConfiguring, setIsConfiguring] = useState(false)
   const [configStatus, setConfigStatus] = useState<any>(null)
@@ -22,8 +22,8 @@ export default function GoogleEarthEngineSetup({ onClose }: GoogleEarthEngineSet
   }, [])
 
   const handleConfigure = async () => {
-    if (!apiKey || !projectId) {
-      toast.error('Please enter both API Key and Project ID', { icon: '⚠️' })
+    if (!clientId || !projectId) {
+      toast.error('Please enter both Client ID and Project ID', { icon: '⚠️' })
       return
     }
 
@@ -32,7 +32,7 @@ export default function GoogleEarthEngineSetup({ onClose }: GoogleEarthEngineSet
       // In a real implementation, you'd save these to environment variables
       // For now, we'll just test the configuration
       const testStatus = {
-        hasApiKey: apiKey !== '' && apiKey !== 'your_api_key_here',
+        hasClientId: clientId !== '' && clientId !== 'your_client_id_here',
         hasProjectId: projectId !== '' && projectId !== 'your_project_id_here',
         isInitialized: false,
         ready: false
@@ -73,8 +73,8 @@ export default function GoogleEarthEngineSetup({ onClose }: GoogleEarthEngineSet
     },
     {
       number: 3,
-      title: 'Get API Credentials',
-      description: 'Create an API key and service account in Google Cloud Console',
+      title: 'Create OAuth 2.0 Credentials',
+      description: 'Create OAuth client ID for web application in Google Cloud Console',
       link: 'https://console.cloud.google.com/apis/credentials',
       completed: false
     },
@@ -186,9 +186,9 @@ export default function GoogleEarthEngineSetup({ onClose }: GoogleEarthEngineSet
                 {configStatus && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 bg-slate-700 rounded-lg">
-                      <span className="text-gray-300">API Key</span>
-                      <span className={`font-bold ${configStatus.hasApiKey ? 'text-green-400' : 'text-red-400'}`}>
-                        {configStatus.hasApiKey ? '✅ Configured' : '❌ Missing'}
+                      <span className="text-gray-300">OAuth Client ID</span>
+                      <span className={`font-bold ${configStatus.hasClientId ? 'text-green-400' : 'text-red-400'}`}>
+                        {configStatus.hasClientId ? '✅ Configured' : '❌ Missing'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-slate-700 rounded-lg">
@@ -218,14 +218,17 @@ export default function GoogleEarthEngineSetup({ onClose }: GoogleEarthEngineSet
                 <h3 className="text-xl font-bold text-white mb-4">⚙️ Quick Configuration</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-white font-semibold mb-2">Google Earth Engine API Key</label>
+                    <label className="block text-white font-semibold mb-2">Google OAuth 2.0 Client ID</label>
                     <input
-                      type="password"
-                      value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
-                      placeholder="Enter your API key..."
+                      type="text"
+                      value={clientId}
+                      onChange={(e) => setClientId(e.target.value)}
+                      placeholder="Enter your OAuth client ID..."
                       className="w-full px-4 py-3 bg-slate-700 border-2 border-slate-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
                     />
+                    <p className="text-gray-400 text-sm mt-1">
+                      Format: 123456789-abc123def456.apps.googleusercontent.com
+                    </p>
                   </div>
                   <div>
                     <label className="block text-white font-semibold mb-2">Google Cloud Project ID</label>
@@ -239,7 +242,7 @@ export default function GoogleEarthEngineSetup({ onClose }: GoogleEarthEngineSet
                   </div>
                   <button
                     onClick={handleConfigure}
-                    disabled={isConfiguring || !apiKey || !projectId}
+                    disabled={isConfiguring || !clientId || !projectId}
                     className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 px-6 py-3 rounded-lg text-white font-semibold transition-all flex items-center justify-center gap-2"
                   >
                     {isConfiguring ? (
@@ -264,7 +267,7 @@ export default function GoogleEarthEngineSetup({ onClose }: GoogleEarthEngineSet
                   <div className="p-3 bg-slate-900 rounded-lg">
                     <div className="text-gray-400 text-sm mb-1">Add to your .env.local file:</div>
                     <code className="text-green-400 text-sm block">
-                      NEXT_PUBLIC_GOOGLE_EARTH_ENGINE_API_KEY=your_api_key_here
+                      NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_client_id_here
                     </code>
                     <code className="text-green-400 text-sm block">
                       NEXT_PUBLIC_GOOGLE_EARTH_ENGINE_PROJECT_ID=your_project_id_here

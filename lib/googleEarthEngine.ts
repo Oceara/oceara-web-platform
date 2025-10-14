@@ -30,17 +30,18 @@ interface VegetationAnalysis {
 }
 
 export class GoogleEarthEngineService {
-  private apiKey: string
+  private clientId: string
   private projectId: string
   private isInitialized: boolean = false
+  private accessToken: string | null = null
 
   constructor() {
-    this.apiKey = process.env.NEXT_PUBLIC_GOOGLE_EARTH_ENGINE_API_KEY || ''
+    this.clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
     this.projectId = process.env.NEXT_PUBLIC_GOOGLE_EARTH_ENGINE_PROJECT_ID || ''
   }
 
   /**
-   * Initialize Google Earth Engine API
+   * Initialize Google Earth Engine API with OAuth 2.0
    */
   async initialize(): Promise<boolean> {
     if (this.isInitialized) return true
@@ -51,12 +52,12 @@ export class GoogleEarthEngineService {
         await this.loadEarthEngineScript()
       }
       
-      // Initialize with API key
-      if (window.ee && this.apiKey) {
-        // In production, you'd authenticate with the API key
-        // For now, we'll simulate the initialization
+      // Initialize with OAuth 2.0
+      if (window.ee && this.clientId) {
+        // Authenticate with OAuth 2.0
+        await this.authenticateWithOAuth()
         this.isInitialized = true
-        console.log('✅ Google Earth Engine initialized')
+        console.log('✅ Google Earth Engine initialized with OAuth 2.0')
         return true
       }
       
@@ -65,6 +66,44 @@ export class GoogleEarthEngineService {
       console.error('❌ Failed to initialize Google Earth Engine:', error)
       return false
     }
+  }
+
+  /**
+   * Authenticate with Google OAuth 2.0
+   */
+  private async authenticateWithOAuth(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (typeof window === 'undefined') {
+        reject(new Error('Window not available'))
+        return
+      }
+
+      // Load Google Identity Services
+      const script = document.createElement('script')
+      script.src = 'https://accounts.google.com/gsi/client'
+      script.onload = () => {
+        // Initialize Google Identity Services
+        if (window.google) {
+          window.google.accounts.oauth2.initTokenClient({
+            client_id: this.clientId,
+            scope: 'https://www.googleapis.com/auth/earthengine',
+            callback: (response: any) => {
+              this.accessToken = response.access_token
+              console.log('✅ OAuth 2.0 authentication successful')
+              resolve()
+            },
+            error_callback: (error: any) => {
+              console.error('❌ OAuth 2.0 authentication failed:', error)
+              reject(error)
+            }
+          })
+        } else {
+          reject(new Error('Google Identity Services not loaded'))
+        }
+      }
+      script.onerror = () => reject(new Error('Failed to load Google Identity Services'))
+      document.head.appendChild(script)
+    })
   }
 
   /**
@@ -317,20 +356,20 @@ export class GoogleEarthEngineService {
    * Check if Earth Engine is properly configured
    */
   isConfigured(): boolean {
-    return this.apiKey !== '' && this.projectId !== '' && this.apiKey !== 'your_api_key_here'
+    return this.clientId !== '' && this.projectId !== '' && this.clientId !== 'your_client_id_here'
   }
 
   /**
    * Get configuration status
    */
   getConfigurationStatus(): {
-    hasApiKey: boolean
+    hasClientId: boolean
     hasProjectId: boolean
     isInitialized: boolean
     ready: boolean
   } {
     return {
-      hasApiKey: this.apiKey !== '' && this.apiKey !== 'your_api_key_here',
+      hasClientId: this.clientId !== '' && this.clientId !== 'your_client_id_here',
       hasProjectId: this.projectId !== '' && this.projectId !== 'your_project_id_here',
       isInitialized: this.isInitialized,
       ready: this.isConfigured() && this.isInitialized

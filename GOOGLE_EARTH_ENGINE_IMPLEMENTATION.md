@@ -31,29 +31,39 @@
    - "Maps JavaScript API" (for fallback)
 3. **Wait for activation** (5-10 minutes)
 
-## Step 3: Get API Credentials
+## Step 3: Get OAuth 2.0 Credentials
 
-### 3.1 Create API Key
+### 3.1 Create OAuth 2.0 Client ID
 1. **Go to**: "APIs & Services" → "Credentials"
-2. **Click "Create Credentials"** → "API Key"
-3. **Copy the API key** (starts with "AIza...")
-4. **Restrict the key** (optional but recommended):
-   - Application restrictions: HTTP referrers
-   - Add your domain: `yourdomain.com/*`
+2. **Click "Create Credentials"** → **"OAuth client ID"**
+3. **Application type**: Select **"Web application"**
+4. **Name**: "Oceara Earth Engine Client"
+5. **Authorized JavaScript origins**:
+   ```
+   http://localhost:3000
+   https://yourdomain.com
+   ```
+6. **Authorized redirect URIs**:
+   ```
+   http://localhost:3000/auth/callback
+   https://yourdomain.com/auth/callback
+   ```
+7. **Click "Create"**
+8. **Copy the Client ID** (starts with something like `123456789-abc...`)
 
-### 3.2 Create Service Account (for server-side)
-1. **Click "Create Credentials"** → "Service Account"
-2. **Name**: "earth-engine-service"
-3. **Role**: "Earth Engine User"
-4. **Click "Create and Continue"**
-5. **Download JSON key file**
+### 3.2 Why OAuth 2.0?
+- ✅ **Works in browsers** (client-side)
+- ✅ **No server required** for authentication
+- ✅ **User-friendly** - users authenticate with their Google account
+- ✅ **Secure** - tokens managed by Google
+- ✅ **Perfect for web apps** like yours
 
 ## Step 4: Configure Environment Variables
 
 ### 4.1 Create .env.local file
 ```bash
-# Google Earth Engine Configuration
-NEXT_PUBLIC_GOOGLE_EARTH_ENGINE_API_KEY=AIzaSyYour_Actual_API_Key_Here
+# Google Earth Engine OAuth 2.0 Configuration
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789-abc123def456.apps.googleusercontent.com
 NEXT_PUBLIC_GOOGLE_EARTH_ENGINE_PROJECT_ID=your-project-id-here
 
 # Google Maps (fallback)
