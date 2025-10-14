@@ -10,8 +10,8 @@ interface GoogleEarthEngineSetupProps {
 }
 
 export default function GoogleEarthEngineSetup({ onClose }: GoogleEarthEngineSetupProps) {
-  const [clientId, setClientId] = useState('')
-  const [projectId, setProjectId] = useState('')
+  const [clientId, setClientId] = useState('187601325863-45db1i9onqndts56g42ccub6gf0onqss.apps.googleusercontent.com')
+  const [projectId, setProjectId] = useState('oceara-satellite-platform')
   const [isConfiguring, setIsConfiguring] = useState(false)
   const [configStatus, setConfigStatus] = useState<any>(null)
 

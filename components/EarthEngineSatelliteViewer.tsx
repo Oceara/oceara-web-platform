@@ -74,31 +74,23 @@ export default function EarthEngineSatelliteViewer({
   }
 
   const tryFallbackImage = () => {
-    // Try alternative image sources
-    const fallbackSources = [
-      // Mapbox satellite
-      `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${coordinates.lng},${coordinates.lat},${zoom}/1200x1200@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw`,
-      // OpenStreetMap
-      `https://tile.openstreetmap.org/${Math.floor(zoom)}/${Math.floor((coordinates.lng + 180) / 360 * Math.pow(2, zoom))}/${Math.floor((1 - Math.log(Math.tan(coordinates.lat * Math.PI / 180) + 1 / Math.cos(coordinates.lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom))}.png`,
-      // NASA Worldview
-      `https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${new Date().toISOString().split('T')[0]}/250m/${Math.floor(zoom)}/${Math.floor((coordinates.lat + 90) / 180 * Math.pow(2, zoom))}/${Math.floor((coordinates.lng + 180) / 360 * Math.pow(2, zoom))}.jpg`
-    ]
-
-    // Try each fallback source
-    let sourceIndex = 0
-    const tryNextSource = () => {
-      if (sourceIndex < fallbackSources.length) {
-        setCurrentImageUrl(fallbackSources[sourceIndex])
-        setImageError(false)
-        sourceIndex++
-      } else {
-        // All sources failed, show error message
-        toast.error('Unable to load satellite imagery from any source', { icon: '⚠️' })
-      }
+    // Get all available image sources from the service
+    const allSources = earthEngineService.getImageSources(coordinates, viewType, zoom)
+    
+    // Find current source index
+    const currentIndex = allSources.indexOf(currentImageUrl)
+    const nextIndex = currentIndex + 1
+    
+    if (nextIndex < allSources.length) {
+      // Try next source
+      setCurrentImageUrl(allSources[nextIndex])
+      setImageError(false)
+      console.log(`🔄 Trying fallback source ${nextIndex + 1}/${allSources.length}`)
+    } else {
+      // All sources failed, show error message
+      console.error('❌ All image sources failed to load')
+      toast.error('Unable to load satellite imagery from any source', { icon: '⚠️' })
     }
-
-    // Try first fallback immediately
-    setTimeout(tryNextSource, 1000)
   }
 
   const viewTypes = [
@@ -224,10 +216,13 @@ export default function EarthEngineSatelliteViewer({
                             console.log('✅ Satellite image loaded successfully')
                           }}
                           onError={(e) => {
-                            console.error('❌ Satellite image failed to load, trying fallback...')
+                            console.error('❌ Satellite image failed to load:', e)
+                            console.log('Current URL:', currentImageUrl)
                             setImageError(true)
-                            // Try fallback sources
-                            tryFallbackImage()
+                            // Try fallback sources after a short delay
+                            setTimeout(() => {
+                              tryFallbackImage()
+                            }, 500)
                           }}
                         />
                       ) : (
@@ -291,8 +286,10 @@ export default function EarthEngineSatelliteViewer({
                       <button
                         onClick={() => {
                           setImageError(false)
+                          // Reset to first source
                           const newUrl = earthEngineService.getSentinelImageUrl(coordinates, viewType, zoom)
                           setCurrentImageUrl(newUrl)
+                          console.log('🔄 Resetting to primary image source')
                         }}
                         className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white font-semibold flex items-center gap-2"
                       >

@@ -254,6 +254,9 @@ export class EarthEngineService {
     // Try multiple image sources for reliability
     const sources = this.getImageSources(coordinates, visualizationType, zoom)
     
+    console.log(`🛰️ Generated ${sources.length} image sources for ${visualizationType}`)
+    console.log('Primary source:', sources[0])
+    
     // Return the first (most reliable) source
     return sources[0]
   }
@@ -261,16 +264,21 @@ export class EarthEngineService {
   /**
    * Get multiple image sources as fallbacks
    */
-  private getImageSources(
+  getImageSources(
     coordinates: Coordinates,
     visualizationType: 'true-color' | 'ndvi' | 'false-color' | 'moisture',
     zoom: number
   ): string[] {
     const sources: string[] = []
     
+    console.log(`🔍 Generating image sources for: ${visualizationType} at zoom ${zoom}`)
+    console.log(`📍 Coordinates: ${coordinates.lat}, ${coordinates.lng}`)
+    
     // 1. Google Maps Static API (most reliable)
     const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8'
     const size = '1200x1200'
+    
+    console.log(`🗝️ Google Maps API Key: ${googleMapsKey.substring(0, 20)}...`)
     
     switch (visualizationType) {
       case 'true-color':

@@ -78,17 +78,27 @@ export class GoogleEarthEngineService {
         return
       }
 
+      // Check if already authenticated
+      const storedToken = localStorage.getItem('google_access_token')
+      if (storedToken) {
+        this.accessToken = storedToken
+        console.log('✅ Using stored OAuth token')
+        resolve()
+        return
+      }
+
       // Load Google Identity Services
       const script = document.createElement('script')
       script.src = 'https://accounts.google.com/gsi/client'
       script.onload = () => {
         // Initialize Google Identity Services
         if (window.google) {
-          window.google.accounts.oauth2.initTokenClient({
+          const client = window.google.accounts.oauth2.initTokenClient({
             client_id: this.clientId,
             scope: 'https://www.googleapis.com/auth/earthengine',
             callback: (response: any) => {
               this.accessToken = response.access_token
+              localStorage.setItem('google_access_token', response.access_token)
               console.log('✅ OAuth 2.0 authentication successful')
               resolve()
             },
@@ -97,6 +107,9 @@ export class GoogleEarthEngineService {
               reject(error)
             }
           })
+          
+          // Request access token
+          client.requestAccessToken()
         } else {
           reject(new Error('Google Identity Services not loaded'))
         }

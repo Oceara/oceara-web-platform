@@ -22,7 +22,8 @@ export class GoogleAuthService {
   private isInitialized: boolean = false
 
   constructor() {
-    this.clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
+    this.clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '187601325863-45db1i9onqndts56g42ccub6gf0onqss.apps.googleusercontent.com'
+    console.log('🔧 GoogleAuthService initialized with clientId:', this.clientId ? `${this.clientId.substring(0, 20)}...` : 'NOT SET')
   }
 
   /**
@@ -94,10 +95,12 @@ export class GoogleAuthService {
           client_id: this.clientId,
           scope: 'openid email profile https://www.googleapis.com/auth/earthengine',
           callback: (response: any) => {
+            console.log('OAuth response received:', response)
             if (response.access_token) {
               // Get user info
               this.getUserInfo(response.access_token)
                 .then((userInfo) => {
+                  console.log('User info retrieved:', userInfo)
                   resolve({
                     success: true,
                     user: userInfo,
@@ -105,12 +108,14 @@ export class GoogleAuthService {
                   })
                 })
                 .catch((error) => {
+                  console.error('Error getting user info:', error)
                   resolve({
                     success: false,
                     error: error.message
                   })
                 })
             } else {
+              console.error('No access token in response:', response)
               resolve({
                 success: false,
                 error: 'No access token received'
@@ -127,6 +132,7 @@ export class GoogleAuthService {
         })
 
         // Request access token
+        console.log('Requesting access token...')
         client.requestAccessToken()
       })
     } catch (error) {
@@ -225,7 +231,12 @@ export class GoogleAuthService {
    * Check if Google Auth is configured
    */
   isConfigured(): boolean {
-    return this.clientId !== '' && this.clientId !== 'your_client_id_here'
+    const isConfigured = this.clientId !== '' && this.clientId !== 'your_client_id_here'
+    console.log('🔍 Google Auth configured check:', {
+      clientId: this.clientId ? `${this.clientId.substring(0, 20)}...` : 'NOT SET',
+      isConfigured
+    })
+    return isConfigured
   }
 }
 
