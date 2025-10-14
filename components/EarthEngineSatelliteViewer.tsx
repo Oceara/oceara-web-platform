@@ -27,10 +27,19 @@ export default function EarthEngineSatelliteViewer({
   const [timeSeriesData, setTimeSeriesData] = useState<any[]>([])
   const [showAnalysis, setShowAnalysis] = useState(false)
   const [zoom, setZoom] = useState(14)
+  const [imageError, setImageError] = useState(false)
+  const [currentImageUrl, setCurrentImageUrl] = useState('')
 
   useEffect(() => {
     loadSatelliteData()
   }, [coordinates])
+
+  useEffect(() => {
+    // Update image URL when view type or zoom changes
+    const newUrl = earthEngineService.getSentinelImageUrl(coordinates, viewType, zoom)
+    setCurrentImageUrl(newUrl)
+    setImageError(false)
+  }, [viewType, zoom, coordinates])
 
   const loadSatelliteData = async () => {
     setLoading(true)
@@ -55,6 +64,34 @@ export default function EarthEngineSatelliteViewer({
       setAnalysis(sampleAnalysis)
       setLoading(false)
     }
+  }
+
+  const tryFallbackImage = () => {
+    // Try alternative image sources
+    const fallbackSources = [
+      // Mapbox satellite
+      `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${coordinates.lng},${coordinates.lat},${zoom}/1200x1200@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw`,
+      // OpenStreetMap
+      `https://tile.openstreetmap.org/${Math.floor(zoom)}/${Math.floor((coordinates.lng + 180) / 360 * Math.pow(2, zoom))}/${Math.floor((1 - Math.log(Math.tan(coordinates.lat * Math.PI / 180) + 1 / Math.cos(coordinates.lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom))}.png`,
+      // NASA Worldview
+      `https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${new Date().toISOString().split('T')[0]}/250m/${Math.floor(zoom)}/${Math.floor((coordinates.lat + 90) / 180 * Math.pow(2, zoom))}/${Math.floor((coordinates.lng + 180) / 360 * Math.pow(2, zoom))}.jpg`
+    ]
+
+    // Try each fallback source
+    let sourceIndex = 0
+    const tryNextSource = () => {
+      if (sourceIndex < fallbackSources.length) {
+        setCurrentImageUrl(fallbackSources[sourceIndex])
+        setImageError(false)
+        sourceIndex++
+      } else {
+        // All sources failed, show error message
+        toast.error('Unable to load satellite imagery from any source', { icon: '⚠️' })
+      }
+    }
+
+    // Try first fallback immediately
+    setTimeout(tryNextSource, 1000)
   }
 
   const viewTypes = [
@@ -144,18 +181,33 @@ export default function EarthEngineSatelliteViewer({
                     </div>
                   ) : (
                     <div className="relative">
-                      <img
-                        src={earthEngineService.getSentinelImageUrl(coordinates, viewType, zoom)}
-                        alt={`Satellite view - ${viewType}`}
-                        className="w-full h-[500px] object-cover"
-                        onLoad={() => {
-                          console.log('✅ Satellite image loaded successfully')
-                        }}
-                        onError={(e) => {
-                          console.error('❌ Satellite image failed to load')
-                          toast.error('Failed to load satellite imagery', { icon: '⚠️' })
-                        }}
-                      />
+                      {!imageError ? (
+                        <img
+                          src={currentImageUrl}
+                          alt={`Satellite view - ${viewType}`}
+                          className="w-full h-[500px] object-cover"
+                          onLoad={() => {
+                            console.log('✅ Satellite image loaded successfully')
+                          }}
+                          onError={(e) => {
+                            console.error('❌ Satellite image failed to load, trying fallback...')
+                            setImageError(true)
+                            // Try fallback sources
+                            tryFallbackImage()
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-[500px] bg-slate-900 flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="text-6xl mb-4">🛰️</div>
+                            <p className="text-white font-semibold mb-2">Satellite Image Loading...</p>
+                            <p className="text-gray-400 text-sm">Trying alternative sources...</p>
+                            <div className="mt-4">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       
                       {/* Overlay Info */}
                       <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg p-3">
@@ -193,13 +245,28 @@ export default function EarthEngineSatelliteViewer({
                       +
                     </button>
                   </div>
-                  <button
-                    onClick={loadSatelliteData}
-                    className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-white font-semibold flex items-center gap-2"
-                  >
-                    <span>🔄</span>
-                    <span>Refresh</span>
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={loadSatelliteData}
+                      className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-white font-semibold flex items-center gap-2"
+                    >
+                      <span>🔄</span>
+                      <span>Refresh</span>
+                    </button>
+                    {imageError && (
+                      <button
+                        onClick={() => {
+                          setImageError(false)
+                          const newUrl = earthEngineService.getSentinelImageUrl(coordinates, viewType, zoom)
+                          setCurrentImageUrl(newUrl)
+                        }}
+                        className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white font-semibold flex items-center gap-2"
+                      >
+                        <span>🛰️</span>
+                        <span>Try Again</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 

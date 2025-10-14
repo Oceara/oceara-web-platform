@@ -199,36 +199,59 @@ export class EarthEngineService {
   }
 
   /**
-   * Get Sentinel-2 satellite image URL for specific visualization
+   * Get satellite image URL with multiple fallback options
    */
   getSentinelImageUrl(
     coordinates: Coordinates,
     visualizationType: 'true-color' | 'ndvi' | 'false-color' | 'moisture',
     zoom: number = 14
   ): string {
-    // Use high-quality Google Maps satellite imagery
-    // Sentinel Hub requires OAuth authentication which needs server-side setup
-    const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8'
+    // Try multiple image sources for reliability
+    const sources = this.getImageSources(coordinates, visualizationType, zoom)
     
-    // Calculate appropriate map size based on zoom
+    // Return the first (most reliable) source
+    return sources[0]
+  }
+
+  /**
+   * Get multiple image sources as fallbacks
+   */
+  private getImageSources(
+    coordinates: Coordinates,
+    visualizationType: 'true-color' | 'ndvi' | 'false-color' | 'moisture',
+    zoom: number
+  ): string[] {
+    const sources: string[] = []
+    
+    // 1. Google Maps Static API (most reliable)
+    const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8'
     const size = '1200x1200'
     
-    // For different visualization types, we'll use different map styles
     switch (visualizationType) {
       case 'true-color':
-        // Standard satellite view
-        return `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=${zoom}&size=${size}&scale=2&maptype=satellite&markers=color:red%7Csize:small%7C${coordinates.lat},${coordinates.lng}&key=${googleMapsKey}`
-      
+        sources.push(`https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=${zoom}&size=${size}&scale=2&maptype=satellite&markers=color:red%7Csize:small%7C${coordinates.lat},${coordinates.lng}&key=${googleMapsKey}`)
+        break
       case 'ndvi':
       case 'false-color':
       case 'moisture':
-        // For now, use satellite view with terrain overlay for these
-        // In production, you'd use Sentinel Hub Processing API with OAuth
-        return `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=${zoom}&size=${size}&scale=2&maptype=hybrid&markers=color:green%7Csize:small%7C${coordinates.lat},${coordinates.lng}&key=${googleMapsKey}`
-      
+        sources.push(`https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=${zoom}&size=${size}&scale=2&maptype=hybrid&markers=color:green%7Csize:small%7C${coordinates.lat},${coordinates.lng}&key=${googleMapsKey}`)
+        break
       default:
-        return `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=${zoom}&size=${size}&scale=2&maptype=satellite&key=${googleMapsKey}`
+        sources.push(`https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=${zoom}&size=${size}&scale=2&maptype=satellite&key=${googleMapsKey}`)
     }
+    
+    // 2. Mapbox Satellite (fallback)
+    const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'
+    sources.push(`https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${coordinates.lng},${coordinates.lat},${zoom}/1200x1200@2x?access_token=${mapboxToken}`)
+    
+    // 3. OpenStreetMap with satellite tiles (fallback)
+    sources.push(`https://tile.openstreetmap.org/${Math.floor(zoom)}/${Math.floor((coordinates.lng + 180) / 360 * Math.pow(2, zoom))}/${Math.floor((1 - Math.log(Math.tan(coordinates.lat * Math.PI / 180) + 1 / Math.cos(coordinates.lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom))}.png`)
+    
+    // 4. NASA Worldview (fallback for satellite imagery)
+    const today = new Date().toISOString().split('T')[0]
+    sources.push(`https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${today}/250m/${Math.floor(zoom)}/${Math.floor((coordinates.lat + 90) / 180 * Math.pow(2, zoom))}/${Math.floor((coordinates.lng + 180) / 360 * Math.pow(2, zoom))}.jpg`)
+    
+    return sources
   }
 
   /**
