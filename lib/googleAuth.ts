@@ -1,4 +1,4 @@
-// Google OAuth 2.0 Authentication Service
+// Google OAuth 2.0 Authentication Service - Optimized Version
 // Handles Google login/signup and Earth Engine authentication
 
 interface GoogleUser {
@@ -22,31 +22,43 @@ export class GoogleAuthService {
   private isInitialized: boolean = false
 
   constructor() {
-    this.clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '187601325863-45db1i9onqndts56g42ccub6gf0onqss.apps.googleusercontent.com'
-    console.log('🔧 GoogleAuthService initialized with clientId:', this.clientId ? `${this.clientId.substring(0, 20)}...` : 'NOT SET')
+    // Use hardcoded credentials for immediate functionality
+    this.clientId = '187601325863-45db1i9onqndts56g42ccub6gf0onqss.apps.googleusercontent.com'
+    console.log('🔧 GoogleAuthService initialized with clientId:', this.clientId.substring(0, 20) + '...')
+  }
+
+  /**
+   * Check if Google Auth is configured
+   */
+  isConfigured(): boolean {
+    const isConfigured = this.clientId !== '' && this.clientId.length > 20
+    console.log('🔍 Google Auth configured check:', {
+      clientId: this.clientId.substring(0, 20) + '...',
+      isConfigured
+    })
+    return isConfigured
   }
 
   /**
    * Initialize Google Identity Services
    */
   async initialize(): Promise<boolean> {
-    if (this.isInitialized) return true
+    if (this.isInitialized) {
+      return true
+    }
 
     try {
-      if (typeof window === 'undefined') return false
-
-      // Load Google Identity Services
+      // Load Google Identity Services script
       await this.loadGoogleScript()
       
-      if (window.google) {
-        this.isInitialized = true
-        console.log('✅ Google Auth initialized')
-        return true
-      }
+      // Wait for Google to be available
+      await this.waitForGoogle()
       
-      return false
+      this.isInitialized = true
+      console.log('✅ Google Identity Services initialized successfully')
+      return true
     } catch (error) {
-      console.error('❌ Failed to initialize Google Auth:', error)
+      console.error('❌ Failed to initialize Google Identity Services:', error)
       return false
     }
   }
@@ -54,15 +66,15 @@ export class GoogleAuthService {
   /**
    * Load Google Identity Services script
    */
-  private async loadGoogleScript(): Promise<void> {
+  private loadGoogleScript(): Promise<void> {
     return new Promise((resolve, reject) => {
       if (typeof window === 'undefined') {
         reject(new Error('Window not available'))
         return
       }
 
-      // Check if already loaded
-      if (window.google) {
+      // Check if script is already loaded
+      if (window.google && window.google.accounts) {
         resolve()
         return
       }
@@ -72,10 +84,42 @@ export class GoogleAuthService {
       script.async = true
       script.defer = true
       
-      script.onload = () => resolve()
-      script.onerror = () => reject(new Error('Failed to load Google Identity Services'))
+      script.onload = () => {
+        console.log('✅ Google Identity Services script loaded')
+        resolve()
+      }
+      
+      script.onerror = () => {
+        console.error('❌ Failed to load Google Identity Services script')
+        reject(new Error('Failed to load Google Identity Services'))
+      }
       
       document.head.appendChild(script)
+    })
+  }
+
+  /**
+   * Wait for Google object to be available
+   */
+  private waitForGoogle(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      let attempts = 0
+      const maxAttempts = 50 // 5 seconds max wait
+      
+      const checkGoogle = () => {
+        attempts++
+        
+        if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+          console.log('✅ Google object available')
+          resolve()
+        } else if (attempts >= maxAttempts) {
+          reject(new Error('Google object not available after timeout'))
+        } else {
+          setTimeout(checkGoogle, 100)
+        }
+      }
+      
+      checkGoogle()
     })
   }
 
@@ -84,9 +128,11 @@ export class GoogleAuthService {
    */
   async signIn(): Promise<AuthResponse> {
     try {
+      console.log('🚀 Starting Google sign-in process...')
+      
       await this.initialize()
       
-      if (!window.google) {
+      if (!window.google || !window.google.accounts) {
         throw new Error('Google Identity Services not loaded')
       }
 
@@ -95,12 +141,12 @@ export class GoogleAuthService {
           client_id: this.clientId,
           scope: 'openid email profile https://www.googleapis.com/auth/earthengine',
           callback: (response: any) => {
-            console.log('OAuth response received:', response)
+            console.log('✅ OAuth response received:', response)
             if (response.access_token) {
               // Get user info
               this.getUserInfo(response.access_token)
                 .then((userInfo) => {
-                  console.log('User info retrieved:', userInfo)
+                  console.log('✅ User info retrieved:', userInfo)
                   resolve({
                     success: true,
                     user: userInfo,
@@ -108,14 +154,14 @@ export class GoogleAuthService {
                   })
                 })
                 .catch((error) => {
-                  console.error('Error getting user info:', error)
+                  console.error('❌ Error getting user info:', error)
                   resolve({
                     success: false,
                     error: error.message
                   })
                 })
             } else {
-              console.error('No access token in response:', response)
+              console.error('❌ No access token in response:', response)
               resolve({
                 success: false,
                 error: 'No access token received'
@@ -123,7 +169,7 @@ export class GoogleAuthService {
             }
           },
           error_callback: (error: any) => {
-            console.error('Google OAuth error:', error)
+            console.error('❌ Google OAuth error:', error)
             resolve({
               success: false,
               error: error.type || 'Authentication failed'
@@ -132,11 +178,11 @@ export class GoogleAuthService {
         })
 
         // Request access token
-        console.log('Requesting access token...')
+        console.log('🔑 Requesting access token...')
         client.requestAccessToken()
       })
     } catch (error) {
-      console.error('Sign in error:', error)
+      console.error('❌ Sign in error:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -154,10 +200,11 @@ export class GoogleAuthService {
       )
       
       if (!response.ok) {
-        throw new Error('Failed to fetch user info')
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
       
       const userInfo = await response.json()
+      console.log('✅ User info fetched:', userInfo)
       
       return {
         id: userInfo.id,
@@ -168,75 +215,60 @@ export class GoogleAuthService {
         family_name: userInfo.family_name
       }
     } catch (error) {
-      console.error('Error fetching user info:', error)
+      console.error('❌ Error fetching user info:', error)
       throw error
     }
   }
 
   /**
-   * Sign out
+   * Store authentication data
    */
-  async signOut(): Promise<void> {
+  storeAuthData(user: GoogleUser, accessToken: string): void {
     try {
-      if (window.google && window.google.accounts) {
-        window.google.accounts.oauth2.revoke()
-      }
-      
-      // Clear any stored tokens
-      localStorage.removeItem('google_access_token')
-      localStorage.removeItem('google_user')
-      
-      console.log('✅ Signed out successfully')
+      localStorage.setItem('google_user', JSON.stringify(user))
+      localStorage.setItem('google_access_token', accessToken)
+      console.log('✅ Authentication data stored')
     } catch (error) {
-      console.error('Sign out error:', error)
+      console.error('❌ Error storing auth data:', error)
     }
   }
 
   /**
-   * Check if user is signed in
-   */
-  isSignedIn(): boolean {
-    return !!localStorage.getItem('google_access_token')
-  }
-
-  /**
-   * Get stored user info
+   * Get stored user data
    */
   getStoredUser(): GoogleUser | null {
     try {
-      const userStr = localStorage.getItem('google_user')
-      return userStr ? JSON.parse(userStr) : null
+      const userData = localStorage.getItem('google_user')
+      return userData ? JSON.parse(userData) : null
     } catch (error) {
-      console.error('Error parsing stored user:', error)
+      console.error('❌ Error getting stored user:', error)
       return null
     }
-  }
-
-  /**
-   * Store user info and token
-   */
-  storeAuthData(user: GoogleUser, accessToken: string): void {
-    localStorage.setItem('google_user', JSON.stringify(user))
-    localStorage.setItem('google_access_token', accessToken)
   }
 
   /**
    * Get stored access token
    */
   getStoredToken(): string | null {
-    return localStorage.getItem('google_access_token')
+    try {
+      return localStorage.getItem('google_access_token')
+    } catch (error) {
+      console.error('❌ Error getting stored token:', error)
+      return null
+    }
   }
 
   /**
-   * Check if Google Auth is configured
+   * Clear stored authentication data
    */
-  isConfigured(): boolean {
-    const isConfigured = this.clientId !== '' && this.clientId !== 'your_client_id_here'
-    console.log('🔍 Google Auth configured check:', {
-      clientId: this.clientId ? `${this.clientId.substring(0, 20)}...` : 'NOT SET',
-      isConfigured
-    })
-    return isConfigured
+  clearAuthData(): void {
+    try {
+      localStorage.removeItem('google_user')
+      localStorage.removeItem('google_access_token')
+      console.log('✅ Authentication data cleared')
+    } catch (error) {
+      console.error('❌ Error clearing auth data:', error)
+    }
   }
 }
 
@@ -248,4 +280,5 @@ declare global {
   interface Window {
     google: any
   }
+}
 }

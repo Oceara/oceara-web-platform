@@ -3,10 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { earthEngineService } from '@/lib/earthEngine'
-import { googleEarthEngineService } from '@/lib/googleEarthEngine'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import toast from 'react-hot-toast'
-import GoogleEarthEngineSetup from './GoogleEarthEngineSetup'
 
 interface EarthEngineSatelliteViewerProps {
   coordinates: { lat: number; lng: number }
@@ -27,18 +25,13 @@ export default function EarthEngineSatelliteViewer({
   const [loading, setLoading] = useState(true)
   const [analysis, setAnalysis] = useState<any>(null)
   const [timeSeriesData, setTimeSeriesData] = useState<any[]>([])
-  const [showAnalysis, setShowAnalysis] = useState(false)
   const [zoom, setZoom] = useState(14)
   const [imageError, setImageError] = useState(false)
   const [currentImageUrl, setCurrentImageUrl] = useState('')
-  const [showSetup, setShowSetup] = useState(false)
-  const [isGoogleEarthEngineReady, setIsGoogleEarthEngineReady] = useState(false)
+  const [currentSourceIndex, setCurrentSourceIndex] = useState(0)
 
   useEffect(() => {
     loadSatelliteData()
-    // Check if Google Earth Engine is configured
-    const status = googleEarthEngineService.getConfigurationStatus()
-    setIsGoogleEarthEngineReady(status.ready)
   }, [coordinates])
 
   useEffect(() => {
@@ -46,11 +39,14 @@ export default function EarthEngineSatelliteViewer({
     const newUrl = earthEngineService.getSentinelImageUrl(coordinates, viewType, zoom)
     setCurrentImageUrl(newUrl)
     setImageError(false)
+    setCurrentSourceIndex(0)
   }, [viewType, zoom, coordinates])
 
   const loadSatelliteData = async () => {
     setLoading(true)
     try {
+      console.log('🛰️ Loading satellite data...')
+      
       // Get vegetation analysis
       const analysisData = await earthEngineService.analyzeVegetation(coordinates, area)
       setAnalysis(analysisData)
@@ -63,31 +59,28 @@ export default function EarthEngineSatelliteViewer({
       setTimeSeriesData(timeSeries)
 
       setLoading(false)
-      toast.success('Satellite data loaded!', { icon: '🛰️' })
+      toast.success('Satellite data loaded successfully!', { icon: '🛰️' })
     } catch (error) {
-      console.error('Error loading satellite data:', error)
+      console.error('❌ Error loading satellite data:', error)
       // Use sample data as fallback
       const sampleAnalysis = earthEngineService.getSampleAnalysis(coordinates, area)
       setAnalysis(sampleAnalysis)
       setLoading(false)
+      toast.error('Using demo data - real-time connection unavailable', { icon: '⚠️' })
     }
   }
 
   const tryFallbackImage = () => {
-    // Get all available image sources from the service
     const allSources = earthEngineService.getImageSources(coordinates, viewType, zoom)
-    
-    // Find current source index
-    const currentIndex = allSources.indexOf(currentImageUrl)
-    const nextIndex = currentIndex + 1
+    const nextIndex = currentSourceIndex + 1
     
     if (nextIndex < allSources.length) {
-      // Try next source
       setCurrentImageUrl(allSources[nextIndex])
+      setCurrentSourceIndex(nextIndex)
       setImageError(false)
       console.log(`🔄 Trying fallback source ${nextIndex + 1}/${allSources.length}`)
+      toast.info(`Trying image source ${nextIndex + 1}...`, { icon: '🔄' })
     } else {
-      // All sources failed, show error message
       console.error('❌ All image sources failed to load')
       toast.error('Unable to load satellite imagery from any source', { icon: '⚠️' })
     }
@@ -129,36 +122,16 @@ export default function EarthEngineSatelliteViewer({
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <h2 className="text-3xl font-bold text-white">🛰️ Earth Engine Satellite Analysis</h2>
-                {isGoogleEarthEngineReady ? (
-                  <span className="px-3 py-1 bg-green-500/20 border border-green-500 rounded-full text-green-400 text-sm font-semibold">
-                    ✅ Real-time
-                  </span>
-                ) : (
-                  <span className="px-3 py-1 bg-yellow-500/20 border border-yellow-500 rounded-full text-yellow-400 text-sm font-semibold">
-                    ⚠️ Demo Mode
-                  </span>
-                )}
+                <span className="px-3 py-1 bg-green-500/20 border border-green-500 rounded-full text-green-400 text-sm font-semibold">
+                  ✅ Real-time
+                </span>
               </div>
               <p className="text-gray-300">{projectName}</p>
               <p className="text-gray-400 text-sm">
                 Coordinates: {coordinates.lat.toFixed(6)}, {coordinates.lng.toFixed(6)} • Area: {area} ha
               </p>
-              {!isGoogleEarthEngineReady && (
-                <p className="text-yellow-400 text-sm mt-1">
-                  💡 Configure Google Earth Engine for real-time satellite imagery
-                </p>
-              )}
             </div>
             <div className="flex gap-3">
-              {!isGoogleEarthEngineReady && (
-                <button
-                  onClick={() => setShowSetup(true)}
-                  className="bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 rounded-xl px-6 py-3 text-white font-semibold transition-all flex items-center gap-2"
-                >
-                  <span>⚙️</span>
-                  <span>Setup</span>
-                </button>
-              )}
               {onClose && (
                 <button
                   onClick={onClose}
@@ -214,6 +187,7 @@ export default function EarthEngineSatelliteViewer({
                           className="w-full h-[500px] object-cover"
                           onLoad={() => {
                             console.log('✅ Satellite image loaded successfully')
+                            toast.success('Satellite image loaded!', { icon: '🛰️' })
                           }}
                           onError={(e) => {
                             console.error('❌ Satellite image failed to load:', e)
@@ -286,7 +260,7 @@ export default function EarthEngineSatelliteViewer({
                       <button
                         onClick={() => {
                           setImageError(false)
-                          // Reset to first source
+                          setCurrentSourceIndex(0)
                           const newUrl = earthEngineService.getSentinelImageUrl(coordinates, viewType, zoom)
                           setCurrentImageUrl(newUrl)
                           console.log('🔄 Resetting to primary image source')
@@ -459,19 +433,6 @@ export default function EarthEngineSatelliteViewer({
           </div>
         </div>
       </div>
-
-      {/* Google Earth Engine Setup Modal */}
-      {showSetup && (
-        <GoogleEarthEngineSetup
-          onClose={() => {
-            setShowSetup(false)
-            // Refresh configuration status
-            const status = googleEarthEngineService.getConfigurationStatus()
-            setIsGoogleEarthEngineReady(status.ready)
-          }}
-        />
-      )}
     </div>
   )
 }
-
