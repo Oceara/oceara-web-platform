@@ -9,7 +9,7 @@ import PhoneOTPAuth from '@/components/PhoneOTPAuth'
 import SimpleGoogleLogin from '@/components/SimpleGoogleLogin'
 import toast, { Toaster } from 'react-hot-toast'
 import { authService, DEMO_CREDENTIALS } from '@/lib/simpleAuth'
-import { googleAuthService } from '@/lib/googleAuth'
+// Removed old Google Auth service import
 
 export default function LoginPage() {
   const searchParams = useSearchParams()
@@ -93,24 +93,7 @@ export default function LoginPage() {
     }
   }
 
-  const handleGoogleLoginSuccess = (user: any) => {
-    // Store role in localStorage for callback handling
-    if (roleParam) {
-      localStorage.setItem('pending_role', roleParam)
-    }
-    
-    // Redirect based on role
-    setTimeout(() => {
-      if (roleParam === 'landowner') router.push('/landowner')
-      else if (roleParam === 'buyer') router.push('/buyer')
-      else if (roleParam === 'admin') router.push('/admin')
-      else router.push('/')
-    }, 500)
-  }
-
-  const handleGoogleLoginError = (error: string) => {
-    console.error('Google login error:', error)
-  }
+  // Google login is now handled by SimpleGoogleLogin component
 
   const handlePhoneSuccess = () => {
     toast.success('Phone verification successful!')

@@ -6,10 +6,10 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import PhoneOTPAuth from '@/components/PhoneOTPAuth'
-import GoogleLoginButton from '@/components/GoogleLoginButton'
+import SimpleGoogleLogin from '@/components/SimpleGoogleLogin'
 import toast, { Toaster } from 'react-hot-toast'
 import { authService } from '@/lib/simpleAuth'
-import { googleAuthService } from '@/lib/googleAuth'
+// Removed old Google Auth service import
 
 export default function SignupPage() {
   const searchParams = useSearchParams()
@@ -114,24 +114,7 @@ export default function SignupPage() {
     }
   }
 
-  const handleGoogleSignupSuccess = (user: any) => {
-    // Store role in localStorage for callback handling
-    if (roleParam) {
-      localStorage.setItem('pending_role', roleParam)
-    }
-    
-    // Redirect based on role
-    setTimeout(() => {
-      if (roleParam === 'landowner') router.push('/landowner')
-      else if (roleParam === 'buyer') router.push('/buyer')
-      else if (roleParam === 'admin') router.push('/admin')
-      else router.push('/')
-    }, 500)
-  }
-
-  const handleGoogleSignupError = (error: string) => {
-    console.error('Google signup error:', error)
-  }
+  // Google signup is now handled by SimpleGoogleLogin component
 
   const handlePhoneSuccess = () => {
     toast.success('Account created successfully!')
@@ -307,12 +290,7 @@ export default function SignupPage() {
           {/* Social Signup */}
           {signupMethod === 'social' && (
             <div className="space-y-3">
-              <GoogleLoginButton
-                onSuccess={handleGoogleSignupSuccess}
-                onError={handleGoogleSignupError}
-                variant="signup"
-                className="shadow-md hover:shadow-lg"
-              />
+              <SimpleGoogleLogin />
 
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
