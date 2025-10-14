@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import PhoneOTPAuth from '@/components/PhoneOTPAuth'
-import SimpleGoogleLogin from '@/components/SimpleGoogleLogin'
+import GoogleOAuthButton from '@/components/GoogleOAuthButton'
 import toast, { Toaster } from 'react-hot-toast'
 import { authService } from '@/lib/simpleAuth'
 // Removed old Google Auth service import
@@ -290,7 +290,7 @@ export default function SignupPage() {
           {/* Social Signup */}
           {signupMethod === 'social' && (
             <div className="space-y-3">
-              <SimpleGoogleLogin />
+              <GoogleOAuthButton />
 
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">

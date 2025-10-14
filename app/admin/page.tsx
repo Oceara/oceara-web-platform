@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useData } from '@/context/DataContext'
 import Link from 'next/link'
@@ -13,6 +14,31 @@ export default function AdminDashboard() {
   const [selectedProject, setSelectedProject] = useState<any>(null)
   const [showModal, setShowModal] = useState(false)
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'verified'>('all')
+  const searchParams = useSearchParams()
+
+  // Handle Google OAuth success
+  useEffect(() => {
+    const googleAuth = searchParams.get('google_auth')
+    const userEmail = searchParams.get('user_email')
+    const userName = searchParams.get('user_name')
+    
+    if (googleAuth === 'success' && userEmail) {
+      toast.success(`Welcome ${userName || userEmail}! Google authentication successful.`, {
+        icon: '🎉',
+        duration: 5000
+      })
+      
+      // Store user info in localStorage
+      localStorage.setItem('google_user', JSON.stringify({
+        email: userEmail,
+        name: userName,
+        authenticated: true
+      }))
+      
+      // Clean up URL parameters
+      window.history.replaceState({}, '', '/admin')
+    }
+  }, [searchParams])
 
   const pendingProjects = getPendingProjects()
   const verifiedProjects = getVerifiedProjects()
