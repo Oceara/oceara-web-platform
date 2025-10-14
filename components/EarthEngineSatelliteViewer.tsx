@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { earthEngineService } from '@/lib/earthEngine'
+import { googleEarthEngineService } from '@/lib/googleEarthEngine'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import toast from 'react-hot-toast'
+import GoogleEarthEngineSetup from './GoogleEarthEngineSetup'
 
 interface EarthEngineSatelliteViewerProps {
   coordinates: { lat: number; lng: number }
@@ -29,9 +31,14 @@ export default function EarthEngineSatelliteViewer({
   const [zoom, setZoom] = useState(14)
   const [imageError, setImageError] = useState(false)
   const [currentImageUrl, setCurrentImageUrl] = useState('')
+  const [showSetup, setShowSetup] = useState(false)
+  const [isGoogleEarthEngineReady, setIsGoogleEarthEngineReady] = useState(false)
 
   useEffect(() => {
     loadSatelliteData()
+    // Check if Google Earth Engine is configured
+    const status = googleEarthEngineService.getConfigurationStatus()
+    setIsGoogleEarthEngineReady(status.ready)
   }, [coordinates])
 
   useEffect(() => {
@@ -128,20 +135,47 @@ export default function EarthEngineSatelliteViewer({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-3xl font-bold text-white mb-2">🛰️ Earth Engine Satellite Analysis</h2>
+              <div className="flex items-center gap-3 mb-2">
+                <h2 className="text-3xl font-bold text-white">🛰️ Earth Engine Satellite Analysis</h2>
+                {isGoogleEarthEngineReady ? (
+                  <span className="px-3 py-1 bg-green-500/20 border border-green-500 rounded-full text-green-400 text-sm font-semibold">
+                    ✅ Real-time
+                  </span>
+                ) : (
+                  <span className="px-3 py-1 bg-yellow-500/20 border border-yellow-500 rounded-full text-yellow-400 text-sm font-semibold">
+                    ⚠️ Demo Mode
+                  </span>
+                )}
+              </div>
               <p className="text-gray-300">{projectName}</p>
               <p className="text-gray-400 text-sm">
                 Coordinates: {coordinates.lat.toFixed(6)}, {coordinates.lng.toFixed(6)} • Area: {area} ha
               </p>
+              {!isGoogleEarthEngineReady && (
+                <p className="text-yellow-400 text-sm mt-1">
+                  💡 Configure Google Earth Engine for real-time satellite imagery
+                </p>
+              )}
             </div>
-            {onClose && (
-              <button
-                onClick={onClose}
-                className="bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 rounded-xl px-6 py-3 text-white font-semibold transition-all"
-              >
-                ✕ Close
-              </button>
-            )}
+            <div className="flex gap-3">
+              {!isGoogleEarthEngineReady && (
+                <button
+                  onClick={() => setShowSetup(true)}
+                  className="bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 rounded-xl px-6 py-3 text-white font-semibold transition-all flex items-center gap-2"
+                >
+                  <span>⚙️</span>
+                  <span>Setup</span>
+                </button>
+              )}
+              {onClose && (
+                <button
+                  onClick={onClose}
+                  className="bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 rounded-xl px-6 py-3 text-white font-semibold transition-all"
+                >
+                  ✕ Close
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
@@ -428,6 +462,18 @@ export default function EarthEngineSatelliteViewer({
           </div>
         </div>
       </div>
+
+      {/* Google Earth Engine Setup Modal */}
+      {showSetup && (
+        <GoogleEarthEngineSetup
+          onClose={() => {
+            setShowSetup(false)
+            // Refresh configuration status
+            const status = googleEarthEngineService.getConfigurationStatus()
+            setIsGoogleEarthEngineReady(status.ready)
+          }}
+        />
+      )}
     </div>
   )
 }

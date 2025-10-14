@@ -1,6 +1,8 @@
 // Google Earth Engine Integration
 // Provides real-time satellite imagery and vegetation analysis
 
+import { googleEarthEngineService } from './googleEarthEngine'
+
 interface Coordinates {
   lat: number
   lng: number
@@ -45,9 +47,22 @@ export class EarthEngineService {
    */
   async getLatestImagery(coordinates: Coordinates, radiusKm: number = 1): Promise<EarthEngineImage[]> {
     try {
-      // In production, this would call Google Earth Engine API
-      // For now, we'll simulate with high-quality imagery
+      // Try to use real Google Earth Engine first
+      if (googleEarthEngineService.isConfigured()) {
+        console.log('🛰️ Using Google Earth Engine for real-time imagery')
+        const realTimeImages = await googleEarthEngineService.getRealTimeSentinel2Imagery(coordinates, radiusKm)
+        if (realTimeImages.length > 0) {
+          return realTimeImages.map(img => ({
+            url: img.url,
+            date: img.date,
+            cloudCover: img.cloudCover,
+            type: img.type
+          }))
+        }
+      }
       
+      // Fallback to simulated imagery
+      console.log('⚠️ Using fallback imagery (Google Earth Engine not configured)')
       const images: EarthEngineImage[] = [
         {
           url: `https://earthengine.googleapis.com/v1alpha/projects/earthengine-legacy/thumbnails?dimensions=800x800&format=png&region=${coordinates.lat},${coordinates.lng}&visParams={"bands":["B4","B3","B2"],"min":0,"max":3000}`,
@@ -77,8 +92,24 @@ export class EarthEngineService {
    */
   async analyzeVegetation(coordinates: Coordinates, areaHectares: number): Promise<SatelliteAnalysis> {
     try {
-      // Simulate real Earth Engine analysis
-      // In production, this would process actual Sentinel-2 bands
+      // Try to use real Google Earth Engine first
+      if (googleEarthEngineService.isConfigured()) {
+        console.log('🌿 Using Google Earth Engine for real-time vegetation analysis')
+        const realTimeAnalysis = await googleEarthEngineService.analyzeVegetationRealTime(coordinates, areaHectares)
+        return {
+          ndvi: realTimeAnalysis.ndvi,
+          evi: realTimeAnalysis.evi,
+          cloudCover: realTimeAnalysis.cloudCover,
+          imageDate: realTimeAnalysis.imageDate,
+          healthScore: realTimeAnalysis.healthScore,
+          vegetationDensity: realTimeAnalysis.vegetationDensity,
+          waterPresence: realTimeAnalysis.waterPresence,
+          changeDetection: realTimeAnalysis.changeDetection
+        }
+      }
+      
+      // Fallback to simulated analysis
+      console.log('⚠️ Using simulated vegetation analysis (Google Earth Engine not configured)')
       
       // Simulate NDVI calculation (healthy vegetation = 0.6-0.9)
       const baseNdvi = 0.65 + Math.random() * 0.2
@@ -136,6 +167,20 @@ export class EarthEngineService {
     cloudCover: number
   }>> {
     try {
+      // Try to use real Google Earth Engine first
+      if (googleEarthEngineService.isConfigured()) {
+        console.log('📈 Using Google Earth Engine for real-time time series data')
+        const realTimeData = await googleEarthEngineService.getTimeSeriesDataRealTime(coordinates, startDate, endDate)
+        return realTimeData.map(item => ({
+          date: item.date,
+          ndvi: item.ndvi,
+          evi: item.evi,
+          cloudCover: item.cloudCover
+        }))
+      }
+      
+      // Fallback to simulated data
+      console.log('⚠️ Using simulated time series data (Google Earth Engine not configured)')
       const data = []
       const daysDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
       const interval = Math.max(1, Math.floor(daysDiff / 12)) // Get ~12 data points
