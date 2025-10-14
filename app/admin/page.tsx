@@ -6,15 +6,12 @@ import { useData } from '@/context/DataContext'
 import Link from 'next/link'
 import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
 import toast from 'react-hot-toast'
-import SatelliteImageViewer from '@/components/SatelliteImageViewer'
-import WorkingSatelliteViewer from '@/components/WorkingSatelliteViewer'
 
 export default function AdminDashboard() {
   const { projects, updateProject, getPendingProjects, getVerifiedProjects } = useData()
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedProject, setSelectedProject] = useState<any>(null)
   const [showModal, setShowModal] = useState(false)
-  const [showEarthEngine, setShowEarthEngine] = useState(false)
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'verified'>('all')
 
   const pendingProjects = getPendingProjects()
@@ -674,22 +671,15 @@ export default function AdminDashboard() {
                         <span>🛰️</span>
                         <span>Satellite Imagery Analysis</span>
                       </h3>
-                      <button
-                        onClick={() => {
-                          setShowModal(false)
-                          setShowEarthEngine(true)
-                        }}
+                      <Link
+                        href={`/satellite-analysis?name=${encodeURIComponent(selectedProject.name)}&lat=${selectedProject.coordinates.lat}&lng=${selectedProject.coordinates.lng}&area=${selectedProject.area}`}
                         className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-4 py-2 rounded-lg text-white font-semibold transition-all flex items-center gap-2"
                       >
-                        <span>🌍</span>
-                        <span>Earth Engine Analysis</span>
-                      </button>
+                        <span>🛰️</span>
+                        <span>Satellite Analysis</span>
+                      </Link>
                     </div>
-                    <SatelliteImageViewer
-                      coordinates={selectedProject.coordinates}
-                      projectName={selectedProject.name}
-                      area={selectedProject.area}
-                    />
+                    {/* Satellite viewer is now handled by the modal */}
                   </div>
                 )}
 
@@ -820,15 +810,6 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Earth Engine Satellite Viewer */}
-      {showEarthEngine && selectedProject && (
-        <WorkingSatelliteViewer
-          coordinates={selectedProject.coordinates}
-          projectName={selectedProject.name}
-          area={selectedProject.area}
-          onClose={() => setShowEarthEngine(false)}
-        />
-      )}
     </div>
   )
 }
