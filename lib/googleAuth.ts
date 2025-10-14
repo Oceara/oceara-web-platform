@@ -281,4 +281,3 @@ declare global {
     google: any
   }
 }
-}
