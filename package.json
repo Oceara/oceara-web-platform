@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test:earth-engine": "node scripts/test-earth-engine.js"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^2.0.1",
