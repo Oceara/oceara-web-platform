@@ -1,0 +1,50 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { ProjectsDatabase } from '@/lib/database/projects'
+
+const db = new ProjectsDatabase()
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const owner = searchParams.get('owner')
+    const ownerEmail = searchParams.get('owner_email')
+    const status = searchParams.get('status')
+    const verified = searchParams.get('verified')
+
+    let projects
+
+    if (owner) {
+      projects = await db.getProjectsByOwner(owner)
+    } else if (ownerEmail) {
+      projects = await db.getProjectsByOwnerEmail(ownerEmail)
+    } else if (status === 'pending') {
+      projects = await db.getPendingProjects()
+    } else if (verified === 'true') {
+      projects = await db.getVerifiedProjects()
+    } else {
+      projects = await db.getAllProjects()
+    }
+
+    return NextResponse.json({ projects }, { status: 200 })
+  } catch (error: any) {
+    console.error('Error in GET /api/projects:', error)
+    return NextResponse.json(
+      { error: error.message || 'Failed to fetch projects' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const project = await db.createProject(body)
+    return NextResponse.json({ project }, { status: 201 })
+  } catch (error: any) {
+    console.error('Error in POST /api/projects:', error)
+    return NextResponse.json(
+      { error: error.message || 'Failed to create project' },
+      { status: 500 }
+    )
+  }
+}
