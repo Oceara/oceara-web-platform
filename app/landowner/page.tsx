@@ -136,7 +136,7 @@ export default function LandownerDashboard() {
   }
 
   // Submit registration
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!projectName || !area || !location) {
       toast.error('Please fill all required fields')
       return
@@ -146,8 +146,7 @@ export default function LandownerDashboard() {
     const treeCount = parseInt(area) * 50
     const carbonCredits = Math.floor(parseInt(area) * 5)
     
-    const newProject: any = {
-      id: projects.length + 1,
+    const newProject = {
       name: projectName,
       owner: 'Demo Landowner',
       location: location,
@@ -156,11 +155,10 @@ export default function LandownerDashboard() {
       creditsAvailable: carbonCredits,
       pricePerCredit: 25,
       verified: false,
-      status: 'Pending Review' as const,
+      status: 'Pending Review',
       impact: `${(carbonCredits * 2.5).toFixed(0)} tons CO₂/year`,
       image: '🌿',
       description: description || 'Mangrove restoration project',
-      submittedDate: new Date().toISOString().split('T')[0],
       images: photos.length > 0 ? photos.slice(0, 5).map(() => '📷') : ['📷', '📷'],
       satelliteImages: coordinates ? [
         `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=16&size=800x600&maptype=satellite&key=`
@@ -183,7 +181,7 @@ export default function LandownerDashboard() {
     }
 
     try {
-      await addProject(newProject as any)
+      await addProject(newProject)
       toast.success('🎉 Project registered successfully! Redirecting to your projects...')
       
       // Reset form
