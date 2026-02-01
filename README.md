@@ -6,7 +6,8 @@
 
 **🌐 Visit:** [https://oceara-web-platform-1.vercel.app/](https://oceara-web-platform-1.vercel.app/)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Oceara/oceara-web-platform)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Oceara/oceara-web-platform)  
+[![Deploy with Vercel (Yash5274)](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Yash5274/oceara-web-platform)
 
 **🏆 Built for Smart India Hackathon 2025**
 
@@ -15,6 +16,17 @@
 ## 🚀 **Quick Deploy to Vercel**
 
 **Click the button above** or follow these steps:
+
+### **Deploy with Yash5274 (your account)**
+
+1. **Create the repo on GitHub:** Go to [github.com/new](https://github.com/new), name it `oceara-web-platform`, create it (don’t add README).
+2. **Push this project:**
+   ```bash
+   cd oceara-simple-deploy
+   git push yash main
+   ```
+   (If you haven’t added the remote: `git remote add yash https://github.com/Yash5274/oceara-web-platform.git`)
+3. **Deploy on Vercel:** [vercel.com/new](https://vercel.com/new) → Import **Yash5274/oceara-web-platform** → Deploy.
 
 ### **Option 1: One-Click Deploy**
 1. Click the "Deploy with Vercel" button above
