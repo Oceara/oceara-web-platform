@@ -1,6 +1,6 @@
-# 🌊 Oceara - Blue Carbon Ecosystem Platform
+# 🌊 Oceara - Blue Carbon MRV & Registry Platform
 
-> A Next.js web platform for mangrove restoration and carbon credit marketplace with stunning 3D Earth visualizations
+> Digital MRV & Registry Platform for Blue Carbon Projects. Measure, track, and verify mangrove and coastal restoration using satellite data, AI, and blockchain-backed registries.
 
 ## 🔗 **Live Website**
 
@@ -71,17 +71,16 @@ Sign in with that email (Google or demo) and you’ll see Wallet, Buy Credits, a
 - Social login (Google, Facebook, GitHub, Twitter, Apple)
 - **Demo Mode** - Skip login for instant access
 
-### **🌴 Landowner Dashboard**
-- Project management
-- Google Maps integration
-- Upload new mangrove sites
-- Track carbon credits
+### **🌴 Project Owner**
+- Register projects, pin location, submit details
+- Satellite imagery & ML-based analysis
+- View project status (Pending / Verified)
 
-### **💰 Buyer Dashboard**
-- Carbon credit marketplace
+### **🏛️ Institution / Program**
+- View verified projects (read-only)
+- Download MRV reports
+- Request MRV / Fund Project (no buying/selling by default)
 - Interactive 3D globe with project markers
-- Portfolio tracking
-- 4 real mangrove projects
 
 ### **📍 Real Project Data**
 - Sundarbans (West Bengal): 250 ha, 1,250 credits

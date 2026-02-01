@@ -1,5 +1,7 @@
 'use client'
 
+import CarbonDisclaimer from '@/components/CarbonDisclaimer'
+
 interface MLAnalysisDisplayProps {
   data: {
     coordinates: { lat: number; lng: number }
@@ -199,13 +201,13 @@ export default function MLAnalysisDisplay({ data }: MLAnalysisDisplayProps) {
           </div>
           <div className="mt-4 pt-4 border-t border-white/20">
             <div className="flex justify-between text-white font-semibold">
-              <span>Total Carbon Credits:</span>
+              <span>Total Estimated Carbon Potential:</span>
               <span className="text-green-400">{mlAnalysis.carbonCredits.toLocaleString()} tons CO₂e</span>
             </div>
           </div>
         </div>
 
-        {/* Economic Value */}
+        {/* Economic Value (optional / advanced) */}
         <div className="mt-4 bg-white/10 rounded-lg p-5">
           <h4 className="text-white font-semibold mb-3">💵 Estimated Market Value</h4>
           <div className="grid grid-cols-3 gap-4">

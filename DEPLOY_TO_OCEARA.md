@@ -1,0 +1,124 @@
+# Deploy to Oceara/oceara-web-platform
+
+**Target repo:** https://github.com/Oceara/oceara-web-platform.git  
+**Your project folder:** `oceara-simple-deploy`
+
+---
+
+## Repositioning (Phase 1: Blue Carbon MRV & Registry)
+
+This codebase is repositioned as a **Blue Carbon MRV & Registry Platform** (government/NGO-friendly).  
+- **Roles (UI):** Project Owner, Institution / Program, MRV Administrator  
+- **Terminology:** Estimated Carbon Potential (Pre-Certification), Request MRV / Fund Project, Project Registry  
+- **Feature flags:** Wallet, marketplace, buy/sell, token prices are **hidden by default**. Visible only for Super Admin role or allowlisted emails (`NEXT_PUBLIC_FULL_ACCESS_EMAILS`).  
+- **Carbon disclaimer** shown wherever carbon numbers appear.
+
+---
+
+## Step 1: Fix the build (do this first)
+
+Before pushing, the project must build successfully. Run:
+
+```powershell
+cd c:\Users\Yash\OneDrive\Desktop\WORK\SIH\oceara-simple-deploy
+npm run build
+```
+
+- **If it fails:** Fix the error shown (e.g. type errors, missing deps). The `Project[]` type fix is already in your code (DataContext export + EarthWithProjects import).
+- **If it succeeds:** Continue to Step 2.
+
+---
+
+## Step 2: Commit your changes
+
+You have uncommitted changes (the type fix). Commit them:
+
+```powershell
+cd c:\Users\Yash\OneDrive\Desktop\WORK\SIH\oceara-simple-deploy
+git add .
+git status
+git commit -m "Blue Carbon MRV & Registry: reposition UI, feature flags, terminology, deploy"
+```
+
+- **If you get "nothing to commit":** Either everything is already committed, or `git status` will show what’s left. Add and commit those files.
+- **If you get "Please tell me who you are":** Set your Git identity:
+  ```powershell
+  git config user.email "your-email@example.com"
+  git config user.name "Your Name"
+  ```
+  Then run the `git add` and `git commit` again.
+
+---
+
+## Step 3: Point remote at Oceara (if needed)
+
+Check your remote:
+
+```powershell
+git remote -v
+```
+
+You want one remote (usually `origin`) to be:
+
+- **URL:** `https://github.com/Oceara/oceara-web-platform.git`
+
+**If `origin` is already that URL:** Skip to Step 4.
+
+**If not, set it:**
+
+```powershell
+git remote remove origin
+git remote add origin https://github.com/Oceara/oceara-web-platform.git
+```
+
+**If you don’t have push access to Oceara:** You need to be added as a collaborator on the repo, or use a fork + pull request (see “Problems” below).
+
+---
+
+## Step 4: Push to Oceara
+
+```powershell
+cd c:\Users\Yash\OneDrive\Desktop\WORK\SIH\oceara-simple-deploy
+git push -u origin main
+```
+
+- **If it asks for username/password:** Use your GitHub username and a **Personal Access Token** (not your GitHub password). Create one at: GitHub → Settings → Developer settings → Personal access tokens.
+- **If it says "branch 'main' doesn't exist" on remote:** Try `git push -u origin main:main` or create `main` on the remote (e.g. first push from GitHub UI or another clone).
+- **If it says "failed to push" / "permission denied" / "403":** Your account doesn’t have write access to Oceara/oceara-web-platform. Get collaborator access or use a fork (see below).
+
+---
+
+## Step 5: Deploy on Vercel (optional)
+
+After the code is on GitHub:
+
+1. Go to https://vercel.com and sign in (with GitHub).
+2. **New Project** → Import **Oceara/oceara-web-platform**.
+3. Root Directory: leave default (or set to repo root).
+4. **Deploy.**  
+   Later: in Project → Settings → Environment Variables, add `NEXT_PUBLIC_FULL_ACCESS_EMAILS` if you want full-access features.
+
+---
+
+## Problems and fixes
+
+| Problem | What to do |
+|--------|------------|
+| **Build fails (e.g. type error)** | Run `npm run build` and fix the reported error. The Project type fix (export from DataContext, import in EarthWithProjects) should resolve the "two different types with this name" error. |
+| **"Please tell me who you are"** | Run `git config user.email "..."` and `git config user.name "..."` then commit again. |
+| **"Permission denied" / "403" / "failed to push"** | Your GitHub user doesn’t have write access to Oceara/oceara-web-platform. **Option A:** Ask an owner to add you as a collaborator. **Option B:** Fork the repo (e.g. Yash5274/oceara-web-platform), push to your fork, then open a Pull Request to Oceara/oceara-web-platform. |
+| **"Updates were rejected" / "non-fast-forward"** | Someone else pushed to `main`. Run `git pull origin main --rebase`, fix conflicts if any, then `git push origin main`. |
+| **Wrong remote URL** | `git remote -v` to check; `git remote set-url origin https://github.com/Oceara/oceara-web-platform.git` to fix. |
+| **Vercel build fails** | Check Vercel build logs. Often: missing env vars, Node version, or the same type/build errors you fix locally with `npm run build`. |
+
+---
+
+## Summary (no confusion)
+
+1. **Build:** `npm run build` in `oceara-simple-deploy` — fix any errors.
+2. **Commit:** `git add .` → `git commit -m "Fix Project type..."` (and set `user.name`/`user.email` if needed).
+3. **Remote:** `origin` = `https://github.com/Oceara/oceara-web-platform.git`.
+4. **Push:** `git push -u origin main`.
+5. **Deploy:** Import Oceara/oceara-web-platform on Vercel and deploy.
+
+If you hit a specific error message (e.g. from `npm run build` or `git push`), fix that first using the table above; then repeat the steps.

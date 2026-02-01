@@ -20,7 +20,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <title>Oceara - Blue Carbon MRV & Registry | SIH 2025</title>
-        <meta name="description" content="Mangrove restoration tracking & carbon credit MRV with 3D Earth visualization" />
+        <meta name="description" content="Digital MRV & Registry Platform for Blue Carbon Projects. Measure, track, and verify mangrove and coastal restoration using satellite data, AI, and blockchain-backed registries." />
         <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
       </head>

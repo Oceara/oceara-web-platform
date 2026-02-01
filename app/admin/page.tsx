@@ -7,6 +7,7 @@ import { useData } from '@/context/DataContext'
 import Link from 'next/link'
 import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
 import toast from 'react-hot-toast'
+import CarbonDisclaimer from '@/components/CarbonDisclaimer'
 
 export default function AdminDashboard() {
   const { projects, updateProject, getPendingProjects, getVerifiedProjects } = useData()
@@ -57,9 +58,9 @@ export default function AdminDashboard() {
       color: 'from-green-500 to-emerald-500'
     },
     { 
-      label: 'Credits Minted', 
+      label: 'Estimated Carbon Potential', 
       value: `${(verifiedProjects.reduce((acc, p) => acc + (p.mlAnalysis?.carbonCredits || 0), 0) / 1000).toFixed(1)}K`, 
-      icon: '💰', 
+      icon: '📊', 
       color: 'from-blue-500 to-cyan-500'
     },
     { 
@@ -120,9 +121,9 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white">
-                🌊 Oceara - Administrator
+                🌊 Oceara - MRV Administrator
               </h1>
-              <p className="text-gray-300 text-xs sm:text-sm">Project Verification & Management</p>
+              <p className="text-gray-300 text-xs sm:text-sm">Project Verification & MRV Reports</p>
             </div>
             <Link
               href="/"
@@ -211,9 +212,10 @@ export default function AdminDashboard() {
                 </ResponsiveContainer>
               </div>
 
-              {/* Carbon Credits Distribution */}
+              {/* Estimated Carbon Potential by Region */}
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-                <h3 className="text-xl font-bold text-white mb-4">💰 Carbon Credits by Region</h3>
+                <h3 className="text-xl font-bold text-white mb-4">📊 Estimated Carbon Potential by Region</h3>
+                <CarbonDisclaimer className="mb-3" />
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[
                     { region: 'West Bengal', credits: verifiedProjects.filter(p => p.location.includes('West Bengal')).reduce((acc, p) => acc + (p.creditsAvailable || 0), 0) },
@@ -282,7 +284,7 @@ export default function AdminDashboard() {
                     <span className="text-yellow-400 font-bold">{pendingProjects.length}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
-                    <span className="text-gray-300">Total Credits</span>
+                    <span className="text-gray-300">Total Estimated Potential</span>
                     <span className="text-blue-400 font-bold">{verifiedProjects.reduce((acc, p) => acc + (p.creditsAvailable || 0), 0).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
@@ -517,38 +519,38 @@ export default function AdminDashboard() {
                   </div>
                 </button>
 
-                {/* Credits Report */}
+                {/* Carbon Estimation Report (Pre-Certification) */}
                 <button 
                   onClick={() => {
                     const verifiedOnly = verifiedProjects
                     const data = verifiedOnly.map(p => ({
                       Project: p.name,
                       Location: p.location,
-                      'Credits Available': p.creditsAvailable,
-                      'Price Per Credit': `$${p.pricePerCredit}`,
-                      'Total Value': `$${p.creditsAvailable * p.pricePerCredit}`,
+                      'Estimated Carbon Potential': p.creditsAvailable,
                       Impact: p.impact,
-                      Status: p.status
+                      Status: p.status,
+                      'ML Confidence': p.mlAnalysis?.confidence ? `${p.mlAnalysis.confidence}%` : 'N/A'
                     }))
                     const csv = [
                       Object.keys(data[0]).join(','),
                       ...data.map(row => Object.values(row).join(','))
                     ].join('\n')
-                    const blob = new Blob([csv], { type: 'text/csv' })
+                    const disclaimer = '\n\nDisclaimer: Carbon values are AI-based estimates and require institutional or regulatory verification before certification.'
+                    const blob = new Blob([csv + disclaimer], { type: 'text/csv' })
                     const url = URL.createObjectURL(blob)
                     const a = document.createElement('a')
                     a.href = url
-                    a.download = `oceara-credits-report-${new Date().toISOString().split('T')[0]}.csv`
+                    a.download = `oceara-carbon-estimation-report-${new Date().toISOString().split('T')[0]}.csv`
                     a.click()
-                    toast.success('Credits report downloaded!')
+                    toast.success('Carbon Estimation Report downloaded!')
                   }}
                   className="p-4 bg-gradient-to-br from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 rounded-xl text-left transition-all border border-green-500/30"
                 >
-                  <div className="text-3xl mb-2">💰</div>
-                  <h3 className="text-white font-semibold mb-1">Credits Report</h3>
-                  <p className="text-gray-300 text-sm mb-3">Export carbon credits data (CSV)</p>
+                  <div className="text-3xl mb-2">📊</div>
+                  <h3 className="text-white font-semibold mb-1">Carbon Estimation Report (Pre-Certification)</h3>
+                  <p className="text-gray-300 text-sm mb-3">Export estimated carbon potential & methodology (CSV)</p>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-400">{verifiedProjects.reduce((acc, p) => acc + p.creditsAvailable, 0).toLocaleString()} credits</span>
+                    <span className="text-xs text-gray-400">{verifiedProjects.length} projects</span>
                     <span className="text-green-400 text-sm">⬇ Download</span>
                   </div>
                 </button>
@@ -561,7 +563,7 @@ export default function AdminDashboard() {
                       'Total Projects': projects.length,
                       'Verified Projects': verifiedProjects.length,
                       'Pending Projects': pendingProjects.length,
-                      'Total Carbon Credits': verifiedProjects.reduce((acc, p) => acc + p.creditsAvailable, 0),
+                      'Total Estimated Carbon Potential': verifiedProjects.reduce((acc, p) => acc + p.creditsAvailable, 0),
                       'Total Area (hectares)': verifiedProjects.reduce((acc, p) => acc + parseFloat(p.area), 0).toFixed(2),
                       'Average ML Confidence': `${(projects.reduce((acc, p) => acc + (p.mlAnalysis?.confidence || 0), 0) / projects.length).toFixed(1)}%`,
                       'Average Health Score': (projects.reduce((acc, p) => acc + (p.mlAnalysis?.healthScore || 0), 0) / projects.length).toFixed(1),
@@ -797,9 +799,10 @@ export default function AdminDashboard() {
                 {/* Carbon Impact */}
                 <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-2xl p-6 border border-purple-500/20">
                   <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                    <span>💰</span>
-                    <span>Carbon Credits & Impact</span>
+                    <span>📊</span>
+                    <span>Estimated Carbon Potential & Impact</span>
                   </h3>
+                  <CarbonDisclaimer className="mb-3" />
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center p-4 bg-white/5 rounded-xl">
                       <p className="text-gray-400 text-sm mb-2">Credits Available</p>

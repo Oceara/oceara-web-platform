@@ -22,9 +22,10 @@ export default function LoginPage() {
   const supabase = createClient()
 
   const roleNames = {
-    landowner: 'Land Owner',
-    buyer: 'Buyer',
-    admin: 'Administrator'
+    landowner: 'Project Owner',
+    buyer: 'Institution / Program',
+    admin: 'MRV Administrator',
+    super_admin: 'Super Admin'
   }
 
   const roleName = roleParam ? roleNames[roleParam as keyof typeof roleNames] : 'User'
@@ -103,7 +104,7 @@ export default function LoginPage() {
         setTimeout(() => {
           if (user.role === 'landowner') router.push('/landowner')
           else if (user.role === 'buyer') router.push('/buyer')
-          else if (user.role === 'administrator') router.push('/admin')
+          else if (user.role === 'administrator' || user.role === 'super_admin') router.push('/admin')
           else router.push('/')
         }, 500)
         return

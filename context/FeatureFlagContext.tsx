@@ -30,7 +30,9 @@ export function FeatureFlagProvider({ children }: { children: React.ReactNode })
   }, [user?.email])
 
   const userEmail = user?.email ?? demoEmail
-  const advanced = canSeeAdvancedFeatures(userEmail ?? undefined)
+  const demoUser = authService.getCurrentUser()
+  const role = user?.user_metadata?.role ?? demoUser?.role ?? null
+  const advanced = canSeeAdvancedFeatures(userEmail ?? undefined, role)
 
   return (
     <FeatureFlagContext.Provider

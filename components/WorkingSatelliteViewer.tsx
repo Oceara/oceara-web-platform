@@ -196,7 +196,7 @@ export default function WorkingSatelliteViewer({
             </div>
             
             <div className="bg-gray-800 border-2 border-yellow-500 rounded-xl p-4">
-              <h3 className="text-lg font-bold text-white mb-2">💚 Carbon Credits</h3>
+              <h3 className="text-lg font-bold text-white mb-2">📊 Estimated Carbon Potential</h3>
               <div className="text-3xl font-bold text-yellow-400 mb-1">647</div>
               <div className="text-gray-300 text-sm">Credits Generated</div>
               <div className="text-gray-400 text-xs mt-1">Annual: 3.5 tons CO₂</div>

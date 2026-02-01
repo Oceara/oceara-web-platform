@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import HolographicCard from '@/components/HolographicCard'
+import PlatformNav from '@/components/PlatformNav'
 import '@/styles/holographic.css'
 
 const RealisticEarth = dynamic(() => import('@/components/RealisticEarth'), {
@@ -18,36 +20,46 @@ export default function Home() {
   const roles = [
     {
       id: 'landowner',
-      title: 'Land Owner',
-      description: 'Register your mangrove land and earn carbon credits',
+      title: 'Project Owner',
+      description: 'Register your mangrove project and track MRV status',
       icon: '🌴',
       color: 'from-green-500 to-emerald-600'
     },
     {
       id: 'buyer',
-      title: 'Credit Buyer',
-      description: 'Purchase verified carbon credits from mangrove projects',
-      icon: '💰',
+      title: 'Institution / Program',
+      description: 'View verified projects and request MRV or funding',
+      icon: '🏛️',
       color: 'from-blue-500 to-cyan-600'
     },
     {
       id: 'admin',
-      title: 'Administrator',
-      description: 'Manage projects and verify carbon credits',
+      title: 'MRV Administrator',
+      description: 'Review projects, verify MRV status, and generate reports',
       icon: '👤',
       color: 'from-purple-500 to-indigo-600'
     }
   ]
 
   return (
-    <main className="relative w-full h-screen overflow-hidden">
+    <main className="relative w-full min-h-screen overflow-hidden">
       {/* 3D Realistic Earth Background */}
       <div className="absolute inset-0 z-0">
         <RealisticEarth hoveredRole={hoveredRole} />
       </div>
 
+      {/* Top Nav */}
+      <header className="absolute top-0 left-0 right-0 z-20 py-3 px-4">
+        <div className="flex items-center justify-between max-w-6xl mx-auto">
+          <Link href="/" className="text-xl font-bold text-white/90 hover:text-white">
+            🌊 Oceara
+          </Link>
+          <PlatformNav />
+        </div>
+      </header>
+
       {/* Content Overlay */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 md:p-8 pt-16">
         <motion.div
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -99,7 +111,7 @@ export default function Home() {
                 else if (selectedRole === 'admin') window.location.href = '/auth/login?role=admin'
               }}
             >
-              Continue as {roles.find(r => r.id === selectedRole)?.title}
+              {selectedRole === 'buyer' ? 'Request MRV Pilot' : `Continue as ${roles.find(r => r.id === selectedRole)?.title}`}
             </motion.button>
         )}
 

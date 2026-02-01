@@ -3,8 +3,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { ProjectsDatabase, Project as DBProject } from '@/lib/database/projects'
 
-// Legacy interface for backward compatibility
-interface Project {
+// Legacy interface for backward compatibility (exported for EarthWithProjects etc.)
+export interface Project {
   id: number | string
   name: string
   owner: string

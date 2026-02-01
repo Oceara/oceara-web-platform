@@ -17,7 +17,7 @@ const EarthWithProjects = dynamic(() => import('@/components/EarthWithProjects')
 export default function BuyerDashboard() {
   const { projects, updateProject, getVerifiedProjects } = useData()
   const { canSeeAdvancedFeatures: showAdvanced } = useFeatureFlags()
-  const [activeTab, setActiveTab] = useState('marketplace')
+  const [activeTab, setActiveTab] = useState('registry')
   const [selectedProject, setSelectedProject] = useState<any | null>(null)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [showEarthEngine, setShowEarthEngine] = useState(false)
@@ -64,7 +64,7 @@ export default function BuyerDashboard() {
           <div className="flex justify-between items-center">
             <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white">
               <span className="hidden sm:inline">🌊 Oceara - {showAdvanced ? 'Carbon Credit Buyer' : 'Institution / Program'}</span>
-              <span className="sm:hidden">🌊 Oceara Buyer</span>
+              <span className="sm:hidden">🌊 Institution</span>
             </h1>
                     <div className="flex items-center gap-2 sm:gap-4">
                       {showAdvanced && (
@@ -114,14 +114,16 @@ export default function BuyerDashboard() {
                     <option>Gujarat</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-white mb-2 text-sm">Price Range</label>
-                  <select className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white">
-                    <option>All Prices</option>
-                    <option>$20-25</option>
-                    <option>$25-30</option>
-                  </select>
-                </div>
+                {showAdvanced && (
+                  <div>
+                    <label className="block text-white mb-2 text-sm">Price Range</label>
+                    <select className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white">
+                      <option>All Prices</option>
+                      <option>$20-25</option>
+                      <option>$25-30</option>
+                    </select>
+                  </div>
+                )}
                 <div>
                   <label className="block text-white mb-2 text-sm">Verification</label>
                   <select className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white">
@@ -132,9 +134,19 @@ export default function BuyerDashboard() {
                 <div>
                   <label className="block text-white mb-2 text-sm">Sort By</label>
                   <select className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white">
-                    <option>Price: Low to High</option>
-                    <option>Price: High to Low</option>
-                    <option>Impact: High to Low</option>
+                    {showAdvanced ? (
+                      <>
+                        <option>Price: Low to High</option>
+                        <option>Price: High to Low</option>
+                        <option>Impact: High to Low</option>
+                      </>
+                    ) : (
+                      <>
+                        <option>Impact: High to Low</option>
+                        <option>Area: High to Low</option>
+                        <option>Location A–Z</option>
+                      </>
+                    )}
                   </select>
                 </div>
               </div>
@@ -177,13 +189,15 @@ export default function BuyerDashboard() {
                         <div className="text-white font-semibold">{project.impact}</div>
                       </div>
                       <div className="bg-white/5 rounded-lg p-3">
-                        <div className="text-gray-400 text-xs">Available Credits</div>
+                        <div className="text-gray-400 text-xs">Estimated Carbon Potential</div>
                         <div className="text-white font-semibold">{project.creditsAvailable}</div>
                       </div>
-                      <div className="bg-white/5 rounded-lg p-3">
-                        <div className="text-gray-400 text-xs">Price per Credit</div>
-                        <div className="text-white font-semibold">${project.pricePerCredit}</div>
-                      </div>
+                      {showAdvanced && (
+                        <div className="bg-white/5 rounded-lg p-3">
+                          <div className="text-gray-400 text-xs">Price per Credit</div>
+                          <div className="text-white font-semibold">${project.pricePerCredit}</div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex gap-3">
@@ -245,7 +259,7 @@ export default function BuyerDashboard() {
                 Explore verified mangrove conservation projects across India. Click on markers to view details.
               </p>
               <div className="h-[500px] bg-slate-900 rounded-xl overflow-hidden">
-                <EarthWithProjects projects={verifiedProjects} />
+                <EarthWithProjects projects={verifiedProjects} showAdvanced={showAdvanced} />
               </div>
             </div>
 
@@ -262,13 +276,15 @@ export default function BuyerDashboard() {
                   <p className="text-gray-400 text-xs mb-2">{project.location}</p>
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-400">Available:</span>
+                      <span className="text-gray-400">Estimated Potential:</span>
                       <span className="text-purple-400 font-semibold">{project.creditsAvailable}</span>
                     </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-400">Price:</span>
-                      <span className="text-white font-semibold">${project.pricePerCredit}/credit</span>
-                    </div>
+                    {showAdvanced && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-400">Price:</span>
+                        <span className="text-white font-semibold">${project.pricePerCredit}/credit</span>
+                      </div>
+                    )}
                     <div className="flex gap-2 mt-3">
                       {showAdvanced ? (
                         <button

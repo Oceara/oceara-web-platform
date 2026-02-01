@@ -7,7 +7,7 @@ interface User {
   id: string
   email: string
   name: string
-  role: 'landowner' | 'buyer' | 'administrator'
+  role: 'landowner' | 'buyer' | 'administrator' | 'super_admin'
 }
 
 // ⚠️ DEMO USERS ONLY - NOT FOR PRODUCTION USE
@@ -32,8 +32,15 @@ const DEMO_USERS = [
     id: 'demo_3',
     email: 'admin@oceara.demo',
     password: 'demo_admin_2024',
-    name: 'Demo Administrator',
+    name: 'Demo MRV Administrator',
     role: 'administrator' as const
+  },
+  {
+    id: 'demo_super',
+    email: 'superadmin@oceara.demo',
+    password: 'demo_super_2024',
+    name: 'Demo Super Admin',
+    role: 'super_admin' as const
   }
 ]
 
@@ -117,11 +124,12 @@ export const authService = {
   },
 
   // Demo user login (bypasses authentication)
-  loginAsDemo: (role: 'landowner' | 'buyer' | 'administrator'): User => {
+  loginAsDemo: (role: 'landowner' | 'buyer' | 'administrator' | 'super_admin'): User => {
+    const displayName = role === 'super_admin' ? 'Super Admin' : role.charAt(0).toUpperCase() + role.slice(1)
     const demoUser: User = {
       id: `demo_${role}`,
-      email: `demo_${role}@oceara.com`,
-      name: `Demo ${role.charAt(0).toUpperCase() + role.slice(1)}`,
+      email: role === 'super_admin' ? 'superadmin@oceara.demo' : `demo_${role}@oceara.com`,
+      name: `Demo ${displayName}`,
       role
     }
     
@@ -150,6 +158,10 @@ export const DEMO_CREDENTIALS = {
   admin: {
     email: 'admin@oceara.demo',
     password: 'demo_admin_2024'
+  },
+  super_admin: {
+    email: 'superadmin@oceara.demo',
+    password: 'demo_super_2024'
   }
 }
 

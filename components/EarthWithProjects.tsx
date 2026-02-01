@@ -5,23 +5,12 @@ import { Canvas, useFrame, useLoader } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { motion } from 'framer-motion'
 import * as THREE from 'three'
-
-interface Project {
-  id: number
-  name: string
-  location: string
-  coordinates: { lat: number; lng: number }
-  area: string
-  creditsAvailable: number
-  pricePerCredit: number
-  verified: boolean
-  impact: string
-  image: string
-  description: string
-}
+import type { Project } from '@/context/DataContext'
 
 interface EarthWithProjectsProps {
   projects: Project[]
+  /** Phase 1: hide prices and show "Request MRV / Fund Project" when false */
+  showAdvanced?: boolean
 }
 
 function ProjectMarker({ 
@@ -239,7 +228,7 @@ function Earth({ projects, onProjectClick }: { projects: Project[], onProjectCli
   )
 }
 
-export default function EarthWithProjects({ projects }: EarthWithProjectsProps) {
+export default function EarthWithProjects({ projects, showAdvanced = false }: EarthWithProjectsProps) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
   const handleProjectClick = (project: Project) => {
@@ -315,13 +304,15 @@ export default function EarthWithProjects({ projects }: EarthWithProjectsProps) 
               <div className="text-white font-semibold text-sm">{selectedProject.area}</div>
             </div>
             <div className="bg-white/5 rounded-lg p-2">
-              <div className="text-gray-400 text-xs">Credits</div>
+              <div className="text-gray-400 text-xs">Estimated Carbon Potential</div>
               <div className="text-white font-semibold text-sm">{selectedProject.creditsAvailable}</div>
             </div>
-            <div className="bg-white/5 rounded-lg p-2">
-              <div className="text-gray-400 text-xs">Price/Credit</div>
-              <div className="text-white font-semibold text-sm">${selectedProject.pricePerCredit}</div>
-            </div>
+            {showAdvanced && (
+              <div className="bg-white/5 rounded-lg p-2">
+                <div className="text-gray-400 text-xs">Price/Credit</div>
+                <div className="text-white font-semibold text-sm">${selectedProject.pricePerCredit}</div>
+              </div>
+            )}
             <div className="bg-white/5 rounded-lg p-2">
               <div className="text-gray-400 text-xs">CO₂ Impact</div>
               <div className="text-white font-semibold text-sm">{selectedProject.impact}</div>
@@ -335,8 +326,8 @@ export default function EarthWithProjects({ projects }: EarthWithProjectsProps) 
             >
               🗺️ View on Map
             </button>
-            <button className="flex-1 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg text-white font-semibold transition-all">
-              💰 Buy Credits
+            <button className="flex-1 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white font-semibold transition-all">
+              {showAdvanced ? '💰 Buy Credits' : '📄 Request MRV / Fund Project'}
             </button>
           </div>
         </div>

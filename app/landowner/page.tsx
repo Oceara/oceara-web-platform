@@ -41,9 +41,9 @@ export default function LandownerDashboard() {
       color: 'from-green-500 to-emerald-600'
     },
     { 
-      label: 'Carbon Credits', 
+      label: 'Estimated Carbon Potential', 
       value: myProjects.reduce((acc, p) => acc + p.creditsAvailable, 0).toLocaleString(), 
-      icon: '💰',
+      icon: '📊',
       color: 'from-yellow-500 to-orange-600'
     },
     { 
@@ -210,7 +210,7 @@ export default function LandownerDashboard() {
       <header className="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-white">🌊 Oceara - Landowner</h1>
+            <h1 className="text-2xl font-bold text-white">🌊 Oceara - Project Owner</h1>
             <div className="flex gap-3 items-center">
               {showAdvanced && <BlockchainWallet />}
               <Link href="/" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition-all">
@@ -333,9 +333,10 @@ export default function LandownerDashboard() {
                   </ResponsiveContainer>
                 </div>
 
-                {/* Carbon Credits Bar Chart */}
+                {/* Estimated Carbon Potential Bar Chart */}
                 <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-                  <h3 className="text-xl font-bold text-white mb-4">💰 Carbon Credits by Project</h3>
+                  <h3 className="text-xl font-bold text-white mb-4">📊 Estimated Carbon Potential by Project</h3>
+                  <CarbonDisclaimer className="mb-3" />
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={creditsOverTime}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -638,8 +639,9 @@ export default function LandownerDashboard() {
                   <p className="text-white font-semibold">{selectedProject.area}</p>
                 </div>
                 <div>
-                  <p className="text-blue-300 text-sm">Carbon Credits:</p>
+                  <p className="text-blue-300 text-sm">Estimated Carbon Potential:</p>
                   <p className="text-green-400 font-semibold">{selectedProject.creditsAvailable}</p>
+                  <CarbonDisclaimer className="mt-1" />
                 </div>
                 <div>
                   <p className="text-blue-300 text-sm">Status:</p>
