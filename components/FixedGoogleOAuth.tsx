@@ -88,7 +88,7 @@ export default function FixedGoogleOAuth() {
             console.log('🔧 Current Environment Variables:')
             console.log('  - NEXT_PUBLIC_GOOGLE_CLIENT_ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)
             console.log('  - NODE_ENV:', process.env.NODE_ENV)
-            toast.info('Check console for environment variable details', { icon: '🔍' })
+            toast('Check console for environment variable details', { icon: '🔍' })
           }}
           className="text-red-600 hover:text-red-800 text-sm underline"
         >

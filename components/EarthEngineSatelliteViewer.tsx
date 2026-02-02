@@ -79,7 +79,7 @@ export default function EarthEngineSatelliteViewer({
       setCurrentSourceIndex(nextIndex)
       setImageError(false)
       console.log(`🔄 Trying fallback source ${nextIndex + 1}/${allSources.length}`)
-      toast.info(`Trying image source ${nextIndex + 1}...`, { icon: '🔄' })
+      toast(`Trying image source ${nextIndex + 1}...`, { icon: '🔄' })
     } else {
       console.error('❌ All image sources failed to load')
       toast.error('Unable to load satellite imagery from any source', { icon: '⚠️' })
