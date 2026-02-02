@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { useData } from '@/context/DataContext'
+import { useData, type Project } from '@/context/DataContext'
 import { useFeatureFlags } from '@/context/FeatureFlagContext'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
@@ -146,7 +146,7 @@ export default function LandownerDashboard() {
     const treeCount = parseInt(area) * 50
     const carbonCredits = Math.floor(parseInt(area) * 5)
     
-    const newProject = {
+    const newProject: Omit<Project, 'id' | 'submittedDate'> = {
       name: projectName,
       owner: 'Demo Landowner',
       location: location,
