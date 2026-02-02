@@ -12,8 +12,8 @@ export default function PlatformNav({ className = '' }: { className?: string }) 
     { href: '/', label: 'Home' },
     { href: '/#how-it-works', label: 'How It Works' },
     { href: '/buyer', label: 'Projects' },
-    { href: '/admin', label: 'Reports' },
-    { href: '/#contact', label: 'Contact / Request Pilot' },
+    { href: '/reports', label: 'Reports' },
+    { href: '/contact', label: 'Contact / Request Pilot' },
   ]
 
   return (

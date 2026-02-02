@@ -42,11 +42,8 @@ export async function GET(request: Request) {
   try {
     console.log('✅ Processing OAuth code:', code.substring(0, 20) + '...')
     
-    // Determine redirect URI
-    const isLocalhost = origin.includes('localhost')
-    const redirectUri = isLocalhost 
-      ? 'http://localhost:3000/auth/callback'
-      : 'https://oceara-web-platform.vercel.app/auth/callback'
+    // Use request origin so callback works on any deployment (add this exact URL in Google Console)
+    const redirectUri = `${origin}/auth/callback`
     
     console.log('🔧 Token Exchange Configuration:')
     console.log('  - Redirect URI:', redirectUri)

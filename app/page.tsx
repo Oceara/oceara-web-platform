@@ -116,6 +116,50 @@ export default function Home() {
         )}
 
 
+        {/* How It Works */}
+        <section id="how-it-works" className="w-full max-w-4xl mx-auto mt-24 sm:mt-32 px-4 scroll-mt-20">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6 text-center">How It Works</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+            <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+              <span className="text-3xl mb-3 block">📋</span>
+              <h3 className="text-white font-semibold mb-2">Register Project</h3>
+              <p className="text-gray-300 text-sm">Project owners register mangrove or coastal restoration projects and pin location.</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+              <span className="text-3xl mb-3 block">🛰️</span>
+              <h3 className="text-white font-semibold mb-2">MRV & Verification</h3>
+              <p className="text-gray-300 text-sm">Satellite and ML analysis; MRV administrators verify and generate reports.</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+              <span className="text-3xl mb-3 block">📊</span>
+              <h3 className="text-white font-semibold mb-2">Registry & Reports</h3>
+              <p className="text-gray-300 text-sm">Verified projects in the registry; institutions can request MRV or funding.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Contact / Request Pilot */}
+        <section id="contact" className="w-full max-w-2xl mx-auto mt-24 sm:mt-32 px-4 scroll-mt-20">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6 text-center">Contact / Request Pilot</h2>
+          <p className="text-gray-300 text-center mb-6">
+            Request an MRV pilot or get in touch with the Oceara team.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link
+              href="/contact"
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full text-white font-semibold hover:shadow-lg transition-all"
+            >
+              Request MRV Pilot
+            </Link>
+            <a
+              href="mailto:contact@oceara.demo"
+              className="px-6 py-3 bg-white/10 border border-white/20 rounded-full text-white font-semibold hover:bg-white/20 transition-all"
+            >
+              Email us
+            </a>
+          </div>
+        </section>
+
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

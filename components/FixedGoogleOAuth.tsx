@@ -33,11 +33,8 @@ export default function FixedGoogleOAuth() {
     setIsLoading(true)
     
     try {
-      // Determine redirect URI based on environment
-      const isLocalhost = window.location.hostname === 'localhost'
-      const redirectUri = isLocalhost 
-        ? 'http://localhost:3000/auth/callback'
-        : 'https://oceara-web-platform.vercel.app/auth/callback'
+      // Use current origin so it works on any deployment (localhost, Vercel, custom domain)
+      const redirectUri = `${window.location.origin}/auth/callback`
       
       // Create OAuth URL with proper parameters
       const params = new URLSearchParams({
@@ -55,7 +52,6 @@ export default function FixedGoogleOAuth() {
       console.log('🔗 Google OAuth Configuration:')
       console.log('  - Client ID:', clientId)
       console.log('  - Redirect URI:', redirectUri)
-      console.log('  - Environment:', isLocalhost ? 'localhost' : 'production')
       console.log('  - Full URL:', googleAuthUrl)
       
       // Show success message

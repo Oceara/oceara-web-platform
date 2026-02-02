@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import PhoneOTPAuth from '@/components/PhoneOTPAuth'
+import TwilioPhoneAuth from '@/components/TwilioPhoneAuth'
 import FixedGoogleOAuth from '@/components/FixedGoogleOAuth'
 import toast, { Toaster } from 'react-hot-toast'
 import { authService } from '@/lib/simpleAuth'
@@ -24,7 +25,17 @@ export default function SignupPage() {
   })
   const [signupMethod, setSignupMethod] = useState<'email' | 'phone' | 'social'>('email')
   const [loading, setLoading] = useState(false)
+  const [twilioConfigured, setTwilioConfigured] = useState<boolean | null>(null)
   const supabase = createClient()
+
+  useEffect(() => {
+    if (signupMethod === 'phone') {
+      fetch('/api/auth/twilio/status')
+        .then((r) => r.json())
+        .then((d) => setTwilioConfigured(d.configured === true))
+        .catch(() => setTwilioConfigured(false))
+    }
+  }, [signupMethod])
 
   const roleNames = {
     landowner: 'Project Owner',
@@ -252,11 +263,11 @@ export default function SignupPage() {
                 />
                 <label className="text-gray-300 text-sm">
                   I agree to the{' '}
-                  <Link href="#" className="text-purple-400 hover:text-purple-300">
+                  <Link href="/contact" className="text-purple-400 hover:text-purple-300">
                     Terms and Conditions
                   </Link>{' '}
                   and{' '}
-                  <Link href="#" className="text-purple-400 hover:text-purple-300">
+                  <Link href="/contact" className="text-purple-400 hover:text-purple-300">
                     Privacy Policy
                   </Link>
                 </label>
@@ -285,7 +296,19 @@ export default function SignupPage() {
 
           {/* Phone Signup */}
           {signupMethod === 'phone' && (
-            <PhoneOTPAuth role={roleParam || 'user'} onSuccess={handlePhoneSuccess} />
+            <>
+              {twilioConfigured === true && (
+                <TwilioPhoneAuth role={roleParam || 'user'} onSuccess={() => handlePhoneSuccess()} />
+              )}
+              {twilioConfigured === false && (
+                <PhoneOTPAuth role={roleParam || 'user'} onSuccess={handlePhoneSuccess} />
+              )}
+              {twilioConfigured === null && (
+                <div className="flex justify-center py-6">
+                  <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </>
           )}
 
           {/* Social Signup */}
@@ -302,16 +325,13 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              <Link
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault()
-                  setSignupMethod('email')
-                }}
+              <button
+                type="button"
+                onClick={() => setSignupMethod('email')}
                 className="block w-full text-center py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white font-semibold transition-all"
               >
                 📧 Sign up with Email
-              </Link>
+              </button>
             </div>
           )}
 

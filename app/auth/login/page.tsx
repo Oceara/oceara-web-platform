@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import PhoneOTPAuth from '@/components/PhoneOTPAuth'
+import TwilioPhoneAuth from '@/components/TwilioPhoneAuth'
 import FixedGoogleOAuth from '@/components/FixedGoogleOAuth'
 import toast, { Toaster } from 'react-hot-toast'
 import { authService, DEMO_CREDENTIALS } from '@/lib/simpleAuth'
@@ -19,7 +20,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loginMethod, setLoginMethod] = useState<'email' | 'phone' | 'social'>('email')
   const [loading, setLoading] = useState(false)
+  const [twilioConfigured, setTwilioConfigured] = useState<boolean | null>(null)
   const supabase = createClient()
+
+  useEffect(() => {
+    if (loginMethod === 'phone') {
+      fetch('/api/auth/twilio/status')
+        .then((r) => r.json())
+        .then((d) => setTwilioConfigured(d.configured === true))
+        .catch(() => setTwilioConfigured(false))
+    }
+  }, [loginMethod])
 
   const roleNames = {
     landowner: 'Project Owner',
@@ -241,7 +252,7 @@ export default function LoginPage() {
                   <input type="checkbox" className="mr-2 rounded" />
                   Remember me
                 </label>
-                <Link href="#" className="text-blue-400 hover:text-blue-300">
+                <Link href="/auth/login" className="text-blue-400 hover:text-blue-300">
                   Forgot password?
                 </Link>
               </div>
@@ -266,9 +277,21 @@ export default function LoginPage() {
             </form>
           )}
 
-          {/* Phone Login */}
+          {/* Phone Login - Twilio if configured, else Firebase */}
           {loginMethod === 'phone' && (
-            <PhoneOTPAuth role={roleParam || 'user'} onSuccess={handlePhoneSuccess} />
+            <>
+              {twilioConfigured === true && (
+                <TwilioPhoneAuth role={roleParam || 'user'} onSuccess={() => handlePhoneSuccess()} />
+              )}
+              {twilioConfigured === false && (
+                <PhoneOTPAuth role={roleParam || 'user'} onSuccess={handlePhoneSuccess} />
+              )}
+              {twilioConfigured === null && (
+                <div className="flex justify-center py-6">
+                  <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </>
           )}
 
           {/* Social Login */}
@@ -285,16 +308,13 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <Link
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault()
-                  setLoginMethod('email')
-                }}
+              <button
+                type="button"
+                onClick={() => setLoginMethod('email')}
                 className="block w-full text-center py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white font-semibold transition-all"
               >
                 📧 Login with Email
-              </Link>
+              </button>
             </div>
           )}
 
