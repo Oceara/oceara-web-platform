@@ -32,12 +32,14 @@ interface VegetationAnalysis {
 export class GoogleEarthEngineService {
   private clientId: string
   private projectId: string
+  private apiKey: string
   private isInitialized: boolean = false
   private accessToken: string | null = null
 
   constructor() {
     this.clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
     this.projectId = process.env.NEXT_PUBLIC_GOOGLE_EARTH_ENGINE_PROJECT_ID || ''
+    this.apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_EARTH_ENGINE_API_KEY || ''
   }
 
   /**

@@ -156,7 +156,7 @@ export default function LandownerDashboard() {
       creditsAvailable: carbonCredits,
       pricePerCredit: 25,
       verified: false,
-      status: 'Pending Review',
+      status: 'Pending Review' as const,
       impact: `${(carbonCredits * 2.5).toFixed(0)} tons CO₂/year`,
       image: '🌿',
       description: description || 'Mangrove restoration project',

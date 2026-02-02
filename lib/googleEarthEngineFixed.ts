@@ -259,7 +259,7 @@ export class GoogleEarthEngineService {
       const sentinel2 = window.ee.ImageCollection('COPERNICUS/S2_SR')
         .filterDate('2024-01-01', new Date().toISOString().split('T')[0])
         .filterBounds(region)
-        .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20))
+        .filter(window.ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20))
         .sort('system:time_start', false) // Most recent first
       
       // Get the most recent image
@@ -383,7 +383,7 @@ export class GoogleEarthEngineService {
       const sentinel2 = window.ee.ImageCollection('COPERNICUS/S2_SR')
         .filterDate('2024-01-01', new Date().toISOString().split('T')[0])
         .filterBounds(region)
-        .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20))
+        .filter(window.ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20))
         .sort('system:time_start', false)
         .first()
       
@@ -508,7 +508,7 @@ export class GoogleEarthEngineService {
       const sentinel2 = window.ee.ImageCollection('COPERNICUS/S2_SR')
         .filterDate(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0])
         .filterBounds(region)
-        .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 30))
+        .filter(window.ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 30))
         .sort('system:time_start')
       
       const images = sentinel2.toList(20) // Get up to 20 images
