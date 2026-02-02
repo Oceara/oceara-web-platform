@@ -10,7 +10,7 @@ import Link from 'next/link'
 export default function PlatformNav({ className = '' }: { className?: string }) {
   const links = [
     { href: '/', label: 'Home' },
-    { href: '/#how-it-works', label: 'How It Works' },
+    { href: '/how-it-works', label: 'How It Works' },
     { href: '/buyer', label: 'Projects' },
     { href: '/reports', label: 'Reports' },
     { href: '/contact', label: 'Contact / Request Pilot' },
