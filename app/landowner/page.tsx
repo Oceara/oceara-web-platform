@@ -8,6 +8,7 @@ import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { LineChart, Line, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import BlockchainWallet from '@/components/BlockchainWallet'
+import CarbonDisclaimer from '@/components/CarbonDisclaimer'
 import EarthEngineSatelliteViewer from '@/components/EarthEngineSatelliteViewer'
 import { getGoogleMapsStaticUrl } from '@/lib/config'
 

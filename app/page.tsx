@@ -70,10 +70,10 @@ export default function Home() {
             Oceara
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-2 px-2">
-            Blue Carbon Ecosystem Platform
+            Digital MRV & Registry Platform for Blue Carbon Projects
           </p>
-          <p className="text-sm sm:text-base md:text-lg text-gray-400 px-4">
-            Protecting Mangroves • Generating Carbon Credits • Fighting Climate Change
+          <p className="text-sm sm:text-base md:text-lg text-gray-400 px-4 max-w-2xl mx-auto">
+            We help measure, track, and verify mangrove and coastal restoration projects using satellite data, AI, and blockchain-backed registries.
           </p>
         </motion.div>
 

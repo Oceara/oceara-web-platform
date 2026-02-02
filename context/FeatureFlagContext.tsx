@@ -24,14 +24,24 @@ export function FeatureFlagProvider({ children }: { children: React.ReactNode })
       setLoading(false)
       return
     }
-    const demoUser = authService.getCurrentUser()
-    setDemoEmail(demoUser?.email ?? null)
+    try {
+      const demoUser = authService.getCurrentUser()
+      setDemoEmail(demoUser?.email ?? null)
+    } catch {
+      setDemoEmail(null)
+    }
     setLoading(false)
   }, [user?.email])
 
-  const userEmail = user?.email ?? demoEmail
-  const demoUser = authService.getCurrentUser()
-  const role = user?.user_metadata?.role ?? demoUser?.role ?? null
+  let userEmail = user?.email ?? demoEmail
+  let role: string | null = user?.user_metadata?.role ?? null
+  try {
+    const demoUser = authService.getCurrentUser()
+    userEmail = user?.email ?? demoEmail ?? demoUser?.email ?? null
+    role = user?.user_metadata?.role ?? demoUser?.role ?? null
+  } catch {
+    // localStorage or auth not available - use defaults
+  }
   const advanced = canSeeAdvancedFeatures(userEmail ?? undefined, role)
 
   return (
