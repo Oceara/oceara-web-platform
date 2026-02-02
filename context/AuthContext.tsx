@@ -6,9 +6,13 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
+export type AppRole = 'LANDOWNER' | 'BUYER' | 'ENTERPRISE' | 'GOVERNMENT' | 'ADMIN'
+
 interface AuthContextType {
   user: User | null
   profile: any | null
+  /** Normalized role from profile or user_metadata (Supabase) or demo; null when not loaded. */
+  role: AppRole | null
   loading: boolean
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
@@ -65,7 +69,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .single()
 
-      if (error) throw error
+      if (error) {
+        if (error.code === 'PGRST116') {
+          setProfile(null)
+          setLoading(false)
+          return
+        }
+        throw error
+      }
       setProfile(data)
     } catch (error) {
       console.error('Error fetching profile:', error)
@@ -73,6 +84,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
     }
   }
+
+  const role: AuthContextType['role'] = (() => {
+    const r = profile?.role ?? user?.user_metadata?.role
+    if (!r) return null
+    const s = String(r).toUpperCase()
+    if (['LANDOWNER', 'BUYER', 'ENTERPRISE', 'GOVERNMENT', 'ADMIN'].includes(s)) return s as AppRole
+    if (r === 'super_admin' || r === 'administrator') return 'ADMIN'
+    if (r === 'landowner') return 'LANDOWNER'
+    if (r === 'buyer') return 'BUYER'
+    return null
+  })()
 
   const signInWithGoogle = async () => {
     try {
@@ -131,6 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         profile,
+        role: role ?? null,
         loading,
         signInWithGoogle,
         signOut,

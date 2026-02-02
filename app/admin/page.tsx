@@ -4,13 +4,16 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useData } from '@/context/DataContext'
+import { useAuth } from '@/context/AuthContext'
 import Link from 'next/link'
 import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
 import toast from 'react-hot-toast'
 import CarbonDisclaimer from '@/components/CarbonDisclaimer'
+import { writeAuditLog } from '@/lib/audit'
 
 export default function AdminDashboard() {
   const { projects, updateProject, getPendingProjects, getVerifiedProjects } = useData()
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedProject, setSelectedProject] = useState<any>(null)
   const [showModal, setShowModal] = useState(false)
@@ -77,6 +80,14 @@ export default function AdminDashboard() {
         status: 'Active',
         verified: true
       })
+      await writeAuditLog({
+        action: 'project_approve',
+        resource_type: 'project',
+        resource_id: String(projectId),
+        details: { status: 'Active', verified: true },
+        user_id: user?.id,
+        user_email: user?.email ?? undefined,
+      })
       toast.success('✅ Project approved successfully!')
       setShowModal(false)
       setSelectedProject(null)
@@ -91,6 +102,14 @@ export default function AdminDashboard() {
       await updateProject(projectId, {
         status: 'Rejected',
         verified: false
+      })
+      await writeAuditLog({
+        action: 'project_reject',
+        resource_type: 'project',
+        resource_id: String(projectId),
+        details: { status: 'Rejected', verified: false },
+        user_id: user?.id,
+        user_email: user?.email ?? undefined,
       })
       toast.success('❌ Project rejected')
       setShowModal(false)

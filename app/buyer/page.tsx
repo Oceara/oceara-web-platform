@@ -94,7 +94,7 @@ export default function BuyerDashboard() {
                   : 'bg-white/10 text-gray-300 hover:bg-white/20'
               }`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === 'marketplace' ? 'Project Registry' : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
         </div>
@@ -209,7 +209,7 @@ export default function BuyerDashboard() {
                           }}
                           className="flex-1 py-3 bg-purple-500 rounded-full text-white font-semibold hover:bg-purple-600 transition-all"
                         >
-                          💳 Buy Credits
+                          💳 Request issued credits
                         </button>
                       ) : (
                         <button

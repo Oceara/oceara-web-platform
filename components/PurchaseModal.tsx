@@ -177,8 +177,8 @@ export default function PurchaseModal({ project, onClose, onPurchase }: Purchase
                           : 'border-white/20 bg-white/5 hover:bg-white/10'
                       }`}
                     >
-                      <div className="text-2xl mb-1">👛</div>
-                      <div className="text-white text-sm font-semibold">Wallet</div>
+                      <div className="text-2xl mb-1">📋</div>
+                      <div className="text-white text-sm font-semibold">Registry balance</div>
                     </button>
                   </div>
                 </div>
@@ -217,7 +217,7 @@ export default function PurchaseModal({ project, onClose, onPurchase }: Purchase
                 {paymentMethod === 'wallet' && (
                   <div className="bg-white/5 border border-white/20 rounded-lg p-4">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-gray-400">Wallet Balance</span>
+                      <span className="text-gray-400">Registry balance (issued credits)</span>
                       <span className="text-white font-bold text-lg">$5,000</span>
                     </div>
                     <div className="text-green-400 text-sm">✓ Sufficient balance</div>

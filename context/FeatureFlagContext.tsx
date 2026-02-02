@@ -14,7 +14,7 @@ interface FeatureFlagContextType {
 const FeatureFlagContext = createContext<FeatureFlagContextType | undefined>(undefined)
 
 export function FeatureFlagProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [demoEmail, setDemoEmail] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -34,15 +34,16 @@ export function FeatureFlagProvider({ children }: { children: React.ReactNode })
   }, [user?.email])
 
   let userEmail = user?.email ?? demoEmail
-  let role: string | null = user?.user_metadata?.role ?? null
+  let role: string | null = user?.user_metadata?.role ?? profile?.role ?? null
+  let marketplaceAccess: boolean = profile?.marketplace_access ?? false
   try {
     const demoUser = authService.getCurrentUser()
     userEmail = user?.email ?? demoEmail ?? demoUser?.email ?? null
-    role = user?.user_metadata?.role ?? demoUser?.role ?? null
+    if (!role) role = demoUser?.role ?? null
   } catch {
     // localStorage or auth not available - use defaults
   }
-  const advanced = canSeeAdvancedFeatures(userEmail ?? undefined, role)
+  const advanced = canSeeAdvancedFeatures(userEmail ?? undefined, role, marketplaceAccess)
 
   return (
     <FeatureFlagContext.Provider
