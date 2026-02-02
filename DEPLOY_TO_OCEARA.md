@@ -5,6 +5,39 @@
 
 ---
 
+## Deployment — do this every time (you deploy)
+
+**You handle the actual deploy; use these steps every time.**
+
+1. **Build** (fix any errors first):
+   ```powershell
+   cd c:\Users\Yash\OneDrive\Desktop\WORK\SIH\oceara-simple-deploy
+   npm run build
+   ```
+
+2. **Commit** (if you have changes):
+   ```powershell
+   git add .
+   git commit -m "Your short message"
+   ```
+
+3. **Push** (triggers Vercel if connected to GitHub):
+   ```powershell
+   git push -u origin main
+   ```
+   Use GitHub username + **Personal Access Token** (not password) if prompted.
+
+4. **Vercel** deploys automatically from `main`. Check the project dashboard for build status and the live URL.
+
+5. **Env vars on Vercel:** In Vercel → Project → Settings → Environment Variables, ensure you have at least:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   For Google sign-in: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`; add your production URL to Google Cloud redirect URIs.  
+   For Twilio: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SID`.  
+   Optional: `NEXT_PUBLIC_FULL_ACCESS_EMAILS` (comma-separated) for marketplace/wallet visibility.
+
+---
+
 ## One-command deploy (recommended)
 
 From **PowerShell**, in the `oceara-simple-deploy` folder, run:
@@ -131,9 +164,9 @@ After the code is on GitHub:
 ## Summary (no confusion)
 
 1. **Build:** `npm run build` in `oceara-simple-deploy` — fix any errors.
-2. **Commit:** `git add .` → `git commit -m "Fix Project type..."` (and set `user.name`/`user.email` if needed).
+2. **Commit:** `git add .` → `git commit -m "Your message"` (and set `user.name`/`user.email` if needed).
 3. **Remote:** `origin` = `https://github.com/Oceara/oceara-web-platform.git`.
 4. **Push:** `git push -u origin main`.
-5. **Deploy:** Import Oceara/oceara-web-platform on Vercel and deploy.
+5. **Deploy:** Vercel auto-deploys from GitHub when you push. You deploy by pushing; no extra step.
 
-If you hit a specific error message (e.g. from `npm run build` or `git push`), fix that first using the table above; then repeat the steps.
+**Remember:** You run the deploy (build → commit → push). The app deploys on Vercel when you push to `main`.

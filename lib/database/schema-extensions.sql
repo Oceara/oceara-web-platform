@@ -55,10 +55,19 @@ ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE report_metadata ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can read own profile" ON profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Admins can read all profiles" ON profiles FOR SELECT USING (
+  EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'ADMIN')
+);
 CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Admins can update any profile" ON profiles FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'ADMIN')
+);
 CREATE POLICY "Service role can manage profiles" ON profiles FOR ALL USING (true);
 
 CREATE POLICY "Authenticated can read audit_logs" ON audit_logs FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Admins can read audit_logs" ON audit_logs FOR SELECT USING (
+  EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'ADMIN')
+);
 CREATE POLICY "Authenticated can insert audit_logs" ON audit_logs FOR INSERT WITH CHECK (true);
 
 CREATE POLICY "Report metadata viewable by authenticated" ON report_metadata FOR SELECT USING (auth.role() = 'authenticated');

@@ -73,7 +73,7 @@ export default function Home() {
             Digital MRV & Registry Platform for Blue Carbon Projects
           </p>
           <p className="text-sm sm:text-base md:text-lg text-gray-400 px-4 max-w-2xl mx-auto">
-            We help measure, track, and verify mangrove and coastal restoration projects using satellite data, AI, and blockchain-backed registries.
+            We help measure, track, and verify mangrove and coastal restoration projects using satellite data, AI, and transparent registries. MRV (Measurement, Reporting, Verification) supports credible carbon estimates and institutional verification.
           </p>
         </motion.div>
 

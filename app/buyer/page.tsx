@@ -15,7 +15,7 @@ const EarthWithProjects = dynamic(() => import('@/components/EarthWithProjects')
 })
 
 export default function BuyerDashboard() {
-  const { projects, updateProject, getVerifiedProjects } = useData()
+  const { projects, updateProject, getVerifiedProjects, dbError } = useData()
   const { canSeeAdvancedFeatures: showAdvanced } = useFeatureFlags()
   const [activeTab, setActiveTab] = useState('registry')
   const [selectedProject, setSelectedProject] = useState<any | null>(null)
@@ -25,7 +25,6 @@ export default function BuyerDashboard() {
   const [totalCreditsOwned, setTotalCreditsOwned] = useState(80)
   const [totalSpent, setTotalSpent] = useState(1910)
 
-  // Get verified projects from context
   const verifiedProjects = getVerifiedProjects()
 
   const handlePurchase = (projectId: number, credits: number, totalCost: number) => {
@@ -82,6 +81,11 @@ export default function BuyerDashboard() {
       </header>
 
       <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
+        {dbError && (
+          <div className="mb-4 py-2 px-4 bg-amber-500/20 border border-amber-500/40 rounded-lg text-amber-200 text-sm">
+            {dbError}
+          </div>
+        )}
         {/* Tabs - hide portfolio for non-advanced (MRV-only view) */}
         <div className="flex gap-2 sm:gap-4 mb-4 sm:mb-6 overflow-x-auto pb-2 scrollbar-hide">
           {(showAdvanced ? ['marketplace', 'globe', 'portfolio'] : ['marketplace', 'globe']).map((tab) => (
@@ -99,9 +103,14 @@ export default function BuyerDashboard() {
           ))}
         </div>
 
-        {/* Marketplace Tab */}
+        {/* Project Registry. Advanced carbon market gated by role + marketplace_access. */}
         {activeTab === 'marketplace' && (
           <div className="space-y-6">
+            {!showAdvanced && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-amber-200 text-sm">
+                You are viewing the <strong>Project Registry</strong>. Issued credits and advanced carbon market features are available to approved institutions and administrators.
+              </div>
+            )}
             {/* Filters */}
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

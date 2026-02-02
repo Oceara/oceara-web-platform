@@ -10,6 +10,7 @@ import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianG
 import toast from 'react-hot-toast'
 import CarbonDisclaimer from '@/components/CarbonDisclaimer'
 import { writeAuditLog } from '@/lib/audit'
+import { generateMrvReportPdf, type ProjectForReport } from '@/lib/mrvReportPdf'
 
 export default function AdminDashboard() {
   const { projects, updateProject, getPendingProjects, getVerifiedProjects } = useData()
@@ -18,7 +19,25 @@ export default function AdminDashboard() {
   const [selectedProject, setSelectedProject] = useState<any>(null)
   const [showModal, setShowModal] = useState(false)
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'verified'>('all')
+  const [auditLogs, setAuditLogs] = useState<Array<{ id: string; action: string; resource_type: string; resource_id: string | null; user_email: string | null; details: unknown; created_at: string }>>([])
+  const [profiles, setProfiles] = useState<Array<{ id: string; email: string | null; full_name: string | null; role: string; marketplace_access: boolean }>>([])
+  const [auditLoading, setAuditLoading] = useState(false)
+  const [profilesLoading, setProfilesLoading] = useState(false)
+  const [profileEdit, setProfileEdit] = useState<{ id: string; role: string; marketplace_access: boolean } | null>(null)
   const searchParams = useSearchParams()
+
+  useEffect(() => {
+    if (activeTab === 'audit') {
+      setAuditLoading(true)
+      fetch('/api/audit-logs').then(r => r.json()).then(data => { setAuditLogs(Array.isArray(data) ? data : []); setAuditLoading(false) }).catch(() => setAuditLoading(false))
+    }
+  }, [activeTab])
+  useEffect(() => {
+    if (activeTab === 'users') {
+      setProfilesLoading(true)
+      fetch('/api/profiles').then(r => r.json()).then(data => { setProfiles(Array.isArray(data) ? data : []); setProfilesLoading(false) }).catch(() => setProfilesLoading(false))
+    }
+  }, [activeTab])
 
   // Handle Google OAuth success
   useEffect(() => {
@@ -176,7 +195,7 @@ export default function AdminDashboard() {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {['overview', 'approval', 'blockchain', 'reports'].map((tab) => (
+          {['overview', 'approval', 'blockchain', 'reports', 'audit', 'users'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -190,6 +209,8 @@ export default function AdminDashboard() {
               {tab === 'approval' && '✅ Approval'}
               {tab === 'blockchain' && '⛓️ Blockchain'}
               {tab === 'reports' && '📄 Reports'}
+              {tab === 'audit' && '🔒 Audit Log'}
+              {tab === 'users' && '👥 Users'}
             </button>
           ))}
         </div>
@@ -538,6 +559,45 @@ export default function AdminDashboard() {
                   </div>
                 </button>
 
+                {/* MRV PDF Report (per project) */}
+                <div className="p-4 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-xl border border-cyan-500/30">
+                  <div className="text-3xl mb-2">📄</div>
+                  <h3 className="text-white font-semibold mb-1">MRV PDF Report</h3>
+                  <p className="text-gray-300 text-sm mb-3">Download standardized PDF for one project (carbon, health, confidence, ref ID)</p>
+                  <select
+                    className="w-full mb-2 px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20 text-sm"
+                    defaultValue=""
+                    onChange={(e) => {
+                      const id = e.target.value
+                      if (!id) return
+                      const p = projects.find(pr => String(pr.id) === id)
+                      if (!p) return
+                      const forReport: ProjectForReport = {
+                        id: p.id,
+                        name: p.name,
+                        location: p.location,
+                        area: p.area,
+                        coordinates: p.coordinates,
+                        status: p.status,
+                        verified: p.verified,
+                        impact: p.impact,
+                        creditsAvailable: p.creditsAvailable,
+                        submittedDate: p.submittedDate,
+                        mlAnalysis: p.mlAnalysis ? { healthScore: p.mlAnalysis.healthScore, confidence: p.mlAnalysis.confidence, carbonCredits: p.mlAnalysis.carbonCredits, speciesDetected: p.mlAnalysis.speciesDetected } : undefined,
+                      }
+                      generateMrvReportPdf(forReport)
+                      toast.success('MRV PDF downloaded')
+                      e.target.value = ''
+                    }}
+                  >
+                    <option value="">Select project...</option>
+                    {projects.map((p) => (
+                      <option key={p.id} value={String(p.id)}>{p.name}</option>
+                    ))}
+                  </select>
+                  <div className="text-xs text-gray-400">{projects.length} projects</div>
+                </div>
+
                 {/* Carbon Estimation Report (Pre-Certification) */}
                 <button 
                   onClick={() => {
@@ -672,6 +732,114 @@ export default function AdminDashboard() {
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Audit Log Tab */}
+        {activeTab === 'audit' && (
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+            <h2 className="text-2xl font-bold text-white mb-4">🔒 Audit Log</h2>
+            {auditLoading ? (
+              <p className="text-gray-400">Loading...</p>
+            ) : auditLogs.length === 0 ? (
+              <p className="text-gray-400">No audit entries yet. Approve/reject projects to see entries here.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead>
+                    <tr className="text-gray-400 border-b border-white/20">
+                      <th className="py-2 pr-4">Time</th>
+                      <th className="py-2 pr-4">Action</th>
+                      <th className="py-2 pr-4">Resource</th>
+                      <th className="py-2 pr-4">User</th>
+                      <th className="py-2">Details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auditLogs.map((log) => (
+                      <tr key={log.id} className="border-b border-white/10">
+                        <td className="py-2 pr-4 text-gray-300">{new Date(log.created_at).toLocaleString()}</td>
+                        <td className="py-2 pr-4 text-white font-medium">{log.action}</td>
+                        <td className="py-2 pr-4 text-gray-300">{log.resource_type}{log.resource_id ? ` #${log.resource_id}` : ''}</td>
+                        <td className="py-2 pr-4 text-gray-300">{log.user_email || '—'}</td>
+                        <td className="py-2 text-gray-400">{log.details ? JSON.stringify(log.details) : '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Users Tab */}
+        {activeTab === 'users' && (
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+            <h2 className="text-2xl font-bold text-white mb-4">👥 User Management</h2>
+            <p className="text-gray-400 text-sm mb-4">Update role and Advanced Carbon Market access. Changes require Supabase profiles.</p>
+            {profilesLoading ? (
+              <p className="text-gray-400">Loading...</p>
+            ) : profiles.length === 0 ? (
+              <p className="text-gray-400">No profiles in database. Users appear here after signing up and profile creation.</p>
+            ) : (
+              <div className="overflow-x-auto space-y-4">
+                {profiles.map((profile) => (
+                  <div key={profile.id} className="flex flex-wrap items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-white font-semibold truncate">{profile.email || profile.full_name || profile.id}</p>
+                      <p className="text-gray-400 text-xs">{profile.id}</p>
+                    </div>
+                    {profileEdit?.id === profile.id ? (
+                      <>
+                        <select
+                          value={profileEdit.role}
+                          onChange={(e) => setProfileEdit(prev => prev ? { ...prev, role: e.target.value } : null)}
+                          className="px-3 py-2 rounded-lg bg-white/10 text-white border border-white/20 text-sm"
+                        >
+                          {['LANDOWNER', 'BUYER', 'ENTERPRISE', 'GOVERNMENT', 'ADMIN'].map((r) => (
+                            <option key={r} value={r}>{r}</option>
+                          ))}
+                        </select>
+                        <label className="flex items-center gap-2 text-gray-300 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={profileEdit.marketplace_access}
+                            onChange={(e) => setProfileEdit(prev => prev ? { ...prev, marketplace_access: e.target.checked } : null)}
+                          />
+                          Marketplace access
+                        </label>
+                        <button
+                          onClick={async () => {
+                            if (!profileEdit) return
+                            try {
+                              const res = await fetch(`/api/profiles/${profile.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: profileEdit.role, marketplace_access: profileEdit.marketplace_access }) })
+                              if (!res.ok) throw new Error(await res.text())
+                              toast.success('Profile updated')
+                              setProfileEdit(null)
+                              setProfiles(prev => prev.map(p => p.id === profile.id ? { ...p, role: profileEdit.role, marketplace_access: profileEdit.marketplace_access } : p))
+                            } catch (e: any) {
+                              toast.error(e.message || 'Update failed')
+                            }
+                          }}
+                          className="px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg text-white text-sm font-semibold"
+                        >
+                          Save
+                        </button>
+                        <button onClick={() => setProfileEdit(null)} className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm">Cancel</button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300">{profile.role}</span>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${profile.marketplace_access ? 'bg-green-500/20 text-green-300' : 'bg-gray-500/20 text-gray-400'}`}>
+                          {profile.marketplace_access ? 'Marketplace' : 'Registry only'}
+                        </span>
+                        <button onClick={() => setProfileEdit({ id: profile.id, role: profile.role, marketplace_access: profile.marketplace_access })} className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white text-sm font-semibold">Edit</button>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>

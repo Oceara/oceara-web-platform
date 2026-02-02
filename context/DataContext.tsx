@@ -909,55 +909,54 @@ export function DataProvider({ children }: { children: ReactNode }) {
   
   const db = new ProjectsDatabase()
 
-  // Load data from database or localStorage
+  // Load data from database or localStorage. On 401/403 or any DB error, fall back to demo data so the app always works.
   useEffect(() => {
     const loadData = async () => {
-      try {
-        // Check if database is configured
-        const isDbConfigured = await db.isConfigured()
-        
-        if (isDbConfigured) {
-          setUseDatabase(true)
-          // Load from database
-          const dbProjects = await db.getAllProjects()
-          setProjects(dbProjects.map(dbToApp))
-          console.log('✅ Loaded projects from database:', dbProjects.length)
-        } else {
-          // Fallback to localStorage
-          console.log('⚠️ Database not configured, using localStorage')
-          const stored = localStorage.getItem(STORAGE_KEY)
-          if (stored) {
-            try {
-              const parsed = JSON.parse(stored)
-              // Convert numeric IDs to strings for compatibility
-              const converted = parsed.map((p: any) => ({
-                ...p,
-                id: String(p.id)
-              }))
-              setProjects(converted)
-            } catch (error) {
-              console.error('Error loading data from localStorage:', error)
-              setProjects(initialProjects.map(p => ({ ...p, id: String(p.id) })))
-            }
-          } else {
-            setProjects(initialProjects.map(p => ({ ...p, id: String(p.id) })))
-          }
-        }
-      } catch (error: any) {
-        console.error('Error loading data:', error)
-        setDbError(error.message)
-        // Fallback to localStorage
-        const stored = localStorage.getItem(STORAGE_KEY)
+      const applyFallback = (stored: string | null) => {
+        setUseDatabase(false)
         if (stored) {
           try {
             const parsed = JSON.parse(stored)
             setProjects(parsed.map((p: any) => ({ ...p, id: String(p.id) })))
-          } catch (e) {
+          } catch {
             setProjects(initialProjects.map(p => ({ ...p, id: String(p.id) })))
           }
         } else {
           setProjects(initialProjects.map(p => ({ ...p, id: String(p.id) })))
         }
+      }
+
+      try {
+        const isDbConfigured = await db.isConfigured()
+        if (!isDbConfigured) {
+          console.log('⚠️ Database not configured, using local registry data')
+          applyFallback(typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null)
+          setIsLoaded(true)
+          return
+        }
+
+        try {
+          const dbProjects = await db.getAllProjects()
+          setUseDatabase(true)
+          setProjects(dbProjects.map(dbToApp))
+          setDbError(null)
+          console.log('✅ Loaded projects from registry:', dbProjects.length)
+        } catch (dbErr: any) {
+          const code = dbErr?.code || dbErr?.status
+          const msg = String(dbErr?.message || '')
+          const isAuthError = code === 401 || code === 403 || msg.includes('401') || msg.includes('403') || msg.includes('JWT') || msg.includes('permission') || dbErr?.code === 'PGRST301'
+          if (isAuthError) {
+            console.warn('Registry read not authorized (using local data):', msg || code)
+            setDbError('Registry in offline mode. Sign in or check Supabase RLS for full sync.')
+          } else {
+            setDbError(msg || 'Registry unavailable')
+          }
+          applyFallback(typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null)
+        }
+      } catch (error: any) {
+        console.error('Error loading data:', error)
+        setDbError(error.message || 'Load failed')
+        applyFallback(typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null)
       }
       setIsLoaded(true)
     }

@@ -13,7 +13,7 @@ import EarthEngineSatelliteViewer from '@/components/EarthEngineSatelliteViewer'
 import { getGoogleMapsStaticUrl } from '@/lib/config'
 
 export default function LandownerDashboard() {
-  const { projects, addProject, getProjectsByOwner } = useData()
+  const { projects, addProject, getProjectsByOwner, dbError } = useData()
   const { canSeeAdvancedFeatures: showAdvanced } = useFeatureFlags()
   const [activeTab, setActiveTab] = useState('overview')
   const [showRegisterModal, setShowRegisterModal] = useState(false)
@@ -223,6 +223,11 @@ export default function LandownerDashboard() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
+        {dbError && (
+          <div className="mb-4 py-2 px-4 bg-amber-500/20 border border-amber-500/40 rounded-lg text-amber-200 text-sm">
+            {dbError}
+          </div>
+        )}
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (

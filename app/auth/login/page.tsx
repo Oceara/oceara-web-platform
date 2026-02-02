@@ -318,15 +318,15 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Demo Credentials for Current Role */}
+          {/* Pilot / test credentials for current role */}
           {roleParam && DEMO_CREDENTIALS[roleParam as keyof typeof DEMO_CREDENTIALS] && (
             <div className="mt-6 p-4 bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-xl">
               <div className="flex items-start gap-3">
                 <div className="text-2xl">🔑</div>
                 <div className="flex-1">
-                  <h4 className="text-white font-semibold mb-1">Demo Credentials</h4>
+                  <h4 className="text-white font-semibold mb-1">Pilot credentials</h4>
                   <p className="text-gray-300 text-xs mb-3">
-                    Use these credentials to test as {roleName}:
+                    Use these to sign in as {roleName} for testing or pilots:
                   </p>
                   <div className="bg-black/30 rounded-lg p-3 space-y-2">
                     <div>
