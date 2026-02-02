@@ -5,6 +5,21 @@
 
 ---
 
+## One-command deploy (recommended)
+
+From **PowerShell**, in the `oceara-simple-deploy` folder, run:
+
+```powershell
+cd "c:\Users\Yash\OneDrive\Desktop\WORK\SIH\oceara-simple-deploy"
+.\deploy.ps1
+```
+
+This will: (1) build the project, (2) commit any changes, (3) push to `origin main`.  
+If push asks for credentials, use your GitHub username and a **Personal Access Token** (not password).  
+After push succeeds, Vercel will deploy in 1–2 minutes if it’s connected to **Oceara/oceara-web-platform**.
+
+---
+
 ## Repositioning (Phase 1: Blue Carbon MRV & Registry)
 
 This codebase is repositioned as a **Blue Carbon MRV & Registry Platform** (government/NGO-friendly).  
