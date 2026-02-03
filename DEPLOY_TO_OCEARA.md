@@ -32,9 +32,9 @@
 5. **Env vars on Vercel:** In Vercel → Project → Settings → Environment Variables, ensure you have at least:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   For Google sign-in: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`; add your production URL to Google Cloud redirect URIs.  
-   For Twilio: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SID`.  
-   Optional: `NEXT_PUBLIC_FULL_ACCESS_EMAILS` (comma-separated) for marketplace/wallet visibility.
+   - **Google OAuth:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and **`NEXT_PUBLIC_APP_URL`** = your main app URL (e.g. `https://your-project.vercel.app`). In Google Cloud Console → APIs & Services → Credentials → your OAuth client → **Authorized redirect URIs** add **exactly**: `https://your-project.vercel.app/auth/callback` (same as `NEXT_PUBLIC_APP_URL` + `/auth/callback`). One URI is enough for all deployments.
+   - Twilio: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SID`
+   - Optional: `NEXT_PUBLIC_FULL_ACCESS_EMAILS` (comma-separated) for marketplace/wallet visibility.
 
 ---
 

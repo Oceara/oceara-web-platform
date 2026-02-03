@@ -297,7 +297,7 @@ export default function LoginPage() {
           {/* Social Login */}
           {loginMethod === 'social' && (
             <div className="space-y-3">
-              <FixedGoogleOAuth />
+              <FixedGoogleOAuth role={roleParam} />
 
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">

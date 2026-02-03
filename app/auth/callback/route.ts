@@ -41,10 +41,11 @@ export async function GET(request: Request) {
 
   try {
     console.log('✅ Processing OAuth code:', code.substring(0, 20) + '...')
-    
-    // Use request origin so callback works on any deployment (add this exact URL in Google Console)
-    const redirectUri = `${origin}/auth/callback`
-    
+
+    // Same canonical redirect URI as the client (NEXT_PUBLIC_APP_URL) so only one URI is registered in Google Console
+    const canonicalOrigin = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || origin
+    const redirectUri = `${canonicalOrigin}/auth/callback`
+
     console.log('🔧 Token Exchange Configuration:')
     console.log('  - Redirect URI:', redirectUri)
     console.log('  - Client ID:', clientId.substring(0, 20) + '...')
@@ -113,8 +114,21 @@ export async function GET(request: Request) {
     console.log('  - Name:', userInfo.name)
     console.log('  - Verified email:', userInfo.verified_email)
 
-    // Create success redirect URL
-    const redirectUrl = new URL(`${origin}/admin`)
+    // Redirect back to the origin and the dashboard for the role they chose (from state)
+    let returnOrigin = origin
+    let role: string = 'admin'
+    try {
+      if (state) {
+        const decoded = JSON.parse(decodeURIComponent(state))
+        if (decoded.r && typeof decoded.r === 'string') returnOrigin = decoded.r
+        if (decoded.role === 'landowner' || decoded.role === 'buyer' || decoded.role === 'admin') role = decoded.role
+      }
+    } catch {
+      // ignore invalid state
+    }
+
+    const path = role === 'landowner' ? '/landowner' : role === 'buyer' ? '/buyer' : '/admin'
+    const redirectUrl = new URL(`${returnOrigin}${path}`)
     redirectUrl.searchParams.set('google_auth', 'success')
     redirectUrl.searchParams.set('user_email', userInfo.email)
     redirectUrl.searchParams.set('user_name', userInfo.name || '')

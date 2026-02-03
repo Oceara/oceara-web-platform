@@ -25,7 +25,15 @@ export default function FixedGoogleOAuth() {
 
     setIsLoading(true)
     try {
-      const redirectUri = `${window.location.origin}/auth/callback`
+      // Use canonical URL from env so you only register ONE redirect URI in Google Console (e.g. production).
+      // Google will redirect to this URL; callback then can send user back to current origin if different.
+      const canonicalOrigin = typeof process.env.NEXT_PUBLIC_APP_URL === 'string' && process.env.NEXT_PUBLIC_APP_URL.trim()
+        ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')
+        : window.location.origin
+      const redirectUri = `${canonicalOrigin}/auth/callback`
+      const returnTo = window.location.origin
+      const roleToUse = (role === 'landowner' || role === 'buyer' || role === 'admin' ? role : 'admin') as Role
+      const state = encodeURIComponent(JSON.stringify({ r: returnTo, role: roleToUse, s: Math.random().toString(36).substring(7) }))
       const params = new URLSearchParams({
         client_id: clientId,
         redirect_uri: redirectUri,
@@ -33,7 +41,7 @@ export default function FixedGoogleOAuth() {
         scope: 'openid email profile',
         access_type: 'offline',
         prompt: 'select_account',
-        state: Math.random().toString(36).substring(7)
+        state
       })
       const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
       toast.success('Redirecting to Google...', { icon: '🔗', duration: 2000 })
