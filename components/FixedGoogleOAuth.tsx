@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 
-interface FixedGoogleOAuthProps {
-  role?: string | null
+export interface FixedGoogleOAuthProps {
+  /** Role to redirect after login: landowner, buyer, or admin */
+  loginRole?: string | null
 }
 
-export default function FixedGoogleOAuth({ role }: FixedGoogleOAuthProps) {
+export default function FixedGoogleOAuth(props: FixedGoogleOAuthProps) {
+  const { loginRole: role } = props
   const [isLoading, setIsLoading] = useState(false)
   const [clientId, setClientId] = useState<string>('')
   const [isConfigured, setIsConfigured] = useState(false)
