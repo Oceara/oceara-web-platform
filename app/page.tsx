@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import HolographicCard from '@/components/HolographicCard'
@@ -16,6 +16,10 @@ const RealisticEarth = dynamic(() => import('@/components/RealisticEarth'), {
 export default function Home() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
   const [hoveredRole, setHoveredRole] = useState<string | null>(null)
+  const { scrollY } = useScroll()
+  const scrollIndicatorOpacity = useTransform(scrollY, [0, 120], [1, 0])
+  const belowFoldOpacity = useTransform(scrollY, [80, 280], [0, 1])
+  const belowFoldY = useTransform(scrollY, [80, 280], [24, 0])
 
   const roles = [
     {
@@ -42,14 +46,14 @@ export default function Home() {
   ]
 
   return (
-    <main className="relative w-full min-h-screen overflow-hidden">
-      {/* 3D Realistic Earth Background */}
-      <div className="absolute inset-0 z-0">
+    <main className="relative w-full min-h-screen overflow-x-hidden overflow-y-auto">
+      {/* 3D Realistic Earth Background - fixed so it stays while scrolling */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
         <RealisticEarth hoveredRole={hoveredRole} />
       </div>
 
       {/* Top Nav */}
-      <header className="absolute top-0 left-0 right-0 z-20 py-3 px-4">
+      <header className="fixed top-0 left-0 right-0 z-20 py-3 px-4">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           <Link href="/" className="text-xl font-bold text-white/90 hover:text-white">
             🌊 Oceara
@@ -58,7 +62,7 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Content Overlay */}
+      {/* Content - first view */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 md:p-8 pt-16">
         <motion.div
           initial={{ opacity: 0, y: -50 }}
@@ -115,18 +119,40 @@ export default function Home() {
             </motion.button>
         )}
 
-
+        {/* Scroll hint - fades out as user scrolls */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1 }}
-          className="absolute bottom-4 sm:bottom-8 text-center text-gray-400 px-4"
+          style={{ opacity: scrollIndicatorOpacity }}
+          className="absolute bottom-6 sm:bottom-10 left-0 right-0 flex flex-col items-center gap-2 text-gray-400"
         >
-          <p className="text-xs sm:text-sm">
-            Join us in protecting 100,000+ hectares of mangrove ecosystems
-          </p>
+          <motion.span
+            animate={{ y: [0, 6, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            className="text-white/60"
+            aria-hidden
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14M5 12l7 7 7-7" />
+            </svg>
+          </motion.span>
+          <p className="text-xs">Scroll to explore</p>
         </motion.div>
       </div>
+
+      {/* Below-fold section - fades in on scroll */}
+      <motion.section
+        style={{ opacity: belowFoldOpacity, y: belowFoldY }}
+        className="relative z-10 min-h-[40vh] flex flex-col items-center justify-center px-4 py-16"
+      >
+        <p className="text-gray-400 text-sm sm:text-base text-center max-w-xl mb-6">
+          Join us in protecting mangrove ecosystems through measurement, reporting, and verification.
+        </p>
+        <Link
+          href="/how-it-works"
+          className="text-blue-400 hover:text-blue-300 font-medium text-sm transition-colors"
+        >
+          See how it works →
+        </Link>
+      </motion.section>
     </main>
   )
 }

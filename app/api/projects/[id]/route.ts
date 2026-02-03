@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 import { ProjectsDatabase } from '@/lib/database/projects'
-
-const db = new ProjectsDatabase()
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabase = createClient()
+    const db = new ProjectsDatabase(supabase)
     const project = await db.getProjectById(params.id)
     
     if (!project) {
@@ -32,6 +33,8 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabase = createClient()
+    const db = new ProjectsDatabase(supabase)
     const body = await request.json()
     const project = await db.updateProject(params.id, body)
     return NextResponse.json({ project }, { status: 200 })
@@ -49,6 +52,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabase = createClient()
+    const db = new ProjectsDatabase(supabase)
     await db.deleteProject(params.id)
     return NextResponse.json({ success: true }, { status: 200 })
   } catch (error: any) {

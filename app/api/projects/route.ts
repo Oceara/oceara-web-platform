@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 import { ProjectsDatabase } from '@/lib/database/projects'
-
-const db = new ProjectsDatabase()
 
 export async function GET(request: NextRequest) {
   try {
+    const supabase = createClient()
+    const db = new ProjectsDatabase(supabase)
     const { searchParams } = new URL(request.url)
     const owner = searchParams.get('owner')
     const ownerEmail = searchParams.get('owner_email')
@@ -37,6 +38,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createClient()
+    const db = new ProjectsDatabase(supabase)
     const body = await request.json()
     const project = await db.createProject(body)
     return NextResponse.json({ project }, { status: 201 })

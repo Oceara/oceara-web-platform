@@ -92,8 +92,9 @@ function appToDb(project: Partial<Project>): any {
 export class ProjectsDatabase {
   private supabase: any
 
-  constructor() {
-    this.supabase = createClient()
+  /** Pass a Supabase client (e.g. from server) or leave empty to use browser client */
+  constructor(supabaseClient?: any) {
+    this.supabase = supabaseClient ?? createClient()
   }
 
   async getAllProjects(): Promise<Project[]> {

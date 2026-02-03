@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { ProjectsDatabase, Project as DBProject } from '@/lib/database/projects'
+import { Project as DBProject } from '@/lib/database/projects'
 
 // Legacy interface for backward compatibility (exported for EarthWithProjects etc.)
 export interface Project {
@@ -906,10 +906,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [useDatabase, setUseDatabase] = useState(false)
   const [dbError, setDbError] = useState<string | null>(null)
-  
-  const db = new ProjectsDatabase()
 
-  // Load data from database or localStorage. On 401/403 or any DB error, fall back to demo data so the app always works.
+  // Load data via API (server-side Supabase) so the browser never gets 401 from Supabase. Fall back to local/demo data on error.
   useEffect(() => {
     const loadData = async () => {
       const applyFallback = (stored: string | null) => {
@@ -927,35 +925,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const isDbConfigured = await db.isConfigured()
-        if (!isDbConfigured) {
-          console.log('⚠️ Database not configured, using local registry data')
-          applyFallback(typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null)
-          setIsLoaded(true)
-          return
-        }
-
-        try {
-          const dbProjects = await db.getAllProjects()
+        const res = await fetch('/api/projects')
+        if (res.ok) {
+          const data = await res.json()
+          const list = data.projects || []
           setUseDatabase(true)
-          setProjects(dbProjects.map(dbToApp))
+          setProjects(list.map((p: DBProject) => dbToApp(p)))
           setDbError(null)
-          console.log('✅ Loaded projects from registry:', dbProjects.length)
-        } catch (dbErr: any) {
-          const code = dbErr?.code || dbErr?.status
-          const msg = String(dbErr?.message || '')
-          const isAuthError = code === 401 || code === 403 || msg.includes('401') || msg.includes('403') || msg.includes('JWT') || msg.includes('permission') || dbErr?.code === 'PGRST301'
-          if (isAuthError) {
-            console.warn('Registry read not authorized (using local data):', msg || code)
-            setDbError('Registry in offline mode. Sign in or check Supabase RLS for full sync.')
-          } else {
-            setDbError(msg || 'Registry unavailable')
-          }
+        } else {
+          setDbError(res.status === 401 || res.status === 403 ? 'Registry in offline mode. Sign in for full sync.' : `Registry unavailable (${res.status})`)
           applyFallback(typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null)
         }
-      } catch (error: any) {
-        console.error('Error loading data:', error)
-        setDbError(error.message || 'Load failed')
+      } catch (err: any) {
+        setDbError(err?.message || 'Load failed')
         applyFallback(typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null)
       }
       setIsLoaded(true)
@@ -974,12 +956,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const addProject = async (project: Omit<Project, 'id' | 'submittedDate'>) => {
     if (useDatabase) {
       try {
-        const dbProject = await db.createProject(appToDb(project))
-        const newProject = dbToApp(dbProject)
+        const res = await fetch('/api/projects', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(appToDb(project))
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err.error || `HTTP ${res.status}`)
+        }
+        const data = await res.json()
+        const newProject = dbToApp(data.project)
         setProjects(prev => [...prev, newProject])
         return newProject
       } catch (error: any) {
-        console.error('Error adding project to database:', error)
         setDbError(error.message)
         throw error
       }
@@ -1002,15 +992,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const updateProject = async (id: number | string, updates: Partial<Project>) => {
     if (useDatabase) {
       try {
-        const dbProject = await db.updateProject(String(id), appToDb(updates as any))
-        const updatedProject = dbToApp(dbProject)
+        const res = await fetch(`/api/projects/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(appToDb(updates as any))
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err.error || `HTTP ${res.status}`)
+        }
+        const data = await res.json()
+        const updatedProject = dbToApp(data.project)
         setProjects(prev =>
           prev.map(project =>
             String(project.id) === String(id) ? updatedProject : project
           )
         )
       } catch (error: any) {
-        console.error('Error updating project in database:', error)
         setDbError(error.message)
         throw error
       }
@@ -1027,10 +1025,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const deleteProject = async (id: number | string) => {
     if (useDatabase) {
       try {
-        await db.deleteProject(String(id))
+        const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
         setProjects(prev => prev.filter(project => String(project.id) !== String(id)))
       } catch (error: any) {
-        console.error('Error deleting project from database:', error)
         setDbError(error.message)
         throw error
       }
