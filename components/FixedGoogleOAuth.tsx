@@ -3,7 +3,11 @@
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 
-export default function FixedGoogleOAuth() {
+interface FixedGoogleOAuthProps {
+  role?: string | null
+}
+
+export default function FixedGoogleOAuth({ role }: FixedGoogleOAuthProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [clientId, setClientId] = useState<string>('')
   const [isConfigured, setIsConfigured] = useState(false)
@@ -32,7 +36,7 @@ export default function FixedGoogleOAuth() {
         : window.location.origin
       const redirectUri = `${canonicalOrigin}/auth/callback`
       const returnTo = window.location.origin
-      const roleToUse = (role === 'landowner' || role === 'buyer' || role === 'admin' ? role : 'admin') as Role
+      const roleToUse = role === 'landowner' || role === 'buyer' || role === 'admin' ? role : 'admin'
       const state = encodeURIComponent(JSON.stringify({ r: returnTo, role: roleToUse, s: Math.random().toString(36).substring(7) }))
       const params = new URLSearchParams({
         client_id: clientId,
