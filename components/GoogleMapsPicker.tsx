@@ -145,19 +145,23 @@ export default function GoogleMapsPicker({ onLocationSelect }: GoogleMapsPickerP
       setProgress(95)
       await new Promise(resolve => setTimeout(resolve, 1000))
 
-      // Generate realistic ML analysis results
+      // Deterministic ML-style results from coordinates (reproducible, not random)
+      const seed = Math.abs(Math.floor((coords.lat * 1e4 + coords.lng * 1e4) % 1e9))
+      const treeCount = 8000 + (seed % 6000)
+      const mangroveArea = 100 + (seed % 80)
+      const healthScore = 78 + (seed % 18)
+      const speciesList = ['Rhizophora mucronata', 'Avicennia marina', 'Bruguiera gymnorrhiza', 'Sonneratia apetala']
+      const numSpecies = 2 + (seed % 2)
+      const speciesDetected = speciesList.slice(0, numSpecies)
+      const confidence = 91 + (seed % 7)
+
       const mlAnalysis = {
-        treeCount: Math.floor(Math.random() * 6000) + 8000, // 8000-14000 trees
-        mangroveArea: Math.floor(Math.random() * 80) + 100, // 100-180 hectares
-        healthScore: Math.floor(Math.random() * 18) + 78, // 78-96%
-        speciesDetected: [
-          'Rhizophora mucronata',
-          'Avicennia marina',
-          'Bruguiera gymnorrhiza',
-          'Sonneratia apetala'
-        ].slice(0, Math.floor(Math.random() * 2) + 2),
+        treeCount,
+        mangroveArea,
+        healthScore,
+        speciesDetected,
         carbonCredits: 0,
-        confidence: Math.floor(Math.random() * 7) + 91 // 91-98%
+        confidence
       }
 
       // Scientific carbon calculation

@@ -5,6 +5,7 @@ import { DataProvider } from '@/context/DataContext'
 import { AuthProvider } from '@/context/AuthContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { Toaster } from 'react-hot-toast'
+import Footer from '@/components/Footer'
 
 export default function RootLayout({
   children,
@@ -24,12 +25,13 @@ export default function RootLayout({
         <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
       </head>
-      <body>
+      <body className="flex min-h-screen flex-col">
         <AuthProvider>
           <FeatureFlagProvider>
             <DataProvider>
               <Toaster position="top-center" />
-              {children}
+              <div className="flex-1">{children}</div>
+              <Footer />
             </DataProvider>
           </FeatureFlagProvider>
         </AuthProvider>

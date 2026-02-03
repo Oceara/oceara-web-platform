@@ -92,18 +92,20 @@ export default function MapLocationPicker({ onLocationSelect }: MapLocationPicke
       setProgress(80)
       await new Promise(resolve => setTimeout(resolve, 1500))
 
-      // Simulate ML analysis results
+      // Deterministic ML-style results from coordinates (reproducible, not random)
+      const seed = Math.abs(Math.floor((coords.lat * 1e4 + coords.lng * 1e4) % 1e9))
+      const treeCount = 8000 + (seed % 5000)
+      const mangroveArea = 100 + (seed % 50)
+      const healthScore = 80 + (seed % 15)
+      const confidence = 90 + (seed % 8)
+
       const mlAnalysis = {
-        treeCount: Math.floor(Math.random() * 5000) + 8000, // 8000-13000 trees
-        mangroveArea: Math.floor(Math.random() * 50) + 100, // 100-150 hectares
-        healthScore: Math.floor(Math.random() * 15) + 80, // 80-95%
-        speciesDetected: [
-          'Rhizophora mucronata',
-          'Avicennia marina',
-          'Bruguiera gymnorrhiza'
-        ],
-        carbonCredits: 0, // Will calculate
-        confidence: Math.floor(Math.random() * 8) + 90 // 90-98%
+        treeCount,
+        mangroveArea,
+        healthScore,
+        speciesDetected: ['Rhizophora mucronata', 'Avicennia marina', 'Bruguiera gymnorrhiza'],
+        carbonCredits: 0,
+        confidence
       }
 
       // Carbon calculation using scientific formulas

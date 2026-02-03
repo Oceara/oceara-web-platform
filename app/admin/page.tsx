@@ -648,7 +648,11 @@ export default function AdminDashboard() {
                       'Average Health Score': (projects.reduce((acc, p) => acc + (p.mlAnalysis?.healthScore || 0), 0) / projects.length).toFixed(1),
                       'Total Trees': projects.reduce((acc, p) => acc + (p.mlAnalysis?.treeCount || 0), 0),
                       'Unique Species': Array.from(new Set(projects.flatMap(p => p.mlAnalysis?.speciesDetected || []))).length,
-                      'Total Impact (CO₂/year)': verifiedProjects.reduce((acc, p) => acc + parseFloat(p.impact.split(' ')[0].replace(',', '')), 0).toFixed(0) + ' tons'
+                      'Total Impact (CO₂/year)': verifiedProjects.reduce((acc, p) => {
+                      if (!p.impact || typeof p.impact !== 'string') return acc
+                      const num = parseFloat(p.impact.split(' ')[0].replace(/,/g, ''))
+                      return acc + (Number.isFinite(num) ? num : 0)
+                    }, 0).toFixed(0) + ' tons'
                     }
                     const csv = Object.entries(stats).map(([key, value]) => `${key},${value}`).join('\n')
                     const blob = new Blob([csv], { type: 'text/csv' })

@@ -172,11 +172,11 @@ export default function LandownerDashboard() {
       },
       mlAnalysis: {
         treeCount: treeCount,
-        mangroveArea: parseInt(area),
-        healthScore: 85 + Math.floor(Math.random() * 10),
+        mangroveArea: parseInt(area, 10) || 0,
+        healthScore: 82 + (treeCount % 15), // 82–96 from tree count
         speciesDetected: ['Rhizophora mucronata', 'Avicennia marina'],
         carbonCredits: carbonCredits,
-        confidence: 88 + Math.floor(Math.random() * 8)
+        confidence: 88 + (parseInt(area, 10) % 9) // 88–96 from area
       },
       documents: ['Land Deed', 'Survey Report']
     }
