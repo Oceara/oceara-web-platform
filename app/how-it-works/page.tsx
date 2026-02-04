@@ -14,7 +14,7 @@ export default function HowItWorksPage() {
     {
       icon: '🛰️',
       title: 'MRV & Verification',
-      description: 'Satellite imagery and ML analysis support carbon estimation. MRV administrators review projects, verify status, and generate Carbon Estimation Reports (Pre-Certification).',
+      description: 'Satellite imagery and reference-based estimation support carbon estimation. MRV administrators review projects, verify status, and generate Carbon Estimation Reports (Pre-Certification).',
     },
     {
       icon: '📊',

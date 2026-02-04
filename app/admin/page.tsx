@@ -13,7 +13,7 @@ import { writeAuditLog } from '@/lib/audit'
 import { generateMrvReportPdf, type ProjectForReport } from '@/lib/mrvReportPdf'
 
 export default function AdminDashboard() {
-  const { projects, updateProject, getPendingProjects, getVerifiedProjects } = useData()
+  const { projects, isLoaded, updateProject, getPendingProjects, getVerifiedProjects } = useData()
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedProject, setSelectedProject] = useState<any>(null)
@@ -151,6 +151,17 @@ export default function AdminDashboard() {
 
   const filteredProjects = getFilteredProjects()
 
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4" />
+          <p className="text-gray-300">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900">
       {/* Header */}
@@ -273,9 +284,9 @@ export default function AdminDashboard() {
                 </ResponsiveContainer>
               </div>
 
-              {/* ML Confidence Trends */}
+              {/* Estimation confidence */}
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-                <h3 className="text-xl font-bold text-white mb-4">🤖 ML Confidence Distribution</h3>
+                <h3 className="text-xl font-bold text-white mb-4">📊 Preliminary confidence distribution</h3>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[
                     { range: '80-85%', count: projects.filter(p => p.mlAnalysis && p.mlAnalysis.confidence >= 80 && p.mlAnalysis.confidence < 85).length },
@@ -335,7 +346,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-                <h3 className="text-lg font-bold text-white mb-4">🔬 ML Analysis Summary</h3>
+                <h3 className="text-lg font-bold text-white mb-4">🔬 Preliminary analysis summary</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
                     <span className="text-gray-300">Avg Confidence</span>
@@ -459,7 +470,7 @@ export default function AdminDashboard() {
                     </div>
                     {project.mlAnalysis && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-400">ML Confidence:</span>
+                        <span className="text-gray-400">Preliminary confidence:</span>
                         <span className="text-blue-400 font-semibold">{project.mlAnalysis.confidence}%</span>
                       </div>
                     )}
@@ -534,7 +545,7 @@ export default function AdminDashboard() {
                       Credits: p.creditsAvailable,
                       'Submitted Date': p.submittedDate,
                       'Health Score': p.mlAnalysis?.healthScore || 'N/A',
-                      'ML Confidence': p.mlAnalysis?.confidence ? `${p.mlAnalysis.confidence}%` : 'N/A'
+                      'Preliminary confidence': p.mlAnalysis?.confidence ? `${p.mlAnalysis.confidence}%` : 'N/A'
                     }))
                     const csv = [
                       Object.keys(data[0]).join(','),
@@ -608,7 +619,7 @@ export default function AdminDashboard() {
                       'Estimated Carbon Potential': p.creditsAvailable,
                       Impact: p.impact,
                       Status: p.status,
-                      'ML Confidence': p.mlAnalysis?.confidence ? `${p.mlAnalysis.confidence}%` : 'N/A'
+                      'Preliminary confidence': p.mlAnalysis?.confidence ? `${p.mlAnalysis.confidence}%` : 'N/A'
                     }))
                     const csv = [
                       Object.keys(data[0]).join(','),
@@ -644,8 +655,8 @@ export default function AdminDashboard() {
                       'Pending Projects': pendingProjects.length,
                       'Total Estimated Carbon Potential': verifiedProjects.reduce((acc, p) => acc + p.creditsAvailable, 0),
                       'Total Area (hectares)': verifiedProjects.reduce((acc, p) => acc + parseFloat(p.area), 0).toFixed(2),
-                      'Average ML Confidence': `${(projects.reduce((acc, p) => acc + (p.mlAnalysis?.confidence || 0), 0) / projects.length).toFixed(1)}%`,
-                      'Average Health Score': (projects.reduce((acc, p) => acc + (p.mlAnalysis?.healthScore || 0), 0) / projects.length).toFixed(1),
+                      'Average estimation confidence': `${projects.length ? (projects.reduce((acc, p) => acc + (p.mlAnalysis?.confidence || 0), 0) / projects.length).toFixed(1) : 0}%`,
+                      'Average Health Score': projects.length ? (projects.reduce((acc, p) => acc + (p.mlAnalysis?.healthScore || 0), 0) / projects.length).toFixed(1) : '0',
                       'Total Trees': projects.reduce((acc, p) => acc + (p.mlAnalysis?.treeCount || 0), 0),
                       'Unique Species': Array.from(new Set(projects.flatMap(p => p.mlAnalysis?.speciesDetected || []))).length,
                       'Total Impact (CO₂/year)': verifiedProjects.reduce((acc, p) => {
@@ -685,7 +696,7 @@ export default function AdminDashboard() {
                       Status: p.status,
                       'Verification Status': p.verified ? 'Verified' : 'Unverified',
                       Documents: p.documents?.length || 0,
-                      'ML Analysis': p.mlAnalysis ? 'Completed' : 'Pending'
+                      'Preliminary analysis': p.mlAnalysis ? 'Completed' : 'Pending'
                     }))
                     const csv = [
                       Object.keys(auditData[0]).join(','),
@@ -916,11 +927,11 @@ export default function AdminDashboard() {
 
                 {/* Project Details Grid */}
                 <div className="grid md:grid-cols-2 gap-6">
-                  {/* ML Analysis */}
+                  {/* Preliminary analysis */}
                   <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-2xl p-6 border border-blue-500/20">
                     <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                      <span>🤖</span>
-                      <span>ML Analysis</span>
+                      <span>📊</span>
+                      <span>Preliminary analysis</span>
                     </h3>
                     {selectedProject.mlAnalysis && (
                       <div className="space-y-3">
@@ -941,7 +952,7 @@ export default function AdminDashboard() {
                           </span>
                         </div>
                         <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
-                          <span className="text-gray-300">AI Confidence:</span>
+                          <span className="text-gray-300">Preliminary confidence:</span>
                           <span className="text-blue-400 font-bold text-lg">{selectedProject.mlAnalysis.confidence}%</span>
                         </div>
                         <div className="p-3 bg-white/5 rounded-lg">

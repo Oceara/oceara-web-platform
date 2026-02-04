@@ -89,34 +89,30 @@ export class EarthEngineService {
   }
 
   /**
-   * Analyze vegetation health (simulated for demo)
+   * Analyze vegetation (deterministic from coordinates + area). Preliminary, for MRV support.
    */
   async analyzeVegetation(coordinates: Coordinates, area: number): Promise<SatelliteAnalysis> {
-    console.log(`🌿 Analyzing vegetation for coordinates: ${coordinates.lat}, ${coordinates.lng}`)
-    
-    // Simulate analysis with realistic data
-    const ndvi = 0.6 + Math.random() * 0.3 // 0.6-0.9 (healthy vegetation)
-    const evi = ndvi * 0.8 // EVI is typically lower than NDVI
-    const cloudCover = Math.random() * 20 // 0-20% cloud cover
-    const healthScore = Math.floor(ndvi * 100) // Convert to percentage
-    
+    const seed = Math.abs(coordinates.lat * 1e4 + coordinates.lng * 1e4 + area * 100) % 1e9
+    const ndvi = 0.6 + (seed % 300) / 1000
+    const evi = ndvi * 0.8
+    const cloudCover = (seed % 200) / 10
+    const healthScore = Math.min(95, Math.floor(ndvi * 100))
+
     let vegetationDensity: 'Low' | 'Medium' | 'High' | 'Very High'
     if (ndvi > 0.8) vegetationDensity = 'Very High'
     else if (ndvi > 0.6) vegetationDensity = 'High'
     else if (ndvi > 0.4) vegetationDensity = 'Medium'
     else vegetationDensity = 'Low'
-    
-    const waterPresence = Math.random() > 0.3 // 70% chance of water presence
-    
-    // Simulate change detection
-    const percentChange = (Math.random() - 0.5) * 20 // -10% to +10% change
+
+    const waterPresence = (seed % 10) >= 3
+    const percentChange = ((seed % 201) - 100) / 10
     const changeDetection = {
       deforestation: percentChange < -5,
       growth: percentChange > 5,
-      percentChange: percentChange
+      percentChange
     }
-    
-    const analysis: SatelliteAnalysis = {
+
+    return {
       ndvi,
       evi,
       cloudCover,
@@ -126,34 +122,27 @@ export class EarthEngineService {
       waterPresence,
       changeDetection
     }
-    
-    console.log('✅ Vegetation analysis completed:', analysis)
-    return analysis
   }
 
   /**
-   * Get time series data (simulated)
+   * Get time series data (deterministic from coordinates and date).
    */
   async getTimeSeriesData(coordinates: Coordinates, startDate: Date, endDate: Date): Promise<any[]> {
-    console.log(`📈 Generating time series data from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`)
-    
     const timeSeries = []
     const currentDate = new Date(startDate)
-    
+    const base = Math.abs(coordinates.lat * 100 + coordinates.lng * 100) % 1000
+
     while (currentDate <= endDate) {
-      const ndvi = 0.5 + Math.random() * 0.4 + Math.sin(currentDate.getTime() / (1000 * 60 * 60 * 24 * 30)) * 0.1
+      const daySeed = Math.floor(currentDate.getTime() / (1000 * 60 * 60 * 24)) + base
+      const ndvi = 0.55 + (daySeed % 400) / 1000
       const evi = ndvi * 0.8
-      
       timeSeries.push({
         date: currentDate.toISOString().split('T')[0],
         ndvi: Math.max(0, Math.min(1, ndvi)),
         evi: Math.max(0, Math.min(1, evi))
       })
-      
-      currentDate.setDate(currentDate.getDate() + 15) // Every 15 days
+      currentDate.setDate(currentDate.getDate() + 15)
     }
-    
-    console.log(`✅ Generated ${timeSeries.length} time series data points`)
     return timeSeries
   }
 
@@ -169,9 +158,9 @@ export class EarthEngineService {
     totalStock: number // tons CO2
     creditsGenerated: number // carbon credits
   } {
-    // Carbon sequestration rates (tons CO2/hectare/year)
+    // Reference coefficients (tons CO2/hectare/year). Mangroves ~6–10 tCO2e/ha/year.
     const rates = {
-      mangrove: 3.5, // Mangroves are excellent carbon sinks
+      mangrove: 8,
       forest: 2.5,
       grassland: 1.0
     }

@@ -15,7 +15,7 @@ const EarthWithProjects = dynamic(() => import('@/components/EarthWithProjects')
 })
 
 export default function BuyerDashboard() {
-  const { projects, updateProject, getVerifiedProjects, dbError } = useData()
+  const { projects, isLoaded, updateProject, getVerifiedProjects, dbError } = useData()
   const { canSeeAdvancedFeatures: showAdvanced } = useFeatureFlags()
   const [activeTab, setActiveTab] = useState('registry')
   const [selectedProject, setSelectedProject] = useState<any | null>(null)
@@ -26,6 +26,17 @@ export default function BuyerDashboard() {
   const [totalSpent, setTotalSpent] = useState(1910)
 
   const verifiedProjects = getVerifiedProjects()
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4" />
+          <p className="text-gray-300">Loading registry...</p>
+        </div>
+      </div>
+    )
+  }
 
   const handlePurchase = (projectId: number, credits: number, totalCost: number) => {
     // Find the project
@@ -240,8 +251,10 @@ export default function BuyerDashboard() {
                       </button>
                       <button
                         onClick={() => {
-                          const { lat, lng } = project.coordinates
-                          window.open(`https://www.google.com/maps?q=${lat},${lng}&z=15&t=k`, '_blank')
+                          const coords = project?.coordinates
+                          if (coords && typeof coords.lat === 'number' && typeof coords.lng === 'number') {
+                            window.open(`https://www.google.com/maps?q=${coords.lat},${coords.lng}&z=15&t=k`, '_blank')
+                          }
                         }}
                         className="px-6 py-3 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all"
                       >
@@ -274,7 +287,11 @@ export default function BuyerDashboard() {
 
             {/* Project List Below Globe */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {verifiedProjects.map((project) => (
+              {verifiedProjects.length === 0 ? (
+                <div className="col-span-full bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 text-center text-gray-300">
+                  No verified projects to display on the globe.
+                </div>
+              ) : verifiedProjects.map((project) => (
                 <motion.div
                   key={project.id}
                   whileHover={{ scale: 1.02 }}
@@ -320,8 +337,10 @@ export default function BuyerDashboard() {
                       </button>
                       <button
                         onClick={() => {
-                          const { lat, lng } = project.coordinates
-                          window.open(`https://www.google.com/maps?q=${lat},${lng}&z=15&t=k`, '_blank')
+                          const coords = project?.coordinates
+                          if (coords && typeof coords.lat === 'number' && typeof coords.lng === 'number') {
+                            window.open(`https://www.google.com/maps?q=${coords.lat},${coords.lng}&z=15&t=k`, '_blank')
+                          }
                         }}
                         className="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-xs transition-all"
                       >
@@ -405,11 +424,11 @@ export default function BuyerDashboard() {
       )}
 
       {/* Earth Engine Satellite Viewer */}
-      {showEarthEngine && selectedProject && (
+      {showEarthEngine && selectedProject?.coordinates && (
         <EarthEngineSatelliteViewer
           coordinates={selectedProject.coordinates}
-          projectName={selectedProject.name}
-          area={parseFloat(selectedProject.area) || 10}
+          projectName={selectedProject.name || 'Project'}
+          area={parseFloat(String(selectedProject.area).replace(/[^0-9.]/g, '')) || 10}
           onClose={() => {
             setShowEarthEngine(false)
             setSelectedProject(null)

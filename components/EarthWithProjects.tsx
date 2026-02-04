@@ -185,9 +185,9 @@ function Earth({ projects, onProjectClick }: { projects: Project[], onProjectCli
           <primitive object={earthMaterial.current} attach="material" />
         </mesh>
 
-        {/* Project Markers - Children of Earth group, rotate with it */}
-        {projects.map((project) => {
-          const position = latLngToVector3(project.coordinates.lat, project.coordinates.lng, 2.12)
+        {/* Project Markers - Children of Earth group, rotate with it (only projects with valid coordinates) */}
+        {(projects || []).filter((p) => p.coordinates && typeof p.coordinates.lat === 'number' && typeof p.coordinates.lng === 'number').map((project) => {
+          const position = latLngToVector3(project.coordinates!.lat, project.coordinates!.lng, 2.12)
           return (
             <ProjectMarker
               key={project.id}
@@ -236,13 +236,9 @@ export default function EarthWithProjects({ projects, showAdvanced = false }: Ea
   }
 
   const handleViewOnMap = () => {
-    if (selectedProject) {
+    if (selectedProject?.coordinates && typeof selectedProject.coordinates.lat === 'number' && typeof selectedProject.coordinates.lng === 'number') {
       const { lat, lng } = selectedProject.coordinates
-      // Open Google Maps with the project location
-      window.open(
-        `https://www.google.com/maps?q=${lat},${lng}&z=15&t=k`,
-        '_blank'
-      )
+      window.open(`https://www.google.com/maps?q=${lat},${lng}&z=15&t=k`, '_blank')
     }
   }
 
@@ -255,7 +251,7 @@ export default function EarthWithProjects({ projects, showAdvanced = false }: Ea
         <color attach="background" args={['#0a0a1a']} />
         <ambientLight intensity={0.3} />
         <directionalLight position={[5, 3, 5]} intensity={1.5} />
-        <Earth projects={projects} onProjectClick={handleProjectClick} />
+        <Earth projects={projects ?? []} onProjectClick={handleProjectClick} />
         <OrbitControls
           enableZoom={true}
           enablePan={false}

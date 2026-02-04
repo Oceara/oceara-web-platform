@@ -11,9 +11,10 @@ import BlockchainWallet from '@/components/BlockchainWallet'
 import CarbonDisclaimer from '@/components/CarbonDisclaimer'
 import EarthEngineSatelliteViewer from '@/components/EarthEngineSatelliteViewer'
 import { getGoogleMapsStaticUrl } from '@/lib/config'
+import { runBlueCarbonEstimation } from '@/lib/estimation'
 
 export default function LandownerDashboard() {
-  const { projects, addProject, getProjectsByOwner, dbError } = useData()
+  const { projects, isLoaded, addProject, getProjectsByOwner, dbError } = useData()
   const { canSeeAdvancedFeatures: showAdvanced } = useFeatureFlags()
   const [activeTab, setActiveTab] = useState('overview')
   const [showRegisterModal, setShowRegisterModal] = useState(false)
@@ -37,13 +38,13 @@ export default function LandownerDashboard() {
   const stats = [
     { 
       label: 'Total Area', 
-      value: `${myProjects.reduce((acc, p) => acc + parseFloat(p.area), 0).toFixed(0)} ha`, 
+      value: `${myProjects.reduce((acc, p) => acc + (parseFloat(String(p.area)) || 0), 0).toFixed(0)} ha`, 
       icon: '🌴',
       color: 'from-green-500 to-emerald-600'
     },
     { 
       label: 'Estimated Carbon Potential', 
-      value: myProjects.reduce((acc, p) => acc + p.creditsAvailable, 0).toLocaleString(), 
+      value: myProjects.reduce((acc, p) => acc + (p.creditsAvailable ?? 0), 0).toLocaleString(), 
       icon: '📊',
       color: 'from-yellow-500 to-orange-600'
     },
@@ -67,18 +68,18 @@ export default function LandownerDashboard() {
     { name: 'Pending', value: myProjects.filter(p => !p.verified).length, color: '#f59e0b' }
   ]
 
-  const creditsOverTime = myProjects.map((p, i) => ({
-    name: p.name.substring(0, 15) + '...',
-    credits: p.creditsAvailable,
-    area: parseFloat(p.area)
+  const creditsOverTime = myProjects.map((p) => ({
+    name: (p.name || 'Project').substring(0, 15) + (p.name && p.name.length > 15 ? '...' : ''),
+    credits: p.creditsAvailable ?? 0,
+    area: parseFloat(String(p.area)) || 0
   }))
 
   const healthScoreData = myProjects
     .filter(p => p.mlAnalysis)
     .map(p => ({
-      name: p.name.substring(0, 20),
-      health: p.mlAnalysis?.healthScore || 0,
-      confidence: p.mlAnalysis?.confidence || 0
+      name: (p.name || 'Project').substring(0, 20),
+      health: p.mlAnalysis?.healthScore ?? 0,
+      confidence: p.mlAnalysis?.confidence ?? 0
     }))
 
   // Auto-detect location
@@ -143,21 +144,30 @@ export default function LandownerDashboard() {
       return
     }
 
-    // Simulate ML analysis
+    // Deterministic preliminary estimation
     const treeCount = parseInt(area) * 50
-    const carbonCredits = Math.floor(parseInt(area) * 5)
-    
+    const areaHa = parseInt(area, 10) || 0
+    const coords = coordinates || { lat: 20.5937, lng: 78.9629 }
+    const estimation = runBlueCarbonEstimation({
+      area_hectares: areaHa,
+      ecosystem_type: 'mangrove',
+      location,
+      coordinates: coords,
+      timestamp: new Date().toISOString(),
+    })
+    const carbonCredits = estimation.estimated_co2_tonnes_per_year
+
     const newProject: Omit<Project, 'id' | 'submittedDate'> = {
       name: projectName,
       owner: 'Demo Landowner',
       location: location,
-      coordinates: coordinates || { lat: 20.5937, lng: 78.9629 },
+      coordinates: coords,
       area: `${area} hectares`,
       creditsAvailable: carbonCredits,
       pricePerCredit: 25,
       verified: false,
       status: 'Pending Review' as const,
-      impact: `${(carbonCredits * 2.5).toFixed(0)} tons CO₂/year`,
+      impact: `${carbonCredits} tons CO₂/year`,
       image: '🌿',
       description: description || 'Mangrove restoration project',
       images: photos.length > 0 ? photos.slice(0, 5).map(() => '📷') : ['📷', '📷'],
@@ -172,11 +182,11 @@ export default function LandownerDashboard() {
       },
       mlAnalysis: {
         treeCount: treeCount,
-        mangroveArea: parseInt(area, 10) || 0,
-        healthScore: 82 + (treeCount % 15), // 82–96 from tree count
+        mangroveArea: areaHa,
+        healthScore: estimation.health_score,
         speciesDetected: ['Rhizophora mucronata', 'Avicennia marina'],
         carbonCredits: carbonCredits,
-        confidence: 88 + (parseInt(area, 10) % 9) // 88–96 from area
+        confidence: 90
       },
       documents: ['Land Deed', 'Survey Report']
     }
@@ -203,6 +213,17 @@ export default function LandownerDashboard() {
       setActiveTab('myprojects')
       toast.success('✅ Your project is now visible in "My Projects"!')
     }, 500)
+  }
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4" />
+          <p className="text-gray-300">Loading your projects...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -366,7 +387,7 @@ export default function LandownerDashboard() {
                         <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }} />
                         <Legend />
                         <Line type="monotone" dataKey="health" stroke="#10b981" strokeWidth={2} name="Health Score %" />
-                        <Line type="monotone" dataKey="confidence" stroke="#3b82f6" strokeWidth={2} name="ML Confidence %" />
+                        <Line type="monotone" dataKey="confidence" stroke="#3b82f6" strokeWidth={2} name="Preliminary confidence %" />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -663,7 +684,7 @@ export default function LandownerDashboard() {
 
               {selectedProject.mlAnalysis && (
                 <div>
-                  <h4 className="text-lg font-bold text-white mb-2">ML Analysis</h4>
+                  <h4 className="text-lg font-bold text-white mb-2">Preliminary analysis</h4>
                   <div className="bg-white/5 rounded-lg p-4 space-y-2">
                     <p className="text-gray-300">Tree Count: {selectedProject.mlAnalysis.treeCount?.toLocaleString()}</p>
                     <p className="text-gray-300">Health Score: {selectedProject.mlAnalysis.healthScore}%</p>
@@ -698,11 +719,11 @@ export default function LandownerDashboard() {
       )}
 
       {/* Earth Engine Satellite Viewer */}
-      {showEarthEngine && selectedProjectForAnalysis && (
+      {showEarthEngine && selectedProjectForAnalysis?.coordinates && (
         <EarthEngineSatelliteViewer
           coordinates={selectedProjectForAnalysis.coordinates}
-          projectName={selectedProjectForAnalysis.name}
-          area={parseFloat(selectedProjectForAnalysis.area) || 10}
+          projectName={selectedProjectForAnalysis.name || 'Project'}
+          area={parseFloat(String(selectedProjectForAnalysis.area).replace(/[^0-9.]/g, '')) || 10}
           onClose={() => {
             setShowEarthEngine(false)
             setSelectedProjectForAnalysis(null)

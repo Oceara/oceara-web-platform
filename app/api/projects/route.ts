@@ -42,6 +42,21 @@ export async function POST(request: NextRequest) {
     const db = new ProjectsDatabase(supabase)
     const body = await request.json()
     const project = await db.createProject(body)
+    const areaHa = parseFloat(String(body.area || '0').replace(/[^0-9.]/g, '')) || (body.ml_analysis?.mangroveArea ?? 0)
+    const co2 = body.credits_available ?? body.ml_analysis?.carbonCredits ?? 0
+    const methodology = 'Area-based reference coefficient (mangrove 6–10 tCO₂e/ha/year). Preliminary, subject to verification.'
+    await supabase.from('estimation_runs').insert({
+      project_id: project.id,
+      area_hectares: areaHa,
+      ecosystem_type: 'mangrove',
+      location: body.location ?? null,
+      coordinates: body.coordinates ?? null,
+      estimated_co2_tonnes_per_year: co2,
+      methodology_used: methodology,
+      confidence_level: 'preliminary',
+      estimation_model_version: '1.0.0',
+      health_score: body.ml_analysis?.healthScore ?? null,
+    }).then(({ error }) => { if (error) console.warn('estimation_runs insert skipped:', error.message) })
     return NextResponse.json({ project }, { status: 201 })
   } catch (error: any) {
     console.error('Error in POST /api/projects:', error)

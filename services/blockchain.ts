@@ -34,9 +34,10 @@ class BlockchainService {
     // Simulate MetaMask connection delay
     await this.delay(1500)
 
+    const hex = this.generateRandomHex(40)
     const mockWallet: WalletInfo = {
-      address: '0x' + this.generateRandomHex(40),
-      balance: Math.floor(Math.random() * 100),
+      address: '0x' + hex,
+      balance: Math.floor((hex.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 80) + 20),
       network: 'Polygon Mumbai Testnet',
       connected: true
     }
@@ -88,8 +89,8 @@ class BlockchainService {
     await this.delay(3000)
     
     tx.status = 'confirmed'
-    tx.blockNumber = Math.floor(Math.random() * 1000000) + 5000000
-    tx.gasUsed = (Math.random() * 0.01 + 0.001).toFixed(6)
+    tx.blockNumber = 5000000 + (projectId * 12345) % 1000000
+    tx.gasUsed = (0.001 + (amount % 100) / 100000).toFixed(6)
 
     return tx
   }
@@ -123,8 +124,8 @@ class BlockchainService {
     await this.delay(2500)
     
     tx.status = 'confirmed'
-    tx.blockNumber = Math.floor(Math.random() * 1000000) + 5000000
-    tx.gasUsed = (Math.random() * 0.008 + 0.001).toFixed(6)
+    tx.blockNumber = 5000000 + (amount * 999 + (projectId ?? 0)) % 1000000
+    tx.gasUsed = (0.001 + (amount % 50) / 100000).toFixed(6)
 
     return tx
   }
@@ -155,8 +156,8 @@ class BlockchainService {
     await this.delay(2000)
     
     tx.status = 'confirmed'
-    tx.blockNumber = Math.floor(Math.random() * 1000000) + 5000000
-    tx.gasUsed = (Math.random() * 0.005 + 0.001).toFixed(6)
+    tx.blockNumber = 5000000 + (amount * 777) % 1000000
+    tx.gasUsed = (0.001 + (amount % 30) / 100000).toFixed(6)
 
     return tx
   }

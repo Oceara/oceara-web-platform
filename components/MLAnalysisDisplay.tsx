@@ -30,7 +30,7 @@ export default function MLAnalysisDisplay({ data }: MLAnalysisDisplayProps) {
           <div>
             <h3 className="text-2xl font-bold text-white mb-1">Location Analysis Complete!</h3>
             <p className="text-green-200">
-              Your mangrove land has been successfully analyzed using AI/ML
+              Preliminary analysis complete. Estimates are indicative and subject to verification.
             </p>
           </div>
         </div>
@@ -39,13 +39,15 @@ export default function MLAnalysisDisplay({ data }: MLAnalysisDisplayProps) {
       {/* Satellite Images */}
       <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
         <h3 className="text-xl font-bold text-white mb-4">📡 Satellite Imagery</h3>
+        <p className="text-gray-400 text-sm mb-3">Illustrative satellite snapshot. Supports MRV workflow.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {satelliteImages.map((img, index) => (
             <div key={index} className="relative aspect-video rounded-lg overflow-hidden border border-white/20">
               <img
                 src={img}
-                alt={`Satellite view ${index + 1}`}
+                alt={`Illustrative satellite view ${index + 1}`}
                 className="w-full h-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
               />
               <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
                 Zoom Level {15 + index}
@@ -78,13 +80,13 @@ export default function MLAnalysisDisplay({ data }: MLAnalysisDisplayProps) {
         </div>
       </div>
 
-      {/* ML Analysis Results */}
+      {/* Preliminary analysis results */}
       <div className="bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-2 border-purple-500/50 rounded-xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="text-4xl">🤖</div>
           <div>
-            <h3 className="text-2xl font-bold text-white">AI/ML Analysis Results</h3>
-            <p className="text-gray-300">Advanced computer vision and satellite imagery analysis</p>
+            <h3 className="text-2xl font-bold text-white">Preliminary Analysis Results</h3>
+            <p className="text-gray-300">Preliminary area-based estimation. Transparent and auditable.</p>
           </div>
         </div>
 
@@ -98,7 +100,7 @@ export default function MLAnalysisDisplay({ data }: MLAnalysisDisplayProps) {
                 <div className="text-white font-bold text-2xl">{mlAnalysis.treeCount.toLocaleString()}</div>
               </div>
             </div>
-            <div className="text-green-400 text-sm mt-2">✓ Verified by ML model</div>
+            <div className="text-green-400 text-sm mt-2">✓ Preliminary estimate — subject to verification</div>
           </div>
 
           {/* Mangrove Area */}
@@ -165,7 +167,7 @@ export default function MLAnalysisDisplay({ data }: MLAnalysisDisplayProps) {
           <div className="text-4xl">💰</div>
           <div>
             <h3 className="text-2xl font-bold text-white">Carbon Credits Calculation</h3>
-            <p className="text-gray-300">Based on scientific formulas and AI analysis</p>
+            <p className="text-gray-300">Based on reference coefficients. Transparent and auditable.</p>
           </div>
         </div>
 

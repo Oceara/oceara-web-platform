@@ -89,8 +89,9 @@ export const authService = {
     return newUser
   },
 
-  // Get current user
+  // Get current user (safe for SSR: returns null when localStorage is not available)
   getCurrentUser: (): User | null => {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return null
     try {
       const userStr = localStorage.getItem(AUTH_KEY)
       const sessionId = localStorage.getItem(SESSION_KEY)
@@ -117,10 +118,12 @@ export const authService = {
     return user?.role === role
   },
 
-  // Logout
+  // Logout (no-op when localStorage is not available, e.g. SSR)
   logout: () => {
-    localStorage.removeItem(AUTH_KEY)
-    localStorage.removeItem(SESSION_KEY)
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.removeItem(AUTH_KEY)
+      localStorage.removeItem(SESSION_KEY)
+    }
   },
 
   // Demo user login (bypasses authentication)

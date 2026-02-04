@@ -27,8 +27,11 @@ export default function PurchaseModal({ project, onClose, onPurchase }: Purchase
 
   if (!project) return null
 
-  const totalCost = credits * project.pricePerCredit
-  const co2Offset = (credits * parseFloat(project.impact.split(' ')[0].replace(',', '')) / project.creditsAvailable).toFixed(2)
+  const totalCost = credits * (project.pricePerCredit ?? 0)
+  const impactStr = (project.impact || '0').split(' ')[0]?.replace(/,/g, '') || '0'
+  const impactNum = parseFloat(impactStr) || 0
+  const creditsAvail = project.creditsAvailable ?? 1
+  const co2Offset = (credits * impactNum / creditsAvail).toFixed(2)
 
   const handlePurchase = async () => {
     setIsPurchasing(true)

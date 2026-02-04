@@ -36,11 +36,18 @@ export default function WalletPage() {
   ]
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
     const savedWallet = localStorage.getItem('connectedWallet')
     if (savedWallet) {
-      const walletData = JSON.parse(savedWallet)
-      setWallet(walletData)
-      loadTransactions(walletData.address)
+      try {
+        const walletData = JSON.parse(savedWallet)
+        if (walletData?.address) {
+          setWallet(walletData)
+          loadTransactions(walletData.address)
+        }
+      } catch {
+        localStorage.removeItem('connectedWallet')
+      }
     }
   }, [])
 

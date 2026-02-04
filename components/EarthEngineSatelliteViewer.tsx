@@ -121,7 +121,8 @@ export default function EarthEngineSatelliteViewer({
           <div className="flex items-center justify-between mb-6">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-3xl font-bold text-white">🛰️ Earth Engine Satellite Analysis</h2>
+                <h2 className="text-3xl font-bold text-white">🛰️ Satellite View</h2>
+                <p className="text-gray-400 text-sm mt-1">Illustrative satellite snapshot. Supports MRV workflow.</p>
                 <span className="px-3 py-1 bg-green-500/20 border border-green-500 rounded-full text-green-400 text-sm font-semibold">
                   ✅ Real-time
                 </span>

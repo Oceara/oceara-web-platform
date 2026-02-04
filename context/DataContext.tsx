@@ -91,6 +91,7 @@ function appToDb(project: Omit<Project, 'id' | 'submittedDate'>): Omit<DBProject
 
 interface DataContextType {
   projects: Project[]
+  isLoaded: boolean
   addProject: (project: Omit<Project, 'id' | 'submittedDate'>) => Promise<Project>
   updateProject: (id: number | string, updates: Partial<Project>) => Promise<void>
   deleteProject: (id: number | string) => Promise<void>
@@ -1058,6 +1059,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     <DataContext.Provider
       value={{
         projects,
+        isLoaded,
         addProject,
         updateProject,
         deleteProject,

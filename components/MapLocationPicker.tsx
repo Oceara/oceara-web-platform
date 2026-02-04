@@ -77,8 +77,8 @@ export default function MapLocationPicker({ onLocationSelect }: MapLocationPicke
         `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${coords.lng},${coords.lat},14,0/800x600@2x?access_token=${mapboxgl.accessToken}`
       ]
 
-      // Stage 2: ML Image Processing
-      setAnalysisStage('🤖 Running ML analysis on imagery...')
+      // Stage 2: Preliminary processing
+      setAnalysisStage('📊 Running preliminary analysis...')
       setProgress(40)
       await new Promise(resolve => setTimeout(resolve, 2000))
 
@@ -87,36 +87,28 @@ export default function MapLocationPicker({ onLocationSelect }: MapLocationPicke
       setProgress(60)
       await new Promise(resolve => setTimeout(resolve, 1500))
 
-      // Stage 4: Carbon Calculation
+      // Stage 4: Carbon estimation (deterministic, area × reference coefficient)
       setAnalysisStage('💚 Calculating carbon sequestration...')
       setProgress(80)
       await new Promise(resolve => setTimeout(resolve, 1500))
 
-      // Deterministic ML-style results from coordinates (reproducible, not random)
-      const seed = Math.abs(Math.floor((coords.lat * 1e4 + coords.lng * 1e4) % 1e9))
-      const treeCount = 8000 + (seed % 5000)
-      const mangroveArea = 100 + (seed % 50)
-      const healthScore = 80 + (seed % 15)
-      const confidence = 90 + (seed % 8)
+      const { runBlueCarbonEstimation } = await import('@/lib/estimation')
+      const areaHa = 25 + (Math.abs(Math.floor(coords.lat * 50 + coords.lng * 50)) % 75)
+      const estimation = runBlueCarbonEstimation({
+        area_hectares: areaHa,
+        ecosystem_type: 'mangrove',
+        coordinates: coords,
+        timestamp: new Date().toISOString(),
+      })
 
       const mlAnalysis = {
-        treeCount,
-        mangroveArea,
-        healthScore,
+        treeCount: Math.max(1000, Math.floor(areaHa * 100)),
+        mangroveArea: areaHa,
+        healthScore: estimation.health_score,
         speciesDetected: ['Rhizophora mucronata', 'Avicennia marina', 'Bruguiera gymnorrhiza'],
-        carbonCredits: 0,
-        confidence
+        carbonCredits: estimation.estimated_co2_tonnes_per_year,
+        confidence: 90
       }
-
-      // Carbon calculation using scientific formulas
-      // AGB = 0.25π × D² × H × ρ × BEF
-      // Assuming average values: D=15cm, H=8m, ρ=0.7, BEF=1.2
-      const avgCrownArea = Math.PI * (2.5 ** 2) // π × (Crown_Radius)²
-      const avgAGB = 0.25 * Math.PI * (0.15 ** 2) * 8 * 0.7 * 1.2 // in kg per tree
-      const totalAGB = (avgAGB * mlAnalysis.treeCount) / 1000 // Convert to tons
-      const carbonStock = totalAGB * 0.46 // Carbon content
-      const co2Sequestration = carbonStock * 3.67 // CO2 equivalent
-      mlAnalysis.carbonCredits = Math.floor(co2Sequestration)
 
       setProgress(100)
       setAnalysisStage('✅ Analysis complete!')

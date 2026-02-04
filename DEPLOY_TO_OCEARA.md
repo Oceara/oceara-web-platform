@@ -5,6 +5,19 @@
 
 ---
 
+## Pilot-ready status (completed)
+
+- **AI/ML:** Deterministic blue-carbon estimation; disclaimers and “preliminary estimate” labelling.
+- **ML-ready pipeline:** Estimation inputs/outputs stored in Supabase (`estimation_runs`); versioning field for future training.
+- **Satellite/AI:** Static/cached imagery; “Illustrative satellite snapshot” labelling; failures do not break pages.
+- **Mobile:** Responsive layout; touch-friendly controls; no horizontal scroll.
+- **Hardening:** Loading states on admin, buyer, landowner; fallback UI for empty data; null-safe stats and coordinates; SSR-safe `localStorage` in auth/wallet.
+- **Terminology:** Government/CSR-friendly language; transparency, verification, auditability.
+
+**You deploy:** run `npm run build`, then commit and push to `main` (see below). Vercel will build and deploy.
+
+---
+
 ## Deployment — do this every time (you deploy)
 
 **You handle the actual deploy; use these steps every time.**
