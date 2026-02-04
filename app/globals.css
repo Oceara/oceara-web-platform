@@ -13,6 +13,15 @@ html, body {
   max-width: 100vw;
 }
 
+/* Hide scrollbar project-wide; scrolling still works (touch, wheel, keyboard) */
+html, body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+  display: none;
+}
+
 /* Lock scroll only when a modal is open; do not use permanent overflow:hidden */
 body.modal-open {
   overflow: hidden;

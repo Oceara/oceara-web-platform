@@ -46,7 +46,7 @@ const nextConfig = {
               "img-src 'self' data: https: blob: https://nominatim.openstreetmap.org https://www.openstreetmap.org https://tile.openstreetmap.org",
               "font-src 'self' https://fonts.gstatic.com data:",
               "connect-src 'self' https://*.googleapis.com https://accounts.google.com https://*.supabase.co https://*.firebaseio.com https://*.firebase.com https://earthengine.googleapis.com wss://*.supabase.co https://nominatim.openstreetmap.org https://www.openstreetmap.org https://tile.openstreetmap.org",
-              "frame-src 'self' https://accounts.google.com https://*.googleapis.com",
+              "frame-src 'self' https://accounts.google.com https://*.googleapis.com https://www.openstreetmap.org",
               "worker-src 'self' blob:",
               "object-src 'none'",
               "base-uri 'self'",

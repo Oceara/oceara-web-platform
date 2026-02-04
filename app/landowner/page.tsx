@@ -583,7 +583,7 @@ export default function LandownerDashboard() {
                   >
                     <div className="text-3xl mb-2">📋</div>
                     <p className="text-white font-semibold">Just Details</p>
-                    <p className="text-gray-400 text-sm">We'll use satellite imagery</p>
+                    <p className="text-gray-400 text-sm">Map preview: OpenStreetMap. Satellite/aerial imagery used for MRV where available.</p>
                   </button>
                   
                   <button

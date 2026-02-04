@@ -76,15 +76,18 @@ function dbToApp(project: any): Project {
   }
 }
 
-// Convert app format to database format; ensure area, status, coordinates (or latitude/longitude) exist
+// Convert app format to database format; ensure area, status, coordinates exist.
+// Also sends latitude/longitude for DBs that have those columns.
 function appToDb(project: Partial<Project>): any {
   const coords = project.coordinates ?? { lat: 0, lng: 0 }
+  const lat = typeof coords.lat === 'number' ? coords.lat : 0
+  const lng = typeof coords.lng === 'number' ? coords.lng : 0
   const row: any = {
     name: project.name ?? '',
     owner: project.owner ?? '',
     owner_email: project.owner_email,
     location: project.location ?? '',
-    coordinates: coords,
+    coordinates: { lat, lng },
     area: project.area != null ? String(project.area) : '',
     credits_available: project.credits_available ?? 0,
     price_per_credit: project.price_per_credit ?? 0,

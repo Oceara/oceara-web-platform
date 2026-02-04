@@ -58,8 +58,17 @@
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - **Google OAuth:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and **`NEXT_PUBLIC_APP_URL`** = your main app URL (e.g. `https://your-project.vercel.app`). In Google Cloud Console → APIs & Services → Credentials → your OAuth client → **Authorized redirect URIs** add **exactly**: `https://your-project.vercel.app/auth/callback` (same as `NEXT_PUBLIC_APP_URL` + `/auth/callback`). One URI is enough for all deployments.
-   - Twilio: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SID`
+   - **Twilio OTP:** `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and **either** `TWILIO_VERIFY_SERVICE_SID` **or** `TWILIO_VERIFY_SID` (Verify Service SID from Twilio Console → Verify).
    - Optional: `NEXT_PUBLIC_FULL_ACCESS_EMAILS` (comma-separated) for marketplace/wallet visibility.
+
+6. **Supabase – fix “Could not find the 'coordinates' column” (project creation 500):**  
+   In **Supabase → SQL Editor**, run the migration once:
+   ```sql
+   -- Add coordinates column so project creation works
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS coordinates JSONB DEFAULT '{"lat":0,"lng":0}'::jsonb;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION, ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION;
+   ```
+   Or run the full migration file: `lib/database/migrations/001_add_projects_coordinates.sql`
 
 ---
 
