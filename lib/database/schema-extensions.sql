@@ -10,9 +10,13 @@ CREATE TABLE IF NOT EXISTS profiles (
   role TEXT NOT NULL DEFAULT 'LANDOWNER'
     CHECK (role IN ('LANDOWNER', 'BUYER', 'ENTERPRISE', 'GOVERNMENT', 'ADMIN')),
   marketplace_access BOOLEAN DEFAULT false,
+  phone TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add phone if table already existed without it
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS phone TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_profiles_role ON profiles(role);
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON profiles(email);

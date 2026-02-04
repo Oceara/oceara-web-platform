@@ -37,24 +37,35 @@ export interface Project {
   updated_at?: string
 }
 
-// Convert database format to app format
+// Normalize coordinates from DB row (supports coordinates JSONB or latitude/longitude columns)
+function normalizeCoordinates(project: any): { lat: number; lng: number } {
+  if (project.coordinates && typeof project.coordinates.lat === 'number' && typeof project.coordinates.lng === 'number') {
+    return { lat: project.coordinates.lat, lng: project.coordinates.lng }
+  }
+  const lat = project.latitude != null ? Number(project.latitude) : NaN
+  const lng = project.longitude != null ? Number(project.longitude) : NaN
+  if (!Number.isNaN(lat) && !Number.isNaN(lng)) return { lat, lng }
+  return { lat: 0, lng: 0 }
+}
+
+// Convert database format to app format; handle null/missing area, status, coordinates for older rows
 function dbToApp(project: any): Project {
   return {
     id: project.id,
-    name: project.name,
-    owner: project.owner,
+    name: project.name ?? '',
+    owner: project.owner ?? '',
     owner_email: project.owner_email,
-    location: project.location,
-    coordinates: project.coordinates,
-    area: project.area,
-    credits_available: project.credits_available,
-    price_per_credit: parseFloat(project.price_per_credit),
-    verified: project.verified,
-    status: project.status,
-    impact: project.impact,
-    image: project.image,
-    description: project.description,
-    submitted_date: project.submitted_date || project.created_at,
+    location: project.location ?? '',
+    coordinates: normalizeCoordinates(project),
+    area: project.area != null ? String(project.area) : '',
+    credits_available: project.credits_available ?? 0,
+    price_per_credit: parseFloat(project.price_per_credit) || 0,
+    verified: Boolean(project.verified),
+    status: project.status ?? 'Pending Review',
+    impact: project.impact ?? '',
+    image: project.image ?? '🌴',
+    description: project.description ?? '',
+    submitted_date: project.submitted_date || project.created_at || new Date().toISOString(),
     images: project.images || [],
     satellite_images: project.satellite_images || [],
     field_data: project.field_data,
@@ -65,28 +76,30 @@ function dbToApp(project: any): Project {
   }
 }
 
-// Convert app format to database format
+// Convert app format to database format; ensure area, status, coordinates (or latitude/longitude) exist
 function appToDb(project: Partial<Project>): any {
-  return {
-    name: project.name,
-    owner: project.owner,
+  const coords = project.coordinates ?? { lat: 0, lng: 0 }
+  const row: any = {
+    name: project.name ?? '',
+    owner: project.owner ?? '',
     owner_email: project.owner_email,
-    location: project.location,
-    coordinates: project.coordinates,
-    area: project.area,
-    credits_available: project.credits_available,
-    price_per_credit: project.price_per_credit,
-    verified: project.verified,
-    status: project.status,
-    impact: project.impact,
-    image: project.image,
-    description: project.description,
-    images: project.images,
+    location: project.location ?? '',
+    coordinates: coords,
+    area: project.area != null ? String(project.area) : '',
+    credits_available: project.credits_available ?? 0,
+    price_per_credit: project.price_per_credit ?? 0,
+    verified: Boolean(project.verified),
+    status: project.status ?? 'Pending Review',
+    impact: project.impact ?? '',
+    image: project.image ?? '🌴',
+    description: project.description ?? '',
+    images: project.images ?? [],
     satellite_images: project.satellite_images,
     field_data: project.field_data,
     ml_analysis: project.ml_analysis,
-    documents: project.documents,
+    documents: project.documents ?? [],
   }
+  return row
 }
 
 export class ProjectsDatabase {

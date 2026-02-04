@@ -13,14 +13,15 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     if (profile?.role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const body = await request.json()
-    const { role, marketplace_access } = body as { role?: string; marketplace_access?: boolean }
+    const { role, marketplace_access, phone } = body as { role?: string; marketplace_access?: boolean; phone?: string }
     const id = params.id
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
     if (role !== undefined) updates.role = role
     if (marketplace_access !== undefined) updates.marketplace_access = marketplace_access
+    if (phone !== undefined) updates.phone = String(phone).trim()
 
-    const { data, error } = await supabase.from('profiles').update(updates).eq('id', id).select('id, email, full_name, role, marketplace_access').single()
+    const { data, error } = await supabase.from('profiles').update(updates).eq('id', id).select('id, email, full_name, role, marketplace_access, phone').single()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
     return NextResponse.json(data)

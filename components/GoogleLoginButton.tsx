@@ -54,7 +54,7 @@ export default function GoogleLoginButton({
         googleAuthService.storeAuthData(response.user, response.accessToken)
         
         // Show success message
-        toast.success(`Welcome, ${response.user.given_name}!`, { icon: '👋' })
+        toast.success(`Welcome, ${response.user.given_name}!`, { icon: '👋', duration: 3500 })
         
         // Call success callback
         onSuccess?.(response.user)

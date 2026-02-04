@@ -32,7 +32,15 @@ export default function LandownerDashboard() {
   const [photos, setPhotos] = useState<string[]>([])
   const [description, setDescription] = useState('')
   const [mapLoading, setMapLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   
+  useEffect(() => {
+    if (showRegisterModal) {
+      document.body.classList.add('modal-open')
+      return () => document.body.classList.remove('modal-open')
+    }
+  }, [showRegisterModal])
+
   const myProjects = getProjectsByOwner('Demo Landowner')
   
   const stats = [
@@ -191,11 +199,9 @@ export default function LandownerDashboard() {
       documents: ['Land Deed', 'Survey Report']
     }
 
+    setIsSubmitting(true)
     try {
       await addProject(newProject)
-      toast.success('🎉 Project registered successfully! Redirecting to your projects...')
-      
-      // Reset form
       setProjectName('')
       setArea('')
       setLocation('')
@@ -203,16 +209,14 @@ export default function LandownerDashboard() {
       setPhotos([])
       setDescription('')
       setShowRegisterModal(false)
+      setActiveTab('myprojects')
+      toast.success('Project registered successfully. It now appears in My Projects.', { duration: 4000 })
     } catch (error: any) {
       console.error('Error adding project:', error)
       toast.error(`Failed to register project: ${error.message || 'Unknown error'}`)
+    } finally {
+      setIsSubmitting(false)
     }
-    
-    // Wait a moment for state to update, then switch to myprojects tab
-    setTimeout(() => {
-      setActiveTab('myprojects')
-      toast.success('✅ Your project is now visible in "My Projects"!')
-    }, 500)
   }
 
   if (!isLoaded) {
@@ -409,7 +413,14 @@ export default function LandownerDashboard() {
                 onClick={() => setSelectedProject(project)}
               >
                 <div className="text-4xl mb-3">{project.image}</div>
-                <h4 className="text-white font-bold text-lg mb-2">{project.name}</h4>
+                <div className="flex items-center gap-2 flex-wrap mb-2">
+                  <h4 className="text-white font-bold text-lg">{project.name}</h4>
+                  {project.isDemo && (
+                    <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-500/30 text-amber-200 border border-amber-500/50">
+                      Demo / Sample
+                    </span>
+                  )}
+                </div>
                 <p className="text-gray-400 text-sm mb-3">{project.location}</p>
                 <div className="space-y-2">
                   <div className="flex justify-between">
@@ -433,8 +444,9 @@ export default function LandownerDashboard() {
               </motion.div>
             ))}
             {myProjects.length === 0 && (
-              <div className="col-span-full text-center py-12">
-                <p className="text-gray-400 text-lg mb-4">You haven't registered any projects yet</p>
+              <div className="col-span-full text-center py-12 bg-white/5 rounded-xl border border-white/10 px-4">
+                <p className="text-gray-300 text-lg mb-2">No projects under your account yet</p>
+                <p className="text-gray-400 text-sm mb-4">Register a project to see it here. Demo projects appear in the Project Registry for all users.</p>
                 <button
                   onClick={() => setActiveTab('register')}
                   className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg text-white font-semibold transition-all"
@@ -621,10 +633,10 @@ export default function LandownerDashboard() {
               {/* Submit Button */}
               <button
                 onClick={handleSubmit}
-                disabled={!projectName || !area || !location}
+                disabled={!projectName || !area || !location || isSubmitting}
                 className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed rounded-xl text-white font-bold text-lg transition-all"
               >
-                🚀 Submit for Verification
+                {isSubmitting ? 'Creating project…' : '🚀 Submit for Verification'}
               </button>
 
               <p className="text-gray-400 text-sm text-center mt-4">

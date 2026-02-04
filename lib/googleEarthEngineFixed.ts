@@ -1,5 +1,12 @@
 // Google Earth Engine API Integration with Proper OAuth 2.0
 // Provides real-time satellite imagery and vegetation analysis
+// Deterministic fallbacks: same inputs → same outputs (no random AI)
+
+/** Deterministic 0..1 from coords/area/seed for reproducible analysis */
+function deterministicSeed(lat: number, lng: number, area: number, seed: number): number {
+  const x = Math.sin(lat * 12.9898 + lng * 78.233 + area * 43.123 + seed * 91.456) * 43758.5453
+  return x - Math.floor(x)
+}
 
 interface Coordinates {
   lat: number
@@ -434,8 +441,8 @@ export class GoogleEarthEngineService {
       else if (ndviValue < 0.7) vegetationDensity = 'High'
       else vegetationDensity = 'Very High'
       
-      // Simulate water presence (would need additional analysis in real implementation)
-      const waterPresence = Math.random() > 0.3
+      // Deterministic water presence from location/area
+      const waterPresence = deterministicSeed(coordinates.lat, coordinates.lng, areaHectares, 7) > 0.3
       
       const analysis: VegetationAnalysis = {
         ndvi: ndviValue,
@@ -461,7 +468,10 @@ export class GoogleEarthEngineService {
    * Get simulated analysis as fallback
    */
   private getSimulatedAnalysis(coordinates: Coordinates, areaHectares: number): VegetationAnalysis {
-    const ndvi = 0.65 + Math.random() * 0.25
+    const s1 = deterministicSeed(coordinates.lat, coordinates.lng, areaHectares, 1)
+    const s2 = deterministicSeed(coordinates.lat, coordinates.lng, areaHectares, 2)
+    const s3 = deterministicSeed(coordinates.lat, coordinates.lng, areaHectares, 3)
+    const ndvi = 0.65 + s1 * 0.25
     const evi = ndvi * 0.8
     const healthScore = Math.floor(ndvi * 100)
     
@@ -474,11 +484,11 @@ export class GoogleEarthEngineService {
     return {
       ndvi,
       evi,
-      cloudCover: Math.random() * 20,
+      cloudCover: s2 * 20,
       imageDate: new Date().toISOString(),
       healthScore,
       vegetationDensity,
-      waterPresence: Math.random() > 0.3
+      waterPresence: s3 > 0.3
     }
   }
 
@@ -571,23 +581,23 @@ export class GoogleEarthEngineService {
   private getSimulatedTimeSeries(startDate: Date, endDate: Date): any[] {
     const timeSeries = []
     const currentDate = new Date(startDate)
-    
+    let step = 0
     while (currentDate <= endDate) {
       const seasonalFactor = Math.sin((currentDate.getMonth() / 12) * 2 * Math.PI) * 0.15
-      const ndvi = 0.6 + seasonalFactor + (Math.random() - 0.5) * 0.1
+      const s = (currentDate.getTime() * 0.001 + step * 17) % 1
+      const ndvi = 0.6 + seasonalFactor + (s - 0.5) * 0.1
       const evi = ndvi * 0.8
-      
+      const s2 = ((currentDate.getTime() * 0.001 + step * 31) % 1)
       timeSeries.push({
         date: currentDate.toISOString().split('T')[0],
         ndvi: Math.max(0, Math.min(1, ndvi)),
         evi: Math.max(0, Math.min(1, evi)),
-        cloudCover: Math.random() * 25,
+        cloudCover: s2 * 25,
         imageSource: 'Sentinel-2 (Simulated)'
       })
-      
-      currentDate.setDate(currentDate.getDate() + 15) // Every 15 days
+      currentDate.setDate(currentDate.getDate() + 15)
+      step++
     }
-    
     return timeSeries
   }
 

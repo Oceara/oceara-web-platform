@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface Project {
@@ -24,6 +24,13 @@ export default function PurchaseModal({ project, onClose, onPurchase }: Purchase
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'upi' | 'wallet'>('card')
   const [isPurchasing, setIsPurchasing] = useState(false)
   const [purchaseComplete, setPurchaseComplete] = useState(false)
+
+  useEffect(() => {
+    if (project) {
+      document.body.classList.add('modal-open')
+      return () => document.body.classList.remove('modal-open')
+    }
+  }, [project])
 
   if (!project) return null
 

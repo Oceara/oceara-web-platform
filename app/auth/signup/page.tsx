@@ -82,7 +82,7 @@ export default function SignupPage() {
         roleParam || 'buyer'
       )
 
-      toast.success(`Account created! Welcome, ${user.name}!`)
+      toast.success(`Welcome, ${user.name}!`, { duration: 3500 })
       
       // Auto-login and redirect
       setTimeout(() => {

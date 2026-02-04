@@ -186,7 +186,14 @@ export default function BuyerDashboard() {
                       <div className="flex items-center gap-3">
                         <div className="text-4xl">{project.image}</div>
                         <div>
-                          <h3 className="text-xl font-bold text-white">{project.name}</h3>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="text-xl font-bold text-white">{project.name}</h3>
+                            {project.isDemo && (
+                              <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-500/30 text-amber-200 border border-amber-500/50">
+                                Demo / Sample
+                              </span>
+                            )}
+                          </div>
                           <p className="text-gray-300 text-sm">📍 {project.location}</p>
                         </div>
                       </div>
@@ -297,7 +304,14 @@ export default function BuyerDashboard() {
                   whileHover={{ scale: 1.02 }}
                   className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 hover:border-purple-500 transition-all"
                 >
-                  <div className="text-3xl mb-2">{project.image}</div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="text-3xl">{project.image}</div>
+                    {project.isDemo && (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/30 text-amber-200 border border-amber-500/50">
+                        Demo
+                      </span>
+                    )}
+                  </div>
                   <h4 className="text-white font-semibold mb-1 text-sm">{project.name}</h4>
                   <p className="text-gray-400 text-xs mb-2">{project.location}</p>
                   <div className="space-y-2">

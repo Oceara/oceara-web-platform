@@ -18,6 +18,18 @@
 
 ---
 
+## Production fixes (latest)
+
+- **Database & API:** Projects API supports `area`, `latitude`, `longitude`, `status`; null-safe reads; POST normalizes body and returns clear errors. Project creation shows loading state and success/error toasts; new project appears in My Projects immediately.
+- **Visibility:** Admin sees all projects; marketplace shows verified projects; My Projects shows user-owned; demo/sample projects always visible and labeled “Demo / Sample”; empty states show explanations.
+- **Phone:** Phone saved to `profiles.phone` via PATCH `/api/profiles/me`; international format validated (+countrycode); save only when auth user exists; errors shown on fail. Schema: `profiles.phone` added in `schema-extensions.sql`.
+- **Welcome:** Welcome messages are toasts; auto-dismiss 3.5s; non-blocking.
+- **Scroll:** No permanent `overflow:hidden` on body; `body.modal-open` locks scroll only when modals are open; restored on close; full mobile scroll.
+- **CSP & maps:** CSP allows `nominatim.openstreetmap.org`, `openstreetmap.org`, `tile.openstreetmap.org` (connect-src and img-src). Maps API route is `force-dynamic`. Map/nominatim failures do not crash pages.
+- **AI/ML:** No random AI; Earth Engine fallbacks deterministic (seed from coords/area); carbon estimation remains area × coefficients; labels and disclaimer in place; I/O stored for future ML.
+
+---
+
 ## Deployment — do this every time (you deploy)
 
 **You handle the actual deploy; use these steps every time.**

@@ -14,7 +14,7 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, email, full_name, role, marketplace_access')
+      .select('id, email, full_name, role, marketplace_access, phone')
       .order('created_at', { ascending: false })
 
     if (error) {

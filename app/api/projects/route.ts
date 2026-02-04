@@ -41,7 +41,24 @@ export async function POST(request: NextRequest) {
     const supabase = createClient()
     const db = new ProjectsDatabase(supabase)
     const body = await request.json()
-    const project = await db.createProject(body)
+
+    // Normalize body: ensure area, status, coordinates (or latitude/longitude) for insert
+    const area = body.area != null ? String(body.area) : ''
+    const status = body.status ?? 'Pending Review'
+    let coordinates = body.coordinates
+    if (!coordinates || typeof coordinates.lat !== 'number' || typeof coordinates.lng !== 'number') {
+      const lat = body.latitude != null ? Number(body.latitude) : NaN
+      const lng = body.longitude != null ? Number(body.longitude) : NaN
+      coordinates = !Number.isNaN(lat) && !Number.isNaN(lng) ? { lat, lng } : { lat: 0, lng: 0 }
+    }
+    const payload = {
+      ...body,
+      area: area || (body.ml_analysis?.mangroveArea != null ? `${body.ml_analysis.mangroveArea} hectares` : '0 hectares'),
+      status,
+      coordinates,
+    }
+
+    const project = await db.createProject(payload)
     const areaHa = parseFloat(String(body.area || '0').replace(/[^0-9.]/g, '')) || (body.ml_analysis?.mangroveArea ?? 0)
     const co2 = body.credits_available ?? body.ml_analysis?.carbonCredits ?? 0
     const methodology = 'Area-based reference coefficient (mangrove 6–10 tCO₂e/ha/year). Preliminary, subject to verification.'
@@ -60,9 +77,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ project }, { status: 201 })
   } catch (error: any) {
     console.error('Error in POST /api/projects:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to create project' },
-      { status: 500 }
-    )
+    const message = error?.message || 'Failed to create project'
+    const status = message.includes('configured') ? 503 : 500
+    return NextResponse.json({ error: message }, { status })
   }
 }

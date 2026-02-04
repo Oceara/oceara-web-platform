@@ -109,7 +109,7 @@ export default function LoginPage() {
           return
         }
         
-        toast.success(`Welcome back, ${user.name}!`)
+        toast.success(`Welcome back, ${user.name}!`, { duration: 3500 })
         
         // Redirect based on user's role
         setTimeout(() => {

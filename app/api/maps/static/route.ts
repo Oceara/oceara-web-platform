@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 // Rate limiting storage (in production, use Redis)
 const requestCounts = new Map<string, { count: number; resetTime: number }>()
 

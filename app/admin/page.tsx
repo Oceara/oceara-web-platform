@@ -46,10 +46,7 @@ export default function AdminDashboard() {
     const userName = searchParams.get('user_name')
     
     if (googleAuth === 'success' && userEmail) {
-      toast.success(`Welcome ${userName || userEmail}! Google authentication successful.`, {
-        icon: '🎉',
-        duration: 5000
-      })
+      toast.success(`Welcome ${userName || userEmail}!`, { icon: '🎉', duration: 3500 })
       
       // Store user info in localStorage
       localStorage.setItem('google_user', JSON.stringify({
@@ -150,6 +147,13 @@ export default function AdminDashboard() {
   }
 
   const filteredProjects = getFilteredProjects()
+
+  useEffect(() => {
+    if (showModal && selectedProject) {
+      document.body.classList.add('modal-open')
+      return () => document.body.classList.remove('modal-open')
+    }
+  }, [showModal, selectedProject])
 
   if (!isLoaded) {
     return (
@@ -436,7 +440,13 @@ export default function AdminDashboard() {
               ))}
             </div>
 
-            {/* Projects Grid */}
+            {/* Projects Grid - Admin sees all projects including demo/sample */}
+            {filteredProjects.length === 0 ? (
+              <div className="rounded-xl p-8 bg-white/5 border border-white/10 text-center text-gray-400">
+                <p className="text-lg mb-2">No projects match the current filter</p>
+                <p className="text-sm">Switch to &quot;all&quot; to see every project, including demo samples.</p>
+              </div>
+            ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredProjects.map((project) => (
                 <motion.div
@@ -456,7 +466,14 @@ export default function AdminDashboard() {
                     </span>
                   </div>
                   
-                  <h3 className="text-lg font-bold text-white mb-1">{project.name}</h3>
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <h3 className="text-lg font-bold text-white">{project.name}</h3>
+                    {project.isDemo && (
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-500/30 text-amber-200 border border-amber-500/50">
+                        Demo / Sample
+                      </span>
+                    )}
+                  </div>
                   <p className="text-gray-400 text-sm mb-3">{project.location}</p>
                   
                   <div className="space-y-2 mb-4">
@@ -498,6 +515,7 @@ export default function AdminDashboard() {
                 </motion.div>
               ))}
             </div>
+            )}
           </div>
         )}
 

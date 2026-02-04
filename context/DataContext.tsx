@@ -37,6 +37,8 @@ export interface Project {
     confidence: number
   }
   documents?: string[]
+  /** True for built-in demo/sample projects; always shown and labeled in UI */
+  isDemo?: boolean
 }
 
 // Convert database project to app format
@@ -913,15 +915,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const loadData = async () => {
       const applyFallback = (stored: string | null) => {
         setUseDatabase(false)
+        const withIdAndDemo = (p: any) => ({ ...p, id: String(p.id), isDemo: true })
         if (stored) {
           try {
             const parsed = JSON.parse(stored)
-            setProjects(parsed.map((p: any) => ({ ...p, id: String(p.id) })))
+            setProjects(Array.isArray(parsed) ? parsed.map(withIdAndDemo) : initialProjects.map(withIdAndDemo))
           } catch {
-            setProjects(initialProjects.map(p => ({ ...p, id: String(p.id) })))
+            setProjects(initialProjects.map(withIdAndDemo))
           }
         } else {
-          setProjects(initialProjects.map(p => ({ ...p, id: String(p.id) })))
+          setProjects(initialProjects.map(withIdAndDemo))
         }
       }
 
@@ -930,8 +933,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         if (res.ok) {
           const data = await res.json()
           const list = data.projects || []
+          const fromDb = list.map((p: DBProject) => ({ ...dbToApp(p), isDemo: false }))
+          const demo = initialProjects.map((p, i) => ({ ...p, id: `demo-${i + 1}`, isDemo: true }))
           setUseDatabase(true)
-          setProjects(list.map((p: DBProject) => dbToApp(p)))
+          setProjects([...fromDb, ...demo])
           setDbError(null)
         } else {
           setDbError(res.status === 401 || res.status === 403 ? 'Registry in offline mode. Sign in for full sync.' : `Registry unavailable (${res.status})`)
@@ -967,7 +972,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
           throw new Error(err.error || `HTTP ${res.status}`)
         }
         const data = await res.json()
-        const newProject = dbToApp(data.project)
+        const created = data.project
+        if (!created || created.id == null) {
+          throw new Error('Invalid response: project not returned')
+        }
+        const newProject = { ...dbToApp(created), isDemo: false }
         setProjects(prev => [...prev, newProject])
         return newProject
       } catch (error: any) {

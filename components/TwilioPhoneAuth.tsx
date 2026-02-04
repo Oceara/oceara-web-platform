@@ -23,6 +23,11 @@ function formatPhoneForApi(value: string): string {
   return value.startsWith('+') ? value : '+' + value
 }
 
+// E.164: +countrycode then 6–15 digits
+function isValidInternationalPhone(phone: string): boolean {
+  return /^\+[1-9]\d{6,14}$/.test(phone)
+}
+
 export default function TwilioPhoneAuth({ role, onSuccess }: TwilioPhoneAuthProps) {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
@@ -40,8 +45,8 @@ export default function TwilioPhoneAuth({ role, onSuccess }: TwilioPhoneAuthProp
 
   const handleSendOTP = async () => {
     const formatted = formatPhoneForApi(phoneNumber)
-    if (formatted.length < 12) {
-      toast.error('Please enter a valid 10-digit phone number')
+    if (!isValidInternationalPhone(formatted)) {
+      toast.error('Use international format: +countrycode then number (e.g. +91 9876543210)')
       return
     }
     setLoading(true)
@@ -96,6 +101,25 @@ export default function TwilioPhoneAuth({ role, onSuccess }: TwilioPhoneAuthProp
         return
       }
       toast.success('Verified!')
+      // Save to profile when user is authenticated
+      try {
+        const profileRes = await fetch('/api/profiles/me', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: formatted }),
+        })
+        if (profileRes.ok) {
+          toast.success('Phone number saved to your profile.', { duration: 3000 })
+        } else if (profileRes.status === 401) {
+          // Not signed in; phone verified but not saved
+          toast('Sign in to save this number to your profile.', { duration: 3500, icon: '📱' })
+        } else {
+          const err = await profileRes.json().catch(() => ({}))
+          toast.error(err.error || 'Could not save phone number')
+        }
+      } catch {
+        toast.error('Could not save phone number')
+      }
       onSuccess(formatted)
     } catch (e) {
       toast.error('Verification failed')
