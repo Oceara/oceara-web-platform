@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { ProjectsDatabase } from '@/lib/database/projects'
+import { toNumericArea } from '@/lib/area'
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,8 +43,8 @@ export async function POST(request: NextRequest) {
     const db = new ProjectsDatabase(supabase)
     const body = await request.json()
 
-    // Normalize body: ensure area, status, coordinates (or latitude/longitude) for insert
-    const area = body.area != null ? String(body.area) : ''
+    // Normalize body: area must be numeric for DB; status and coordinates
+    const areaNum = toNumericArea(body.area ?? body.ml_analysis?.mangroveArea ?? 0)
     const status = body.status ?? 'Pending Review'
     let coordinates = body.coordinates
     if (!coordinates || typeof coordinates.lat !== 'number' || typeof coordinates.lng !== 'number') {
@@ -53,13 +54,13 @@ export async function POST(request: NextRequest) {
     }
     const payload = {
       ...body,
-      area: area || (body.ml_analysis?.mangroveArea != null ? `${body.ml_analysis.mangroveArea} hectares` : '0 hectares'),
+      area: areaNum,
       status,
       coordinates,
     }
 
     const project = await db.createProject(payload)
-    const areaHa = parseFloat(String(body.area || '0').replace(/[^0-9.]/g, '')) || (body.ml_analysis?.mangroveArea ?? 0)
+    const areaHa = areaNum
     const co2 = body.credits_available ?? body.ml_analysis?.carbonCredits ?? 0
     const methodology = 'Area-based reference coefficient (mangrove 6–10 tCO₂e/ha/year). Preliminary, subject to verification.'
     await supabase.from('estimation_runs').insert({

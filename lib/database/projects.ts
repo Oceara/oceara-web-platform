@@ -48,7 +48,7 @@ function normalizeCoordinates(project: any): { lat: number; lng: number } {
   return { lat: 0, lng: 0 }
 }
 
-// Convert database format to app format; handle null/missing area, status, coordinates for older rows
+// Convert database format to app format; handle null/missing area, status, coordinates for older rows. Area stored as number in DB, displayed as "X hectares".
 function dbToApp(project: any): Project {
   return {
     id: project.id,
@@ -57,7 +57,7 @@ function dbToApp(project: any): Project {
     owner_email: project.owner_email,
     location: project.location ?? '',
     coordinates: normalizeCoordinates(project),
-    area: project.area != null ? String(project.area) : '',
+    area: formatAreaForDisplay(project.area),
     credits_available: project.credits_available ?? 0,
     price_per_credit: parseFloat(project.price_per_credit) || 0,
     verified: Boolean(project.verified),
@@ -76,8 +76,7 @@ function dbToApp(project: any): Project {
   }
 }
 
-// Convert app format to database format; ensure area, status, coordinates exist.
-// Also sends latitude/longitude for DBs that have those columns.
+// Convert app format to database format (full row for updates/selects).
 function appToDb(project: Partial<Project>): any {
   const coords = project.coordinates ?? { lat: 0, lng: 0 }
   const lat = typeof coords.lat === 'number' ? coords.lat : 0
@@ -103,6 +102,26 @@ function appToDb(project: Partial<Project>): any {
     documents: project.documents ?? [],
   }
   return row
+}
+
+/** Minimal insert row: only columns that commonly exist. Area must be numeric for DB. */
+function buildMinimalInsertRow(project: Partial<Project>): Record<string, unknown> {
+  const coords = project.coordinates ?? { lat: 0, lng: 0 }
+  const lat = typeof coords.lat === 'number' ? coords.lat : 0
+  const lng = typeof coords.lng === 'number' ? coords.lng : 0
+  const areaNum = typeof project.area === 'number' ? project.area : toNumericArea(project.area)
+  return {
+    name: project.name ?? '',
+    owner: project.owner ?? '',
+    owner_email: project.owner_email ?? null,
+    location: project.location ?? '',
+    coordinates: { lat, lng },
+    area: areaNum,
+    credits_available: project.credits_available ?? 0,
+    price_per_credit: project.price_per_credit ?? 0,
+    verified: Boolean(project.verified),
+    status: project.status ?? 'Pending Review',
+  }
 }
 
 export class ProjectsDatabase {
@@ -235,11 +254,12 @@ export class ProjectsDatabase {
       throw new Error('Supabase not configured')
     }
 
-    const projectData = appToDb(project)
+    // Use minimal insert so it works even when optional columns (documents, images, etc.) don't exist yet
+    const insertRow = buildMinimalInsertRow(project)
 
     const { data, error } = await this.supabase
       .from('projects')
-      .insert(projectData)
+      .insert(insertRow)
       .select()
       .single()
 
@@ -256,7 +276,29 @@ export class ProjectsDatabase {
       throw new Error('Supabase not configured')
     }
 
-    const updateData = appToDb(updates)
+    // Only update columns that are present in updates (partial update)
+    const updateData: Record<string, unknown> = {}
+    if (updates.name !== undefined) updateData.name = updates.name
+    if (updates.owner !== undefined) updateData.owner = updates.owner
+    if (updates.owner_email !== undefined) updateData.owner_email = updates.owner_email
+    if (updates.location !== undefined) updateData.location = updates.location
+    if (updates.coordinates !== undefined) updateData.coordinates = updates.coordinates
+    if (updates.area !== undefined) updateData.area = typeof updates.area === 'number' ? updates.area : toNumericArea(updates.area)
+    if (updates.credits_available !== undefined) updateData.credits_available = updates.credits_available
+    if (updates.price_per_credit !== undefined) updateData.price_per_credit = updates.price_per_credit
+    if (updates.verified !== undefined) updateData.verified = updates.verified
+    if (updates.status !== undefined) updateData.status = updates.status
+    if (updates.impact !== undefined) updateData.impact = updates.impact
+    if (updates.image !== undefined) updateData.image = updates.image
+    if (updates.description !== undefined) updateData.description = updates.description
+    if (updates.images !== undefined) updateData.images = updates.images
+    if (updates.satellite_images !== undefined) updateData.satellite_images = updates.satellite_images
+    if (updates.field_data !== undefined) updateData.field_data = updates.field_data
+    if (updates.ml_analysis !== undefined) updateData.ml_analysis = updates.ml_analysis
+    if (updates.documents !== undefined) updateData.documents = updates.documents
+    if (Object.keys(updateData).length === 0) {
+      return (await this.getProjectById(id))!
+    }
 
     const { data, error } = await this.supabase
       .from('projects')

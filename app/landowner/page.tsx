@@ -12,9 +12,10 @@ import CarbonDisclaimer from '@/components/CarbonDisclaimer'
 import EarthEngineSatelliteViewer from '@/components/EarthEngineSatelliteViewer'
 import { getGoogleMapsStaticUrl } from '@/lib/config'
 import { runBlueCarbonEstimation } from '@/lib/estimation'
+import { parseAreaInput } from '@/lib/area'
 
 export default function LandownerDashboard() {
-  const { projects, isLoaded, addProject, getProjectsByOwner, dbError } = useData()
+  const { projects, isLoaded, addProject, updateProject, getProjectsByOwner, dbError } = useData()
   const { canSeeAdvancedFeatures: showAdvanced } = useFeatureFlags()
   const [activeTab, setActiveTab] = useState('overview')
   const [showRegisterModal, setShowRegisterModal] = useState(false)
@@ -147,17 +148,44 @@ export default function LandownerDashboard() {
 
   // Submit registration
   const handleSubmit = async () => {
-    if (!projectName || !area || !location) {
+    if (!projectName || !area.trim() || !location) {
       toast.error('Please fill all required fields')
       return
     }
 
+    const areaParsed = parseAreaInput(area)
+    if (!areaParsed.valid) {
+      toast.error(areaParsed.error ?? 'Please enter a valid area in hectares (e.g. 20 or 20 hectares).')
+      return
+    }
+    const areaNum = areaParsed.value
+
+    // Upload verification photos first if any
+    let uploadedImageUrls: string[] = []
+    if (photos.length > 0) {
+      try {
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ images: photos.slice(0, 10) }),
+        })
+        const uploadData = await uploadRes.json().catch(() => ({}))
+        if (uploadRes.ok && Array.isArray(uploadData.urls)) {
+          uploadedImageUrls = uploadData.urls
+        } else if (!uploadRes.ok) {
+          toast.error(uploadData.error || 'Photo upload failed. Submitting without photos.')
+        }
+      } catch (e) {
+        console.warn('Photo upload failed:', e)
+        toast.error('Photo upload failed. Submitting without photos.')
+      }
+    }
+
     // Deterministic preliminary estimation
-    const treeCount = parseInt(area) * 50
-    const areaHa = parseInt(area, 10) || 0
+    const treeCount = Math.floor(areaNum * 50)
     const coords = coordinates || { lat: 20.5937, lng: 78.9629 }
     const estimation = runBlueCarbonEstimation({
-      area_hectares: areaHa,
+      area_hectares: areaNum,
       ecosystem_type: 'mangrove',
       location,
       coordinates: coords,
@@ -170,7 +198,7 @@ export default function LandownerDashboard() {
       owner: 'Demo Landowner',
       location: location,
       coordinates: coords,
-      area: `${area} hectares`,
+      area: `${areaNum} hectares`,
       creditsAvailable: carbonCredits,
       pricePerCredit: 25,
       verified: false,
@@ -178,7 +206,7 @@ export default function LandownerDashboard() {
       impact: `${carbonCredits} tons CO₂/year`,
       image: '🌿',
       description: description || 'Mangrove restoration project',
-      images: photos.length > 0 ? photos.slice(0, 5).map(() => '📷') : ['📷', '📷'],
+      images: uploadedImageUrls.length > 0 ? uploadedImageUrls : ['📷', '📷'],
       satelliteImages: coordinates ? [
         `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=16&size=800x600&maptype=satellite&key=`
       ] : [],
@@ -190,7 +218,7 @@ export default function LandownerDashboard() {
       },
       mlAnalysis: {
         treeCount: treeCount,
-        mangroveArea: areaHa,
+        mangroveArea: areaNum,
         healthScore: estimation.health_score,
         speciesDetected: ['Rhizophora mucronata', 'Avicennia marina'],
         carbonCredits: carbonCredits,
@@ -201,7 +229,15 @@ export default function LandownerDashboard() {
 
     setIsSubmitting(true)
     try {
-      await addProject(newProject)
+      const created = await addProject(newProject)
+      // Attach uploaded photo URLs to the project (DB insert is minimal; images are set via PATCH)
+      if (uploadedImageUrls.length > 0 && created?.id != null) {
+        try {
+          await updateProject(created.id, { images: uploadedImageUrls })
+        } catch (patchErr) {
+          console.warn('Could not save verification photos to project:', patchErr)
+        }
+      }
       setProjectName('')
       setArea('')
       setLocation('')
@@ -549,10 +585,11 @@ export default function LandownerDashboard() {
               <div className="mb-6">
                 <label className="block text-white font-semibold mb-2">📏 Area (hectares) *</label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   value={area}
                   onChange={(e) => setArea(e.target.value)}
-                  placeholder="e.g., 50"
+                  placeholder="e.g. 20, 20 ha, or 20 hectares"
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400"
                 />
               </div>
@@ -609,6 +646,7 @@ export default function LandownerDashboard() {
                     type="file"
                     accept="image/*"
                     multiple
+                    capture="environment"
                     onChange={handlePhotoUpload}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:cursor-pointer"
                   />

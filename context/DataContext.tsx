@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { Project as DBProject } from '@/lib/database/projects'
+import { toNumericArea } from '@/lib/area'
 
 // Legacy interface for backward compatibility (exported for EarthWithProjects etc.)
 export interface Project {
@@ -67,7 +68,7 @@ function dbToApp(project: DBProject): Project {
   }
 }
 
-// Convert app format to database format
+// Convert app format to database format (area sent as number for DB)
 function appToDb(project: Omit<Project, 'id' | 'submittedDate'>): Omit<DBProject, 'id' | 'submitted_date' | 'created_at' | 'updated_at'> {
   return {
     name: project.name,
@@ -75,7 +76,7 @@ function appToDb(project: Omit<Project, 'id' | 'submittedDate'>): Omit<DBProject
     owner_email: project.owner_email,
     location: project.location,
     coordinates: project.coordinates,
-    area: project.area,
+    area: toNumericArea(project.area) as unknown as string,
     credits_available: project.creditsAvailable,
     price_per_credit: project.pricePerCredit,
     verified: project.verified,
@@ -89,6 +90,30 @@ function appToDb(project: Omit<Project, 'id' | 'submittedDate'>): Omit<DBProject
     ml_analysis: project.mlAnalysis,
     documents: project.documents,
   }
+}
+
+/** Build PATCH payload: only defined keys, in DB (snake_case) format; area as number */
+function toDbPartial(updates: Partial<Project>): Record<string, unknown> {
+  const r: Record<string, unknown> = {}
+  if (updates.name !== undefined) r.name = updates.name
+  if (updates.owner !== undefined) r.owner = updates.owner
+  if (updates.owner_email !== undefined) r.owner_email = updates.owner_email
+  if (updates.location !== undefined) r.location = updates.location
+  if (updates.coordinates !== undefined) r.coordinates = updates.coordinates
+  if (updates.area !== undefined) r.area = toNumericArea(updates.area)
+  if (updates.creditsAvailable !== undefined) r.credits_available = updates.creditsAvailable
+  if (updates.pricePerCredit !== undefined) r.price_per_credit = updates.pricePerCredit
+  if (updates.verified !== undefined) r.verified = updates.verified
+  if (updates.status !== undefined) r.status = updates.status
+  if (updates.impact !== undefined) r.impact = updates.impact
+  if (updates.image !== undefined) r.image = updates.image
+  if (updates.description !== undefined) r.description = updates.description
+  if (updates.images !== undefined) r.images = updates.images
+  if (updates.satelliteImages !== undefined) r.satellite_images = updates.satelliteImages
+  if (updates.fieldData !== undefined) r.field_data = updates.fieldData
+  if (updates.mlAnalysis !== undefined) r.ml_analysis = updates.mlAnalysis
+  if (updates.documents !== undefined) r.documents = updates.documents
+  return r
 }
 
 interface DataContextType {
@@ -1005,7 +1030,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const res = await fetch(`/api/projects/${id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(appToDb(updates as any))
+          body: JSON.stringify(toDbPartial(updates))
         })
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))

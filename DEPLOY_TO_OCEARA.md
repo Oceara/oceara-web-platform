@@ -61,14 +61,39 @@
    - **Twilio OTP:** `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and **either** `TWILIO_VERIFY_SERVICE_SID` **or** `TWILIO_VERIFY_SID` (Verify Service SID from Twilio Console → Verify).
    - Optional: `NEXT_PUBLIC_FULL_ACCESS_EMAILS` (comma-separated) for marketplace/wallet visibility.
 
-6. **Supabase – fix “Could not find the 'coordinates' column” (project creation 500):**  
-   In **Supabase → SQL Editor**, run the migration once:
+6. **Supabase – fix project creation 500 (“Could not find the 'location' or other column”):**  
+   In **Supabase → SQL Editor**, run **one** of these (run the full migration once; safe to re-run):
+   - **Recommended:** open `lib/database/migrations/002_add_projects_missing_columns.sql`, copy all, paste in SQL Editor → Run.  
+   - Or run this inline (adds all columns the app needs):
    ```sql
-   -- Add coordinates column so project creation works
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS name TEXT;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS owner TEXT;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS owner_email TEXT;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS location TEXT;
    ALTER TABLE projects ADD COLUMN IF NOT EXISTS coordinates JSONB DEFAULT '{"lat":0,"lng":0}'::jsonb;
-   ALTER TABLE projects ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION, ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS area TEXT;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS credits_available NUMERIC DEFAULT 0;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS price_per_credit NUMERIC DEFAULT 0;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS verified BOOLEAN DEFAULT false;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Pending Review';
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS impact TEXT;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS image TEXT;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS description TEXT;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS images TEXT[];
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS satellite_images TEXT[];
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS field_data JSONB;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS ml_analysis JSONB;
+   ALTER TABLE projects ADD COLUMN IF NOT EXISTS documents TEXT[];
    ```
-   Or run the full migration file: `lib/database/migrations/001_add_projects_coordinates.sql`
+
+7. **Supabase Storage – verification photos:**  
+   For landowner “Upload Photos” (mobile verification photos) to be stored, create a **Storage** bucket in Supabase:
+   - **Supabase → Storage → New bucket**
+   - Name: `project-uploads`
+   - **Public bucket:** ON (so returned image URLs work in the app)
+   - Create. The upload API (`/api/upload`) will store photos under `verification/` and attach their URLs to the project via PATCH. If the bucket is missing, photo upload fails gracefully and the project is still created without images.
 
 ---
 
