@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
+import { formatAreaForDisplay, toNumericArea } from '@/lib/area'
 
 export interface Project {
   id: string
